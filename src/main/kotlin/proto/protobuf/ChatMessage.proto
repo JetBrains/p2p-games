@@ -1,0 +1,13 @@
+package proto;
+option java_package = "proto";
+option java_outer_classname = "ChatMessageProto";
+message User{
+    required string name = 1;
+    required string adress = 2;
+}
+
+message ChatMessage {
+    required User user = 1;
+    required string message = 2;
+    required int32 cahtId = 3;
+}

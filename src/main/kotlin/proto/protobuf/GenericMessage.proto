@@ -1,0 +1,19 @@
+package proto;
+import "Query.proto";
+import "ChatMessage.proto";
+
+option java_package = "proto";
+option java_outer_classname = "GenericMessageProto";
+
+message GenericMessage {
+    enum Type {
+        CHAT_MESSAGE = 1;
+        QUERY = 2;
+    }
+
+    required Type type = 1;
+
+    optional ChatMessage chatMessage = 2;
+    optional Query query = 3;
+}
+

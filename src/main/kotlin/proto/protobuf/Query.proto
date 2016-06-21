@@ -1,0 +1,17 @@
+package proto;
+option java_package = "proto";
+option java_outer_classname = "QueryProto";
+
+message Query{
+    enum Type {
+        CHAT_MEMBER_QUERY = 1;
+    }
+
+    required Type type = 1;
+
+    optional ChatMemberQuery query = 2;
+}
+
+message ChatMemberQuery{
+    required int32 chatID = 1;
+}
