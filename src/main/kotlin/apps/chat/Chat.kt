@@ -1,6 +1,6 @@
-package service.chat
+package apps.chat
 
-import GUI.ChatGUI
+import apps.chat.GUI.ChatGUI
 import broker.NettyGroupBroker
 import entity.Group
 import entity.User
@@ -9,7 +9,10 @@ import network.Service
 import network.dispatching.Dispatcher
 import network.dispatching.SimpleDispatcher
 import proto.ChatMessageProto
+import proto.EntitiesProto
 import proto.GenericMessageProto
+import service.ChatService
+import service.QueryService
 import java.net.InetSocketAddress
 import javax.swing.UIManager
 
@@ -17,15 +20,18 @@ import javax.swing.UIManager
  * Created by user on 6/22/16.
  * Represents logic behind chat
  */
-class ChatService(val chatGUI: ChatGUI, private val connectionManager: ConnectionManager): Service<ChatMessageProto.ChatMessage>, Runnable{
+class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManager): Runnable{
     // chat users in this group
     val group = Group(mutableSetOf())
     val groupBroker = NettyGroupBroker(connectionManager)
 
     init{
         //TODO remove callbacks
-        connectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE, this)
-        chatGUI.chatService = this
+        connectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
+                ChatService({msg: ChatMessageProto.ChatMessage -> receiveMessage(msg)}))
+        connectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY,
+                QueryService(this))
+        chatGUI.chat = this
     }
 
     /**
@@ -43,7 +49,7 @@ class ChatService(val chatGUI: ChatGUI, private val connectionManager: Connectio
      */
     fun sendMessage(message: String){
         //TODO separate protobuf factory
-        val user = ChatMessageProto.User.newBuilder().setHostname(connectionManager.hostAddr.hostName)
+        val user = EntitiesProto.User.newBuilder().setHostname(connectionManager.hostAddr.hostName)
                 .setPort(connectionManager.hostAddr.port).setName(chatGUI.username).build()
         val chatMessage = ChatMessageProto.ChatMessage.newBuilder().setChatId(chatGUI.chatID).setMessage(message)
                 .setUser(user).build()
@@ -56,13 +62,7 @@ class ChatService(val chatGUI: ChatGUI, private val connectionManager: Connectio
      * protobuf dispatcher
      * @see Dispatcher
      */
-    override fun getDispatcher(): Dispatcher<ChatMessageProto.ChatMessage> {
-        fun response(msg: ChatMessageProto.ChatMessage): GenericMessageProto.GenericMessage?{
-            receiveMessage(msg)
-            return null
-        }
-        return SimpleDispatcher(::response)
-    }
+
 
     override fun run(){
         try {

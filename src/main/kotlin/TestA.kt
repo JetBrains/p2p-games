@@ -1,4 +1,4 @@
-import GUI.ChatGUI
+import apps.chat.GUI.ChatGUI
 import network.ConnectionManager
 import network.dispatching.EnumDispatcher
 import network.dispatching.SimpleDispatcher
@@ -7,7 +7,7 @@ import network.MessageServer
 import org.apache.log4j.BasicConfigurator
 import proto.ChatMessageProto
 import proto.GenericMessageProto
-import service.chat.ChatService
+import apps.chat.Chat
 import java.net.InetSocketAddress
 import java.net.InterfaceAddress
 import javax.swing.SwingUtilities
@@ -33,7 +33,7 @@ fun main(args : Array<String>) {
     val a3: InetSocketAddress = InetSocketAddress("localhost", 1233)
     val a4: InetSocketAddress = InetSocketAddress("localhost", 1234)
     val connectionManager = ConnectionManager(a1, a2)
-    val chat = ChatService(ChatGUI(666), connectionManager)
+    val chat = Chat(ChatGUI(666), connectionManager)
 
     val gui = Thread(chat)
     gui.start()

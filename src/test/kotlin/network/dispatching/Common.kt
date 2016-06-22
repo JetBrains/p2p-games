@@ -1,6 +1,7 @@
 package network.dispatching
 
 import proto.ChatMessageProto
+import proto.EntitiesProto
 import proto.GenericMessageProto
 import proto.QueryProto
 import java.net.InetSocketAddress
@@ -14,7 +15,7 @@ fun getSampleChatMessage(): ChatMessageProto.ChatMessage {
     chatMessage.chatId = 666
     chatMessage.message = "Need more Souls"
     val a2: InetSocketAddress = InetSocketAddress("localhost", 1232)
-    chatMessage.user = (ChatMessageProto.User.newBuilder().setHostname(a2.hostName).setPort(a2.port).setName("Mark Geller").build())
+    chatMessage.user = (EntitiesProto.User.newBuilder().setHostname(a2.hostName).setPort(a2.port).setName("Mark Geller").build())
     return chatMessage.build()
 }
 

@@ -1,10 +1,10 @@
-package GUI
+package apps.chat.GUI
 
 /**
  * Created by user on 6/22/16.
  */
 
-import service.chat.ChatService
+import apps.chat.Chat
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -27,7 +27,7 @@ class ChatGUI(val chatID: Int) {
     internal var preFrame: JFrame = JFrame()
 
     //Todo - remove callbacks
-    internal var chatService: ChatService? = null
+    internal var chat: Chat? = null
 
     fun preDisplay() {
         newFrame.isVisible = false
@@ -116,7 +116,7 @@ class ChatGUI(val chatID: Int) {
                 messageBox.text = ""
             } else {
                 displayMessage(chatID, username, messageBox.text)
-                chatService!!.sendMessage(messageBox.text)
+                chat!!.sendMessage(messageBox.text)
                 messageBox.text = ""
             }
             messageBox.requestFocusInWindow()
