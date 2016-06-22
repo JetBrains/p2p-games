@@ -1,46 +1,38 @@
-package broker.network
+package network
 
 import io.netty.bootstrap.Bootstrap
+import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
+import io.netty.handler.logging.LogLevel
+import io.netty.handler.logging.LoggingHandler
+import network.dispatching.Dispatcher
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 
 /**
- * Created by Mark Geller on 6/21/16.
- * simple message client - transfers protobuf messages to server
+ * Created by user on 6/21/16.
  */
-class MessageClient(val addr: InetSocketAddress) {
-    //Upstream connections
-    private val bootstrap = Bootstrap()
 
+
+class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) {
+    private val future : ChannelFuture
+    val bootstrap = ServerBootstrap()
     init{
         val group = NioEventLoopGroup();
-        bootstrap.group(group).channel(NioSocketChannel::class.java).
-                handler(MessageServerChannelInitializer())
+        bootstrap.group(group).channel(NioServerSocketChannel::class.java).
+                childHandler(MessageServerChannelInitializer(dispatcher))
         bootstrap.option(ChannelOption.SO_REUSEADDR, true)
-        bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
-    }
-
-
-    /**
-     * Send Protobuff message to Sever(async),
-     * no response required
-     * @param host - Server to receive message
-     * @param msg - Protobuff message
-     */
-    fun send(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
-        val f = bootstrap.connect(host, addr).sync()
-        f.channel().writeAndFlush(msg)
-        f.channel().closeFuture()
+        future = bootstrap.bind(addr).sync()
     }
 
     /**
@@ -48,16 +40,28 @@ class MessageClient(val addr: InetSocketAddress) {
      */
     fun close(){
         bootstrap.group().shutdownGracefully()
+        future.channel().closeFuture().sync()
     }
 }
 
 
 /**
- * Client response handler (process message from server)
+ * Server response handler (process message from client)
  */
-class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>() {
+class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>() {
+    var response: GenericMessageProto.GenericMessage? = null
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: GenericMessageProto.GenericMessage?) {
-        print(msg)
+        if(msg != null){
+            response = dispatcher.dispatch(msg)
+        }
+    }
+
+    override fun channelReadComplete(ctx: ChannelHandlerContext) {
+        if(response != null){
+            ctx.write(ctx)
+        }
+        ctx.flush()
+
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
@@ -67,17 +71,18 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
 }
 
 
+// TODO merge with MessageClientChannelInitializer
 /**
  * Pipeline for protobuf network serialization/deserialization
  */
-class MessageClientChannelInitializer : ChannelInitializer<SocketChannel> (){
+class MessageServerChannelInitializer(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>): ChannelInitializer<SocketChannel>(){
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
         pipeline.addLast(ProtobufVarint32FrameDecoder())
         pipeline.addLast(ProtobufDecoder(GenericMessageProto.GenericMessage.getDefaultInstance()))
         pipeline.addLast(ProtobufVarint32LengthFieldPrepender())
         pipeline.addLast(ProtobufEncoder())
-        pipeline.addLast(MessageClientHandler())
+        pipeline.addLast(MessageServerHandler(dispatcher))
     }
 
 }

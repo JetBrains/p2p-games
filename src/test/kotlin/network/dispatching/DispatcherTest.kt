@@ -1,4 +1,4 @@
-package broker.dispatching
+package network.dispatching
 
 import org.junit.Test
 

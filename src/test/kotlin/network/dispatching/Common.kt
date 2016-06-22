@@ -1,4 +1,4 @@
-package broker.dispatching
+package network.dispatching
 
 import proto.ChatMessageProto
 import proto.GenericMessageProto
@@ -11,10 +11,10 @@ import java.net.InetSocketAddress
 
 fun getSampleChatMessage(): ChatMessageProto.ChatMessage {
     val chatMessage = ChatMessageProto.ChatMessage.newBuilder()
-    chatMessage.cahtId = 666
+    chatMessage.chatId = 666
     chatMessage.message = "Need more Souls"
     val a2: InetSocketAddress = InetSocketAddress("localhost", 1232)
-    chatMessage.user = (ChatMessageProto.User.newBuilder().setAdress(a2.toString()).setName("Mark Geller").build())
+    chatMessage.user = (ChatMessageProto.User.newBuilder().setHostname(a2.hostName).setPort(a2.port).setName("Mark Geller").build())
     return chatMessage.build()
 }
 

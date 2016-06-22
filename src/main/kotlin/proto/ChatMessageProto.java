@@ -27,18 +27,27 @@ public final class ChatMessageProto {
         getNameBytes();
 
     /**
-     * <code>required string adress = 2;</code>
+     * <code>required string hostname = 2;</code>
      */
-    boolean hasAdress();
+    boolean hasHostname();
     /**
-     * <code>required string adress = 2;</code>
+     * <code>required string hostname = 2;</code>
      */
-    java.lang.String getAdress();
+    java.lang.String getHostname();
     /**
-     * <code>required string adress = 2;</code>
+     * <code>required string hostname = 2;</code>
      */
     com.google.protobuf.ByteString
-        getAdressBytes();
+        getHostnameBytes();
+
+    /**
+     * <code>required int32 port = 3;</code>
+     */
+    boolean hasPort();
+    /**
+     * <code>required int32 port = 3;</code>
+     */
+    int getPort();
   }
   /**
    * Protobuf type {@code proto.User}
@@ -101,7 +110,12 @@ public final class ChatMessageProto {
             case 18: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              adress_ = bs;
+              hostname_ = bs;
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              port_ = input.readInt32();
               break;
             }
           }
@@ -186,19 +200,19 @@ public final class ChatMessageProto {
       }
     }
 
-    public static final int ADRESS_FIELD_NUMBER = 2;
-    private java.lang.Object adress_;
+    public static final int HOSTNAME_FIELD_NUMBER = 2;
+    private java.lang.Object hostname_;
     /**
-     * <code>required string adress = 2;</code>
+     * <code>required string hostname = 2;</code>
      */
-    public boolean hasAdress() {
+    public boolean hasHostname() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required string adress = 2;</code>
+     * <code>required string hostname = 2;</code>
      */
-    public java.lang.String getAdress() {
-      java.lang.Object ref = adress_;
+    public java.lang.String getHostname() {
+      java.lang.Object ref = hostname_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -206,31 +220,47 @@ public final class ChatMessageProto {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          adress_ = s;
+          hostname_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>required string adress = 2;</code>
+     * <code>required string hostname = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getAdressBytes() {
-      java.lang.Object ref = adress_;
+        getHostnameBytes() {
+      java.lang.Object ref = hostname_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        adress_ = b;
+        hostname_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
 
+    public static final int PORT_FIELD_NUMBER = 3;
+    private int port_;
+    /**
+     * <code>required int32 port = 3;</code>
+     */
+    public boolean hasPort() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int32 port = 3;</code>
+     */
+    public int getPort() {
+      return port_;
+    }
+
     private void initFields() {
       name_ = "";
-      adress_ = "";
+      hostname_ = "";
+      port_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -242,7 +272,11 @@ public final class ChatMessageProto {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasAdress()) {
+      if (!hasHostname()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasPort()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -257,7 +291,10 @@ public final class ChatMessageProto {
         output.writeBytes(1, getNameBytes());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getAdressBytes());
+        output.writeBytes(2, getHostnameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, port_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -274,7 +311,11 @@ public final class ChatMessageProto {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getAdressBytes());
+          .computeBytesSize(2, getHostnameBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, port_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -395,8 +436,10 @@ public final class ChatMessageProto {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        adress_ = "";
+        hostname_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        port_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -432,7 +475,11 @@ public final class ChatMessageProto {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.adress_ = adress_;
+        result.hostname_ = hostname_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.port_ = port_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -454,10 +501,13 @@ public final class ChatMessageProto {
           name_ = other.name_;
           onChanged();
         }
-        if (other.hasAdress()) {
+        if (other.hasHostname()) {
           bitField0_ |= 0x00000002;
-          adress_ = other.adress_;
+          hostname_ = other.hostname_;
           onChanged();
+        }
+        if (other.hasPort()) {
+          setPort(other.getPort());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -468,7 +518,11 @@ public final class ChatMessageProto {
           
           return false;
         }
-        if (!hasAdress()) {
+        if (!hasHostname()) {
+          
+          return false;
+        }
+        if (!hasPort()) {
           
           return false;
         }
@@ -570,24 +624,24 @@ public final class ChatMessageProto {
         return this;
       }
 
-      private java.lang.Object adress_ = "";
+      private java.lang.Object hostname_ = "";
       /**
-       * <code>required string adress = 2;</code>
+       * <code>required string hostname = 2;</code>
        */
-      public boolean hasAdress() {
+      public boolean hasHostname() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required string adress = 2;</code>
+       * <code>required string hostname = 2;</code>
        */
-      public java.lang.String getAdress() {
-        java.lang.Object ref = adress_;
+      public java.lang.String getHostname() {
+        java.lang.Object ref = hostname_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            adress_ = s;
+            hostname_ = s;
           }
           return s;
         } else {
@@ -595,53 +649,85 @@ public final class ChatMessageProto {
         }
       }
       /**
-       * <code>required string adress = 2;</code>
+       * <code>required string hostname = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getAdressBytes() {
-        java.lang.Object ref = adress_;
+          getHostnameBytes() {
+        java.lang.Object ref = hostname_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          adress_ = b;
+          hostname_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>required string adress = 2;</code>
+       * <code>required string hostname = 2;</code>
        */
-      public Builder setAdress(
+      public Builder setHostname(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        adress_ = value;
+        hostname_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string adress = 2;</code>
+       * <code>required string hostname = 2;</code>
        */
-      public Builder clearAdress() {
+      public Builder clearHostname() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        adress_ = getDefaultInstance().getAdress();
+        hostname_ = getDefaultInstance().getHostname();
         onChanged();
         return this;
       }
       /**
-       * <code>required string adress = 2;</code>
+       * <code>required string hostname = 2;</code>
        */
-      public Builder setAdressBytes(
+      public Builder setHostnameBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000002;
-        adress_ = value;
+        hostname_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int port_ ;
+      /**
+       * <code>required int32 port = 3;</code>
+       */
+      public boolean hasPort() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int32 port = 3;</code>
+       */
+      public int getPort() {
+        return port_;
+      }
+      /**
+       * <code>required int32 port = 3;</code>
+       */
+      public Builder setPort(int value) {
+        bitField0_ |= 0x00000004;
+        port_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 port = 3;</code>
+       */
+      public Builder clearPort() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        port_ = 0;
         onChanged();
         return this;
       }
@@ -1451,11 +1537,11 @@ public final class ChatMessageProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\021ChatMessage.proto\022\005proto\"$\n\004User\022\014\n\004na" +
-      "me\030\001 \002(\t\022\016\n\006adress\030\002 \002(\t\"I\n\013ChatMessage\022" +
-      "\031\n\004user\030\001 \002(\0132\013.proto.User\022\017\n\007message\030\002 " +
-      "\002(\t\022\016\n\006chatId\030\003 \002(\005B\031\n\005protoB\020ChatMessag" +
-      "eProto"
+      "\n\021ChatMessage.proto\022\005proto\"4\n\004User\022\014\n\004na" +
+      "me\030\001 \002(\t\022\020\n\010hostname\030\002 \002(\t\022\014\n\004port\030\003 \002(\005" +
+      "\"I\n\013ChatMessage\022\031\n\004user\030\001 \002(\0132\013.proto.Us" +
+      "er\022\017\n\007message\030\002 \002(\t\022\016\n\006chatId\030\003 \002(\005B\031\n\005p" +
+      "rotoB\020ChatMessageProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1474,7 +1560,7 @@ public final class ChatMessageProto {
     internal_static_proto_User_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_User_descriptor,
-        new java.lang.String[] { "Name", "Adress", });
+        new java.lang.String[] { "Name", "Hostname", "Port", });
     internal_static_proto_ChatMessage_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_proto_ChatMessage_fieldAccessorTable = new

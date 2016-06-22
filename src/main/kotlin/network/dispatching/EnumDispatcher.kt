@@ -1,4 +1,4 @@
-package broker.dispatching
+package network.dispatching
 
 import com.google.protobuf.Descriptors
 import com.google.protobuf.GeneratedMessage
