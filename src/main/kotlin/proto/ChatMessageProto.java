@@ -689,13 +689,13 @@ public final class ChatMessageProto {
         getMessageBytes();
 
     /**
-     * <code>required int32 cahtId = 3;</code>
+     * <code>required int32 chatId = 3;</code>
      */
-    boolean hasCahtId();
+    boolean hasChatId();
     /**
-     * <code>required int32 cahtId = 3;</code>
+     * <code>required int32 chatId = 3;</code>
      */
-    int getCahtId();
+    int getChatId();
   }
   /**
    * Protobuf type {@code proto.ChatMessage}
@@ -770,7 +770,7 @@ public final class ChatMessageProto {
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              cahtId_ = input.readInt32();
+              chatId_ = input.readInt32();
               break;
             }
           }
@@ -876,25 +876,25 @@ public final class ChatMessageProto {
       }
     }
 
-    public static final int CAHTID_FIELD_NUMBER = 3;
-    private int cahtId_;
+    public static final int CHATID_FIELD_NUMBER = 3;
+    private int chatId_;
     /**
-     * <code>required int32 cahtId = 3;</code>
+     * <code>required int32 chatId = 3;</code>
      */
-    public boolean hasCahtId() {
+    public boolean hasChatId() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required int32 cahtId = 3;</code>
+     * <code>required int32 chatId = 3;</code>
      */
-    public int getCahtId() {
-      return cahtId_;
+    public int getChatId() {
+      return chatId_;
     }
 
     private void initFields() {
       user_ = proto.ChatMessageProto.User.getDefaultInstance();
       message_ = "";
-      cahtId_ = 0;
+      chatId_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -910,7 +910,7 @@ public final class ChatMessageProto {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasCahtId()) {
+      if (!hasChatId()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -932,7 +932,7 @@ public final class ChatMessageProto {
         output.writeBytes(2, getMessageBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, cahtId_);
+        output.writeInt32(3, chatId_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -953,7 +953,7 @@ public final class ChatMessageProto {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, cahtId_);
+          .computeInt32Size(3, chatId_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1081,7 +1081,7 @@ public final class ChatMessageProto {
         bitField0_ = (bitField0_ & ~0x00000001);
         message_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        cahtId_ = 0;
+        chatId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
@@ -1126,7 +1126,7 @@ public final class ChatMessageProto {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.cahtId_ = cahtId_;
+        result.chatId_ = chatId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1151,8 +1151,8 @@ public final class ChatMessageProto {
           message_ = other.message_;
           onChanged();
         }
-        if (other.hasCahtId()) {
-          setCahtId(other.getCahtId());
+        if (other.hasChatId()) {
+          setChatId(other.getChatId());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1167,7 +1167,7 @@ public final class ChatMessageProto {
           
           return false;
         }
-        if (!hasCahtId()) {
+        if (!hasChatId()) {
           
           return false;
         }
@@ -1389,34 +1389,34 @@ public final class ChatMessageProto {
         return this;
       }
 
-      private int cahtId_ ;
+      private int chatId_ ;
       /**
-       * <code>required int32 cahtId = 3;</code>
+       * <code>required int32 chatId = 3;</code>
        */
-      public boolean hasCahtId() {
+      public boolean hasChatId() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required int32 cahtId = 3;</code>
+       * <code>required int32 chatId = 3;</code>
        */
-      public int getCahtId() {
-        return cahtId_;
+      public int getChatId() {
+        return chatId_;
       }
       /**
-       * <code>required int32 cahtId = 3;</code>
+       * <code>required int32 chatId = 3;</code>
        */
-      public Builder setCahtId(int value) {
+      public Builder setChatId(int value) {
         bitField0_ |= 0x00000004;
-        cahtId_ = value;
+        chatId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required int32 cahtId = 3;</code>
+       * <code>required int32 chatId = 3;</code>
        */
-      public Builder clearCahtId() {
+      public Builder clearChatId() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        cahtId_ = 0;
+        chatId_ = 0;
         onChanged();
         return this;
       }
@@ -1454,7 +1454,7 @@ public final class ChatMessageProto {
       "\n\021ChatMessage.proto\022\005proto\"$\n\004User\022\014\n\004na" +
       "me\030\001 \002(\t\022\016\n\006adress\030\002 \002(\t\"I\n\013ChatMessage\022" +
       "\031\n\004user\030\001 \002(\0132\013.proto.User\022\017\n\007message\030\002 " +
-      "\002(\t\022\016\n\006cahtId\030\003 \002(\005B\031\n\005protoB\020ChatMessag" +
+      "\002(\t\022\016\n\006chatId\030\003 \002(\005B\031\n\005protoB\020ChatMessag" +
       "eProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
@@ -1480,7 +1480,7 @@ public final class ChatMessageProto {
     internal_static_proto_ChatMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_ChatMessage_descriptor,
-        new java.lang.String[] { "User", "Message", "CahtId", });
+        new java.lang.String[] { "User", "Message", "ChatId", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

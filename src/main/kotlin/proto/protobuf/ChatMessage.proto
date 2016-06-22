@@ -9,5 +9,5 @@ message User{
 message ChatMessage {
     required User user = 1;
     required string message = 2;
-    required int32 cahtId = 3;
+    required int32 chatId = 3;
 }
