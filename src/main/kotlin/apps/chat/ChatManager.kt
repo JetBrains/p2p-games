@@ -35,18 +35,16 @@ class ChatManager(private val connectionManager: ConnectionManager) {
      * @param msg - incomming message
      */
     fun receiveMessage(msg: ChatMessageProto.ChatMessage) {
-        val chat = chats.firstOrNull { x -> x.chatId == msg.chatId }
-        if (chat == null) {
-            createChat(msg.chatId)
-        }
-        chats.first { x -> x.chatId == msg.chatId }.showMessage(msg)
+        val chat = getOrCreateChat(msg.chatId)
+        chat.showMessage(msg)
+        chat.addMember(User(InetSocketAddress(msg.user.hostname, msg.user.port), msg.user.name))
     }
 
     /**
      * create chat with given Id(and gui for it)
      * @param msg - Id of chat to be created
      */
-    fun createChat(chatId: Int): Chat {
+    @Synchronized fun createChat(chatId: Int): Chat {
         val chat = Chat(ChatGUI(), connectionManager, chatId)
         Thread(chat).start()
         chats.add(chat)
@@ -57,7 +55,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
      * create chat with given Id(and gui for it)
      * @param chatId - id of chat to be created
      */
-    fun getOrCreateChat(chatId: Int): Chat {
+    @Synchronized fun getOrCreateChat(chatId: Int): Chat {
         var chat = chats.find { x -> x.chatId == chatId }
         if (chat == null) {
             chat = createChat(chatId)
@@ -70,7 +68,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
      * members for known host)
      * create it if need.
      */
-    fun joinChat(chatId: Int, memberAddr: InetSocketAddress) {
+    @Synchronized fun joinChat(chatId: Int, memberAddr: InetSocketAddress) {
         //TODO - query factory
         val query = GenericMessageProto.GenericMessage.newBuilder()
                 .setType(GenericMessageProto.GenericMessage.Type.QUERY)
@@ -81,8 +79,9 @@ class ChatManager(private val connectionManager: ConnectionManager) {
         val chat = getOrCreateChat(chatId)
 
         for (user in request.responseGroup.responseList[0].group.usersList) {
-            chat.group.users.add(User(InetSocketAddress(user.hostname, user.port), user.name))
+            chat.addMember(User(InetSocketAddress(user.hostname, user.port), user.name))
         }
+        chat.sendMessage("${chat.username} joined chat #${chat.chatId}!")
     }
 }
 
@@ -107,6 +106,7 @@ class ChatService(private val chatManager: ChatManager) : Service<ChatMessagePro
 class ChatQueryService(private val manager: ChatManager) : Service<QueryProto.Query> {
 
     fun queryChatMembers(query: QueryProto.ChatMemberQuery): GenericMessageProto.GenericMessage? {
+
         val chat = manager.chats.find { x -> x.chatId == query.chatID }
         var response = EntitiesProto.Group.newBuilder().build()
         if (chat != null) {

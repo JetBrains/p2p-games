@@ -6,8 +6,7 @@ package apps.chat.GUI
 
 import apps.chat.Chat
 import java.awt.*
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
+import java.awt.event.*
 import javax.swing.*
 
 /**
@@ -96,6 +95,11 @@ class ChatGUI() {
 
         newFrame.add(mainPanel)
         newFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        newFrame.addWindowListener(object: WindowAdapter() {
+            override fun windowClosing(e: WindowEvent?) {
+                close()
+            }
+        })
         newFrame.setSize(470, 300)
         newFrame.isVisible = true
     }
@@ -138,4 +142,7 @@ class ChatGUI() {
 
     }
 
+    internal fun close(){
+        chat!!.close()
+    }
 }

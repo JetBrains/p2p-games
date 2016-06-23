@@ -31,26 +31,40 @@ class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManage
      */
     fun showMessage(msg: ChatMessageProto.ChatMessage) {
         chatGUI.displayMessage(msg.chatId, msg.user.name, msg.message)
-        group.users.add(User(InetSocketAddress(msg.user.hostname, msg.user.port), msg.user.name))
     }
 
+    /**
+     * register new chat member
+     */
+    fun addMember(user: User){
+        group.users.add(user)
+    }
 
     /**
-     * Receive and process general purpose message
+     * Compose general purpose message
      * callback from gui on submit button
      */
     fun sendMessage(message: String) {
         //TODO separate protobuf factory
         val user = EntitiesProto.User.newBuilder().setHostname(connectionManager.hostAddr.hostName)
-                .setPort(connectionManager.hostAddr.port).setName(chatGUI.username).build()
-        val chatMessage = ChatMessageProto.ChatMessage.newBuilder().setChatId(chatId).setMessage(message)
+                .setPort(connectionManager.hostAddr.port)
+                .setName(chatGUI.username).build()
+
+        val chatMessage = ChatMessageProto.ChatMessage.newBuilder()
+                .setChatId(chatId)
+                .setMessage(message)
                 .setUser(user).build()
-        val msg = GenericMessageProto.GenericMessage.newBuilder().setChatMessage(chatMessage)
-                .setType(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE).setChatMessage(chatMessage).build()
+
+        val msg = GenericMessageProto.GenericMessage.newBuilder()
+                .setChatMessage(chatMessage)
+                .setType(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE).build()
         groupBroker.broadcast(group, msg)
     }
 
     //todo
+    /**
+     * self registration
+     */
     fun register(username: String) {
         group.users.add(User(connectionManager.hostAddr, username))
     }
@@ -80,5 +94,8 @@ class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManage
         return chatId
     }
 
-
+    //TODO - only close connectons of this chat
+    fun close(){
+        connectionManager.close()
+    }
 }

@@ -9,6 +9,8 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
+import io.netty.util.concurrent.Future
+import io.netty.util.concurrent.FutureListener
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 import java.util.concurrent.LinkedBlockingQueue
@@ -50,7 +52,7 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param msg - Protobuff message
      */
     fun request(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
-        val f = bootstrap.connect(host, addr).sync()
+        val f = bootstrap.connect(host, addr).await().sync()
         val handler = f.channel().pipeline().get(MessageClientHandler::class.java)
         val response: GenericMessageProto.GenericMessage = handler.request(msg)
         f.channel().close().sync()

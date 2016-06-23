@@ -34,8 +34,8 @@ class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<Gene
      * Terminate connection
      */
     fun close() {
+        future.channel().close()
         bootstrap.group().shutdownGracefully()
-        future.channel().closeFuture().sync()
     }
 }
 
