@@ -11,6 +11,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
+import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * Created by Mark Geller on 6/21/16.
@@ -20,7 +21,7 @@ class MessageClient(val addr: InetSocketAddress) {
     //Upstream connections
     private val bootstrap = Bootstrap()
 
-    init{
+    init {
         val group = NioEventLoopGroup();
         bootstrap.group(group).channel(NioSocketChannel::class.java).
                 handler(MessageClientChannelInitializer())
@@ -43,9 +44,23 @@ class MessageClient(val addr: InetSocketAddress) {
     }
 
     /**
+     * Send Protobuff message to Sever(async),
+     * and wait for response
+     * @param host - Server to receive message
+     * @param msg - Protobuff message
+     */
+    fun request(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
+        val f = bootstrap.connect(host, addr).sync()
+        val handler = f.channel().pipeline().get(MessageClientHandler::class.java)
+        val response: GenericMessageProto.GenericMessage = handler.request(msg)
+        f.channel().close().sync()
+        return response
+    }
+
+    /**
      * Terminate connection
      */
-    fun close(){
+    fun close() {
         bootstrap.group().shutdownGracefully()
     }
 }
@@ -54,9 +69,37 @@ class MessageClient(val addr: InetSocketAddress) {
 /**
  * Client response handler (process message from server)
  */
-class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>() {
+class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>(false) {
+    internal val responses = LinkedBlockingQueue<GenericMessageProto.GenericMessage>()
+    @Volatile internal var channel: Channel? = null
+
+    fun request(msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
+        channel!!.writeAndFlush(msg)
+        var interrupted = false
+        val response: GenericMessageProto.GenericMessage
+        while (true) {
+            try {
+                response = responses.take()
+                break
+            } catch(ignored: InterruptedException) {
+                interrupted = true
+            }
+        }
+        if (interrupted) {
+            Thread.currentThread().interrupt()
+        }
+        return response
+    }
+
+    override fun channelRegistered(ctx: ChannelHandlerContext?) {
+        this.channel = ctx!!.channel()
+        //super.channelRegistered(ctx)
+    }
+
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: GenericMessageProto.GenericMessage?) {
-        print(msg)
+        if (msg != null) {
+            responses.add(msg)
+        }
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
@@ -69,7 +112,7 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
 /**
  * Pipeline for protobuf network serialization/deserialization
  */
-class MessageClientChannelInitializer : ChannelInitializer<SocketChannel> (){
+class MessageClientChannelInitializer : ChannelInitializer<SocketChannel> () {
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
         pipeline.addLast(ProtobufVarint32FrameDecoder())

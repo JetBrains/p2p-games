@@ -5,17 +5,15 @@ package apps.chat.GUI
  */
 
 import apps.chat.Chat
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import javax.swing.*
 
-class ChatGUI(val chatID: Int) {
+/**
+ * Simple chat gui. Almost entirely found on internet
+ */
+class ChatGUI() {
 
     internal var appName = "P2Pchat"
     internal var chatGUI: ChatGUI? = null
@@ -52,7 +50,7 @@ class ChatGUI(val chatID: Int) {
         prePanel.add(usernameChooser, preRight)
         preFrame.add(BorderLayout.CENTER, prePanel)
         preFrame.add(BorderLayout.SOUTH, enterServer)
-        preFrame.setSize(300, 300)
+        preFrame.setSize(600, 400)
         preFrame.isVisible = true
 
     }
@@ -102,7 +100,7 @@ class ChatGUI(val chatID: Int) {
         newFrame.isVisible = true
     }
 
-    fun displayMessage(chat: Int, user: String, msg: String){
+    fun displayMessage(chat: Int, user: String, msg: String) {
         chatBox.append("<$user>:  $msg\n")
     }
 
@@ -115,7 +113,7 @@ class ChatGUI(val chatID: Int) {
                 chatBox.text = "Cleared all messages\n"
                 messageBox.text = ""
             } else {
-                displayMessage(chatID, username, messageBox.text)
+                //displayMessage(chat!!.chatId, username, messageBox.text)
                 chat!!.sendMessage(messageBox.text)
                 messageBox.text = ""
             }
@@ -128,6 +126,8 @@ class ChatGUI(val chatID: Int) {
     internal inner class enterServerButtonListener : ActionListener {
         override fun actionPerformed(event: ActionEvent) {
             username = usernameChooser.text
+            //todo better register
+            chat!!.register(username)
             if (username.length < 1) {
                 println("No!")
             } else {
@@ -138,20 +138,4 @@ class ChatGUI(val chatID: Int) {
 
     }
 
-
-    companion object {
-
-        @JvmStatic fun main(args: Array<String>) {
-            SwingUtilities.invokeLater {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-                val mainGUI = ChatGUI(555)
-                mainGUI.preDisplay()
-            }
-        }
-    }
 }

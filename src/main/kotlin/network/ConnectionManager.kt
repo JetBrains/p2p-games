@@ -15,16 +15,20 @@ class ConnectionManager(private val clientAddr: InetSocketAddress, val hostAddr:
 
     val services = mutableSetOf<Service<*>>()
 
-    fun addService(event: GenericMessageProto.GenericMessage.Type, service: Service<*>){
+    fun addService(event: GenericMessageProto.GenericMessage.Type, service: Service<*>) {
         dispatcher.register(event, service.getDispatcher())
         services.add(service)
     }
 
-    fun send(addr: InetSocketAddress, msg: GenericMessageProto.GenericMessage){
+    fun send(addr: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
         client.send(addr, msg)
     }
 
-    fun close(){
+    fun request(addr: InetSocketAddress, msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
+        return client.request(addr, msg)
+    }
+
+    fun close() {
         client.close()
         server.close()
     }

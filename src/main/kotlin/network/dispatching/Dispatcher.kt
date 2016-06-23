@@ -8,7 +8,7 @@ import proto.GenericMessageProto
  */
 
 @FunctionalInterface
-interface  Dispatcher<T: GeneratedMessage>{
-    fun dispatch(message: T) : GenericMessageProto.GenericMessage?
+interface Dispatcher<T : GeneratedMessage> {
+    fun dispatch(message: T): GenericMessageProto.GenericMessage?
 }
 

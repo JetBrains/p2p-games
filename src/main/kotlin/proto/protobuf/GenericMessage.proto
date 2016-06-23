@@ -1,6 +1,7 @@
 package proto;
 import "Query.proto";
 import "ChatMessage.proto";
+import "Entities.proto";
 
 option java_package = "proto";
 option java_outer_classname = "GenericMessageProto";
@@ -9,11 +10,18 @@ message GenericMessage {
     enum Type {
         CHAT_MESSAGE = 1;
         QUERY = 2;
+        RESPONSE_GROUP = 3;
+        GROUP = 4;
     }
 
     required Type type = 1;
 
     optional ChatMessage chatMessage = 2;
     optional Query query = 3;
+    optional ResponseGroup response_group = 4;
+    optional Group group = 5;
 }
 
+message ResponseGroup {
+    repeated GenericMessage response = 1;
+}

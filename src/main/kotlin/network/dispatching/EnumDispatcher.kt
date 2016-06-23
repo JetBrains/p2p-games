@@ -34,7 +34,7 @@ import proto.GenericMessageProto
  */
 
 
-class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T>{
+class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
     // Todo: mb somehow infere type(Get rid of Any).
     // Problem: we dont want to specify both Enum type and GeneratedMessage, as one
     // is inferior to the other
@@ -107,10 +107,27 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T>{
         // By convention typenumber + 1 = field number
         val fieldNumber = (type as Descriptors.EnumValueDescriptor).number + 1
         val nesterMessage = message.getField(message.descriptorForType.findFieldByNumber(fieldNumber))
+        var responseGroupBuilder: GenericMessageProto.ResponseGroup.Builder? = null
         for (listener in getHandlers(type, (nesterMessage as GeneratedMessage).javaClass)) {
-            listener.dispatch(nesterMessage)
+            val res = listener.dispatch(nesterMessage)
+            if (res != null) {
+                if (responseGroupBuilder == null) {
+                    responseGroupBuilder = GenericMessageProto.ResponseGroup.newBuilder()
+                }
+                if (res.type == GenericMessageProto.GenericMessage.Type.RESPONSE_GROUP) {
+                    responseGroupBuilder!!.addAllResponse(res.responseGroup.responseList)
+                } else {
+                    responseGroupBuilder!!.addResponse(res)
+                }
+
+            }
         }
-        //TDO combine listeners output to single message
+        if (responseGroupBuilder != null) {
+            return GenericMessageProto.GenericMessage.newBuilder()
+                    .setType(GenericMessageProto.GenericMessage.Type.RESPONSE_GROUP)
+                    .setResponseGroup(responseGroupBuilder)
+                    .build()
+        }
         return null
     }
 

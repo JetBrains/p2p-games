@@ -1,8 +1,12 @@
 package proto;
 option java_package = "proto";
 option java_outer_classname = "EntitiesProto";
-message User{
+message User {
     required string name = 1;
     required string hostname = 2;
     required int32 port = 3;
+}
+
+message Group {
+    repeated User users = 1;
 }

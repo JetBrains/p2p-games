@@ -1,20 +1,14 @@
 package network
 
-import io.netty.bootstrap.Bootstrap
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.buffer.ByteBuf
-import io.netty.buffer.Unpooled
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
-import io.netty.handler.logging.LogLevel
-import io.netty.handler.logging.LoggingHandler
 import network.dispatching.Dispatcher
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
@@ -25,9 +19,10 @@ import java.net.InetSocketAddress
 
 
 class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) {
-    private val future : ChannelFuture
+    private val future: ChannelFuture
     val bootstrap = ServerBootstrap()
-    init{
+
+    init {
         val group = NioEventLoopGroup();
         bootstrap.group(group).channel(NioServerSocketChannel::class.java).
                 childHandler(MessageServerChannelInitializer(dispatcher))
@@ -38,7 +33,7 @@ class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<Gene
     /**
      * Terminate connection
      */
-    fun close(){
+    fun close() {
         bootstrap.group().shutdownGracefully()
         future.channel().closeFuture().sync()
     }
@@ -51,15 +46,15 @@ class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<Gene
 class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>() {
     var response: GenericMessageProto.GenericMessage? = null
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: GenericMessageProto.GenericMessage?) {
-        if(msg != null){
+        if (msg != null) {
             response = dispatcher.dispatch(msg)
+            if (response != null) {
+                ctx!!.write(response)
+            }
         }
     }
 
     override fun channelReadComplete(ctx: ChannelHandlerContext) {
-        if(response != null){
-            ctx.write(ctx)
-        }
         ctx.flush()
 
     }
@@ -75,7 +70,7 @@ class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.Generi
 /**
  * Pipeline for protobuf network serialization/deserialization
  */
-class MessageServerChannelInitializer(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>): ChannelInitializer<SocketChannel>(){
+class MessageServerChannelInitializer(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) : ChannelInitializer<SocketChannel>() {
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
         pipeline.addLast(ProtobufVarint32FrameDecoder())

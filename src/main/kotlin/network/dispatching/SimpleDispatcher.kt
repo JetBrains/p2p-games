@@ -8,7 +8,7 @@ import proto.GenericMessageProto
  */
 
 
-fun <T: GeneratedMessage> SimpleDispatcher(handler: (T) -> GenericMessageProto.GenericMessage?): Dispatcher<T> = object : Dispatcher<T>{
+fun <T : GeneratedMessage> SimpleDispatcher(handler: (T) -> GenericMessageProto.GenericMessage?): Dispatcher<T> = object : Dispatcher<T> {
     override fun dispatch(message: T): GenericMessageProto.GenericMessage? {
         return handler(message)
     }
