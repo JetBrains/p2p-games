@@ -16,12 +16,13 @@ import javax.swing.UIManager
  * Created by user on 6/22/16.
  * Represents logic behind chat
  */
-class Chat(private val connectionManager: ConnectionManager, val chatId: Int) : Runnable {
+class Chat(val chatId: Int) : Runnable {
     // chat users in this group
     val group = Group(mutableSetOf())
-    val groupBroker = NettyGroupBroker(connectionManager)
+    val groupBroker = NettyGroupBroker()
     var username: String = "Unknown"
     val chatGUI = ChatGUI(this)
+    var finatilzed = false
 
     /**
      * Receive and process general purpose message
@@ -36,7 +37,9 @@ class Chat(private val connectionManager: ConnectionManager, val chatId: Int) : 
      * register new chat member
      */
     fun addMember(user: User){
-        group.users.add(user)
+        if(!finatilzed){
+            group.users.add(user)
+        }
     }
 
     /**
@@ -45,7 +48,7 @@ class Chat(private val connectionManager: ConnectionManager, val chatId: Int) : 
      */
     fun sendMessage(message: String) {
         //TODO separate protobuf factory
-        val user = User(connectionManager.hostAddr, username)
+        val user = User(Settings.hostAddress, username)
 
         val chatMessage = ChatMessage(chatId, user, message)
 
@@ -61,8 +64,8 @@ class Chat(private val connectionManager: ConnectionManager, val chatId: Int) : 
      */
     fun register(username: String) {
         this.username = username
-        group.users.add(User(connectionManager.hostAddr, username))
-        chatGUI.refreshTitle("$username[${connectionManager.hostAddr.toString()}]Chat #$chatId")
+        group.users.add(User(Settings.hostAddress, username))
+        chatGUI.refreshTitle("$username[${Settings.hostAddress.toString()}]Chat #$chatId")
     }
 
     override fun run() {

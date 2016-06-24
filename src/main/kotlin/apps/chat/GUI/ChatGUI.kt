@@ -30,12 +30,14 @@ class ChatGUI(internal var chat: Chat) {
         val southPanel = JPanel()
         southPanel.background = Color.BLUE
         southPanel.layout = GridBagLayout()
+        val listener = sendMessageButtonListener()
 
         messageBox = JTextField(30)
         messageBox.requestFocusInWindow()
+        messageBox.addActionListener(listener)
 
         sendMessage = JButton("Send Message")
-        sendMessage.addActionListener(sendMessageButtonListener())
+        sendMessage.addActionListener(listener)
 
         chatBox = JTextArea()
         chatBox.isEditable = false
@@ -63,7 +65,7 @@ class ChatGUI(internal var chat: Chat) {
         mainPanel.add(BorderLayout.SOUTH, southPanel)
 
         chatFrame.add(mainPanel)
-        chatFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        chatFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         chatFrame.setSize(470, 300)
         chatFrame.isVisible = true
         chatFrame.addWindowListener(object: WindowAdapter() {

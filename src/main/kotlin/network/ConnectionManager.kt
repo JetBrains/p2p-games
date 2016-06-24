@@ -8,11 +8,11 @@ import java.net.InetSocketAddress
  * Created by user on 6/22/16.
  */
 //TODO move to singleton
-class ConnectionManager(private val clientAddr: InetSocketAddress, val hostAddr: InetSocketAddress) {
+object ConnectionManager{
     val dispatcher = EnumDispatcher(GenericMessageProto.GenericMessage.getDefaultInstance())
 
-    private val client = MessageClient(clientAddr)
-    private val server = MessageServer(hostAddr, dispatcher)
+    private val client = MessageClient(Settings.clientAddress)
+    private val server = MessageServer(Settings.hostAddress, dispatcher)
 
     val services = mutableSetOf<Service<*>>()
 

@@ -8,7 +8,7 @@ import proto.GenericMessageProto
 /**
  * Created by user on 6/20/16.
  */
-class NettyGroupBroker(val connectionManager: ConnectionManager) : GroupBroker {
+class NettyGroupBroker() : GroupBroker {
 
 
     override fun broadcast(group: Group, msg: GenericMessageProto.GenericMessage) {
@@ -18,6 +18,6 @@ class NettyGroupBroker(val connectionManager: ConnectionManager) : GroupBroker {
     }
 
     override fun send(user: User, msg: GenericMessageProto.GenericMessage) {
-        connectionManager.send(user.hostAddress, msg)
+        ConnectionManager.send(user.hostAddress, msg)
     }
 }

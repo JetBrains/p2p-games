@@ -21,20 +21,19 @@ import javax.swing.UIManager
  * Entity for managing chats
  */
 
-class ChatManager(private val connectionManager: ConnectionManager) {
+object ChatManager {
     val chats = mutableSetOf<Chat>()
-    internal val mainGUI: ChatManagerGUI
-    init {
-        connectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY,
+    internal val mainGUI = ChatManagerGUI()
+    fun start() {
+        ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY,
                 ChatQueryService(this))
 
         //TODO remove callbacks
-        connectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
+        ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
                 ChatService(this))
 
 
         //Init main GUI
-        mainGUI = ChatManagerGUI(this)
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
         } catch (e: Exception) {
@@ -59,7 +58,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
      * @param msg - Id of chat to be created
      */
     @Synchronized fun createChat(chatId: Int): Chat {
-        val chat = Chat(connectionManager, chatId)
+        val chat = Chat(chatId)
         Thread(chat).start()
         chats.add(chat)
         return chat
@@ -92,7 +91,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
                 .setQuery(QueryProto.Query.newBuilder()
                         .setType(QueryProto.Query.Type.CHAT_MEMBER_QUERY)
                         .setQuery(QueryProto.ChatMemberQuery.newBuilder().setChatID(chatId).build())).build()
-        val request = connectionManager.request(memberAddr, query)
+        val request = ConnectionManager.request(memberAddr, query)
         val chat = getOrCreateChat(chatId)
         chat.register(username)
         for (user in request.responseGroup.responseList[0].group.usersList) {
@@ -103,7 +102,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
     }
 
     @Synchronized fun close(){
-        connectionManager.close()
+        ConnectionManager.close()
     }
 }
 

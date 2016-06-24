@@ -10,8 +10,8 @@ import java.net.InetSocketAddress
 
 fun main(args: Array<String>) {
     BasicConfigurator.configure();
-    val a1: InetSocketAddress = InetSocketAddress("localhost", 1231)
-    val a2: InetSocketAddress = InetSocketAddress("localhost", 1232)
+    val a1: InetSocketAddress = InetSocketAddress("localhost", 1233)
+    val a2: InetSocketAddress = InetSocketAddress("localhost", 1234)
     Settings.clientAddress = a1
     Settings.hostAddress = a2
     ChatManager.start()

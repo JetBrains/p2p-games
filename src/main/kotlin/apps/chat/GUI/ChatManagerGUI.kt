@@ -18,7 +18,7 @@ import javax.swing.*
 /**
  * Created by user on 6/24/16.
  */
-class ChatManagerGUI(internal val chatManager: ChatManager) {
+class ChatManagerGUI() {
     internal val appName = "P2P chat"
     internal var usernameChooser: JTextField = JTextField()
     internal var hostAddressChooser: JTextField = JTextField()
@@ -107,7 +107,7 @@ class ChatManagerGUI(internal val chatManager: ChatManager) {
                 val hostAddr = InetSocketAddress(uri.host, uri.port)
                 chatIDChooser.commitEdit()
                 val chatId = (chatIDChooser.value as Number).toInt()
-                chatManager.joinChat(chatId, hostAddr, usernameChooser.text)
+                ChatManager.joinChat(chatId, hostAddr, usernameChooser.text)
             } catch(ignored: URISyntaxException){
                 System.err.println("Malformed host address")
             }
@@ -118,6 +118,6 @@ class ChatManagerGUI(internal val chatManager: ChatManager) {
     }
 
     internal fun close(){
-        chatManager.close()
+        ChatManager.close()
     }
 }
