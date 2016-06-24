@@ -7,11 +7,11 @@ import java.net.InetSocketAddress
  * Created by Mark Geller on 6/20/16.
  */
 
-class User(val hostAddress: InetSocketAddress, val name: String) {
+class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerializable<EntitiesProto.User> {
 
 
 
-    fun getProto(): EntitiesProto.User {
+    override fun getProto(): EntitiesProto.User {
         return EntitiesProto.User.newBuilder()
                 .setHostname(hostAddress.hostName)
                 .setPort(hostAddress.port)

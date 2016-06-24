@@ -12,47 +12,16 @@ import javax.swing.*
 /**
  * Simple chat gui. Almost entirely found on internet
  */
-class ChatGUI() {
+class ChatGUI(internal var chat: Chat) {
 
-    internal var appName = "P2Pchat"
-    internal var chatGUI: ChatGUI? = null
-    internal var newFrame = JFrame(appName)
+    internal var appName: String = "P2P chat window(loading)"
+    internal var chatFrame = JFrame(appName)
     internal var sendMessage: JButton = JButton()
     internal var messageBox: JTextField = JTextField()
     internal var chatBox: JTextArea = JTextArea()
-    internal var usernameChooser: JTextField = JTextField()
-    internal var preFrame: JFrame = JFrame()
+    var isClosed: Boolean = false
 
     //Todo - remove callbacks
-    internal var chat: Chat? = null
-
-    fun preDisplay() {
-        newFrame.isVisible = false
-        preFrame = JFrame(appName)
-        usernameChooser = JTextField(15)
-        val chooseUsernameLabel = JLabel("Pick a username:")
-        val enterServer = JButton("Enter Chat Server")
-        enterServer.addActionListener(enterServerButtonListener())
-        val prePanel = JPanel(GridBagLayout())
-
-        val preRight = GridBagConstraints()
-        preRight.insets = Insets(0, 0, 0, 10)
-        preRight.anchor = GridBagConstraints.EAST
-        val preLeft = GridBagConstraints()
-        preLeft.anchor = GridBagConstraints.WEST
-        preLeft.insets = Insets(0, 10, 0, 10)
-        // preRight.weightx = 2.0;
-        preRight.fill = GridBagConstraints.HORIZONTAL
-        preRight.gridwidth = GridBagConstraints.REMAINDER
-
-        prePanel.add(chooseUsernameLabel, preLeft)
-        prePanel.add(usernameChooser, preRight)
-        preFrame.add(BorderLayout.CENTER, prePanel)
-        preFrame.add(BorderLayout.SOUTH, enterServer)
-        preFrame.setSize(600, 400)
-        preFrame.isVisible = true
-
-    }
 
     fun display() {
         val mainPanel = JPanel()
@@ -93,18 +62,27 @@ class ChatGUI() {
 
         mainPanel.add(BorderLayout.SOUTH, southPanel)
 
-        newFrame.add(mainPanel)
-        newFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        newFrame.addWindowListener(object: WindowAdapter() {
+        chatFrame.add(mainPanel)
+        chatFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+        chatFrame.setSize(470, 300)
+        chatFrame.isVisible = true
+        chatFrame.addWindowListener(object: WindowAdapter() {
             override fun windowClosing(e: WindowEvent?) {
-                close()
+                isClosed = true
             }
         })
-        newFrame.setSize(470, 300)
-        newFrame.isVisible = true
     }
 
-    fun displayMessage(chat: Int, user: String, msg: String) {
+    fun reopen(){
+        isClosed = false
+        chatFrame.isVisible = true
+    }
+
+    fun refreshTitle(title: String){
+        appName = title
+        chatFrame.title = title
+    }
+    fun displayMessage(user: String, msg: String) {
         chatBox.append("<$user>:  $msg\n")
     }
 
@@ -117,32 +95,14 @@ class ChatGUI() {
                 chatBox.text = "Cleared all messages\n"
                 messageBox.text = ""
             } else {
-                //displayMessage(chat!!.chatId, username, messageBox.text)
-                chat!!.sendMessage(messageBox.text)
+                chat.sendMessage(messageBox.text)
                 messageBox.text = ""
             }
             messageBox.requestFocusInWindow()
         }
     }
 
-    internal var username: String = ""
 
-    internal inner class enterServerButtonListener : ActionListener {
-        override fun actionPerformed(event: ActionEvent) {
-            username = usernameChooser.text
-            //todo better register
-            chat!!.register(username)
-            if (username.length < 1) {
-                println("No!")
-            } else {
-                preFrame.isVisible = false
-                display()
-            }
-        }
 
-    }
 
-    internal fun close(){
-        chat!!.close()
-    }
 }

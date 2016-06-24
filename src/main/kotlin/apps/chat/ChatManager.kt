@@ -1,7 +1,9 @@
 package apps.chat
 
 import apps.chat.GUI.ChatGUI
+import apps.chat.GUI.ChatManagerGUI
 import entity.User
+import main
 import network.ConnectionManager
 import network.Service
 import network.dispatching.Dispatcher
@@ -12,6 +14,7 @@ import proto.EntitiesProto
 import proto.GenericMessageProto
 import proto.QueryProto
 import java.net.InetSocketAddress
+import javax.swing.UIManager
 
 /**
  * Created by Mark Geller on 6/23/16.
@@ -20,7 +23,7 @@ import java.net.InetSocketAddress
 
 class ChatManager(private val connectionManager: ConnectionManager) {
     val chats = mutableSetOf<Chat>()
-
+    internal val mainGUI: ChatManagerGUI
     init {
         connectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY,
                 ChatQueryService(this))
@@ -28,6 +31,17 @@ class ChatManager(private val connectionManager: ConnectionManager) {
         //TODO remove callbacks
         connectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
                 ChatService(this))
+
+
+        //Init main GUI
+        mainGUI = ChatManagerGUI(this)
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        mainGUI.display()
     }
 
     /**
@@ -45,7 +59,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
      * @param msg - Id of chat to be created
      */
     @Synchronized fun createChat(chatId: Int): Chat {
-        val chat = Chat(ChatGUI(), connectionManager, chatId)
+        val chat = Chat(connectionManager, chatId)
         Thread(chat).start()
         chats.add(chat)
         return chat
@@ -60,6 +74,9 @@ class ChatManager(private val connectionManager: ConnectionManager) {
         if (chat == null) {
             chat = createChat(chatId)
         }
+        if(chat.chatGUI.isClosed){
+            chat.chatGUI.reopen()
+        }
         return chat
     }
 
@@ -68,7 +85,7 @@ class ChatManager(private val connectionManager: ConnectionManager) {
      * members for known host)
      * create it if need.
      */
-    @Synchronized fun joinChat(chatId: Int, memberAddr: InetSocketAddress) {
+    @Synchronized fun joinChat(chatId: Int, memberAddr: InetSocketAddress, username: String): Chat {
         //TODO - query factory
         val query = GenericMessageProto.GenericMessage.newBuilder()
                 .setType(GenericMessageProto.GenericMessage.Type.QUERY)
@@ -77,11 +94,16 @@ class ChatManager(private val connectionManager: ConnectionManager) {
                         .setQuery(QueryProto.ChatMemberQuery.newBuilder().setChatID(chatId).build())).build()
         val request = connectionManager.request(memberAddr, query)
         val chat = getOrCreateChat(chatId)
-
+        chat.register(username)
         for (user in request.responseGroup.responseList[0].group.usersList) {
             chat.addMember(User(InetSocketAddress(user.hostname, user.port), user.name))
         }
         chat.sendMessage("${chat.username} joined chat #${chat.chatId}!")
+        return chat
+    }
+
+    @Synchronized fun close(){
+        connectionManager.close()
     }
 }
 

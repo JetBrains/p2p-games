@@ -2,6 +2,7 @@ package apps.chat
 
 import apps.chat.GUI.ChatGUI
 import broker.NettyGroupBroker
+import entity.ChatMessage
 import entity.Group
 import entity.User
 import network.ConnectionManager
@@ -15,22 +16,20 @@ import javax.swing.UIManager
  * Created by user on 6/22/16.
  * Represents logic behind chat
  */
-class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManager, val chatId: Int) : Runnable {
+class Chat(private val connectionManager: ConnectionManager, val chatId: Int) : Runnable {
     // chat users in this group
     val group = Group(mutableSetOf())
     val groupBroker = NettyGroupBroker(connectionManager)
-    val username: String = "Unknown"
-
-    init {
-
-        chatGUI.chat = this
-    }
+    var username: String = "Unknown"
+    val chatGUI = ChatGUI(this)
 
     /**
      * Receive and process general purpose message
      */
     fun showMessage(msg: ChatMessageProto.ChatMessage) {
-        chatGUI.displayMessage(msg.chatId, msg.user.name, msg.message)
+        if(msg.chatId == chatId){
+            chatGUI.displayMessage(msg.user.name, msg.message)
+        }
     }
 
     /**
@@ -46,17 +45,12 @@ class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManage
      */
     fun sendMessage(message: String) {
         //TODO separate protobuf factory
-        val user = EntitiesProto.User.newBuilder().setHostname(connectionManager.hostAddr.hostName)
-                .setPort(connectionManager.hostAddr.port)
-                .setName(chatGUI.username).build()
+        val user = User(connectionManager.hostAddr, username)
 
-        val chatMessage = ChatMessageProto.ChatMessage.newBuilder()
-                .setChatId(chatId)
-                .setMessage(message)
-                .setUser(user).build()
+        val chatMessage = ChatMessage(chatId, user, message)
 
         val msg = GenericMessageProto.GenericMessage.newBuilder()
-                .setChatMessage(chatMessage)
+                .setChatMessage(chatMessage.getProto())
                 .setType(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE).build()
         groupBroker.broadcast(group, msg)
     }
@@ -66,7 +60,9 @@ class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManage
      * self registration
      */
     fun register(username: String) {
+        this.username = username
         group.users.add(User(connectionManager.hostAddr, username))
+        chatGUI.refreshTitle("$username[${connectionManager.hostAddr.toString()}]Chat #$chatId")
     }
 
     override fun run() {
@@ -76,7 +72,7 @@ class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManage
             e.printStackTrace()
         }
 
-        chatGUI.preDisplay()
+        chatGUI.display()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -94,8 +90,8 @@ class Chat(val chatGUI: ChatGUI, private val connectionManager: ConnectionManage
         return chatId
     }
 
-    //TODO - only close connectons of this chat
+    //TODO - close connectons of this chat
     fun close(){
-        connectionManager.close()
+        println("Chat closing")
     }
 }
