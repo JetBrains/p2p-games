@@ -72,6 +72,19 @@ public final class GenericMessageProto {
      * <code>optional .proto.Group group = 5;</code>
      */
     proto.EntitiesProto.GroupOrBuilder getGroupOrBuilder();
+
+    /**
+     * <code>optional .proto.GameMessage gameMessage = 6;</code>
+     */
+    boolean hasGameMessage();
+    /**
+     * <code>optional .proto.GameMessage gameMessage = 6;</code>
+     */
+    proto.GameMessageProto.GameMessage getGameMessage();
+    /**
+     * <code>optional .proto.GameMessage gameMessage = 6;</code>
+     */
+    proto.GameMessageProto.GameMessageOrBuilder getGameMessageOrBuilder();
   }
   /**
    * Protobuf type {@code proto.GenericMessage}
@@ -188,6 +201,19 @@ public final class GenericMessageProto {
               bitField0_ |= 0x00000010;
               break;
             }
+            case 50: {
+              proto.GameMessageProto.GameMessage.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000020) == 0x00000020)) {
+                subBuilder = gameMessage_.toBuilder();
+              }
+              gameMessage_ = input.readMessage(proto.GameMessageProto.GameMessage.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(gameMessage_);
+                gameMessage_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000020;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -248,6 +274,10 @@ public final class GenericMessageProto {
        * <code>GROUP = 4;</code>
        */
       GROUP(3, 4),
+      /**
+       * <code>GAME_MESSAGE = 5;</code>
+       */
+      GAME_MESSAGE(4, 5),
       ;
 
       /**
@@ -266,6 +296,10 @@ public final class GenericMessageProto {
        * <code>GROUP = 4;</code>
        */
       public static final int GROUP_VALUE = 4;
+      /**
+       * <code>GAME_MESSAGE = 5;</code>
+       */
+      public static final int GAME_MESSAGE_VALUE = 5;
 
 
       public final int getNumber() { return value; }
@@ -276,6 +310,7 @@ public final class GenericMessageProto {
           case 2: return QUERY;
           case 3: return RESPONSE_GROUP;
           case 4: return GROUP;
+          case 5: return GAME_MESSAGE;
           default: return null;
         }
       }
@@ -427,12 +462,34 @@ public final class GenericMessageProto {
       return group_;
     }
 
+    public static final int GAMEMESSAGE_FIELD_NUMBER = 6;
+    private proto.GameMessageProto.GameMessage gameMessage_;
+    /**
+     * <code>optional .proto.GameMessage gameMessage = 6;</code>
+     */
+    public boolean hasGameMessage() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional .proto.GameMessage gameMessage = 6;</code>
+     */
+    public proto.GameMessageProto.GameMessage getGameMessage() {
+      return gameMessage_;
+    }
+    /**
+     * <code>optional .proto.GameMessage gameMessage = 6;</code>
+     */
+    public proto.GameMessageProto.GameMessageOrBuilder getGameMessageOrBuilder() {
+      return gameMessage_;
+    }
+
     private void initFields() {
       type_ = proto.GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE;
       chatMessage_ = proto.ChatMessageProto.ChatMessage.getDefaultInstance();
       query_ = proto.QueryProto.Query.getDefaultInstance();
       responseGroup_ = proto.GenericMessageProto.ResponseGroup.getDefaultInstance();
       group_ = proto.EntitiesProto.Group.getDefaultInstance();
+      gameMessage_ = proto.GameMessageProto.GameMessage.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -468,6 +525,12 @@ public final class GenericMessageProto {
           return false;
         }
       }
+      if (hasGameMessage()) {
+        if (!getGameMessage().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -489,6 +552,9 @@ public final class GenericMessageProto {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(5, group_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeMessage(6, gameMessage_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -518,6 +584,10 @@ public final class GenericMessageProto {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, group_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, gameMessage_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -632,6 +702,7 @@ public final class GenericMessageProto {
           getQueryFieldBuilder();
           getResponseGroupFieldBuilder();
           getGroupFieldBuilder();
+          getGameMessageFieldBuilder();
         }
       }
       private static Builder create() {
@@ -666,6 +737,12 @@ public final class GenericMessageProto {
           groupBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (gameMessageBuilder_ == null) {
+          gameMessage_ = proto.GameMessageProto.GameMessage.getDefaultInstance();
+        } else {
+          gameMessageBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -730,6 +807,14 @@ public final class GenericMessageProto {
         } else {
           result.group_ = groupBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        if (gameMessageBuilder_ == null) {
+          result.gameMessage_ = gameMessage_;
+        } else {
+          result.gameMessage_ = gameMessageBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -761,6 +846,9 @@ public final class GenericMessageProto {
         if (other.hasGroup()) {
           mergeGroup(other.getGroup());
         }
+        if (other.hasGameMessage()) {
+          mergeGameMessage(other.getGameMessage());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -790,6 +878,12 @@ public final class GenericMessageProto {
         }
         if (hasGroup()) {
           if (!getGroup().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasGameMessage()) {
+          if (!getGameMessage().isInitialized()) {
             
             return false;
           }
@@ -1313,6 +1407,122 @@ public final class GenericMessageProto {
           group_ = null;
         }
         return groupBuilder_;
+      }
+
+      private proto.GameMessageProto.GameMessage gameMessage_ = proto.GameMessageProto.GameMessage.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          proto.GameMessageProto.GameMessage, proto.GameMessageProto.GameMessage.Builder, proto.GameMessageProto.GameMessageOrBuilder> gameMessageBuilder_;
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public boolean hasGameMessage() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public proto.GameMessageProto.GameMessage getGameMessage() {
+        if (gameMessageBuilder_ == null) {
+          return gameMessage_;
+        } else {
+          return gameMessageBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public Builder setGameMessage(proto.GameMessageProto.GameMessage value) {
+        if (gameMessageBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          gameMessage_ = value;
+          onChanged();
+        } else {
+          gameMessageBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public Builder setGameMessage(
+          proto.GameMessageProto.GameMessage.Builder builderForValue) {
+        if (gameMessageBuilder_ == null) {
+          gameMessage_ = builderForValue.build();
+          onChanged();
+        } else {
+          gameMessageBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public Builder mergeGameMessage(proto.GameMessageProto.GameMessage value) {
+        if (gameMessageBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+              gameMessage_ != proto.GameMessageProto.GameMessage.getDefaultInstance()) {
+            gameMessage_ =
+              proto.GameMessageProto.GameMessage.newBuilder(gameMessage_).mergeFrom(value).buildPartial();
+          } else {
+            gameMessage_ = value;
+          }
+          onChanged();
+        } else {
+          gameMessageBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public Builder clearGameMessage() {
+        if (gameMessageBuilder_ == null) {
+          gameMessage_ = proto.GameMessageProto.GameMessage.getDefaultInstance();
+          onChanged();
+        } else {
+          gameMessageBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public proto.GameMessageProto.GameMessage.Builder getGameMessageBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getGameMessageFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      public proto.GameMessageProto.GameMessageOrBuilder getGameMessageOrBuilder() {
+        if (gameMessageBuilder_ != null) {
+          return gameMessageBuilder_.getMessageOrBuilder();
+        } else {
+          return gameMessage_;
+        }
+      }
+      /**
+       * <code>optional .proto.GameMessage gameMessage = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          proto.GameMessageProto.GameMessage, proto.GameMessageProto.GameMessage.Builder, proto.GameMessageProto.GameMessageOrBuilder> 
+          getGameMessageFieldBuilder() {
+        if (gameMessageBuilder_ == null) {
+          gameMessageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              proto.GameMessageProto.GameMessage, proto.GameMessageProto.GameMessage.Builder, proto.GameMessageProto.GameMessageOrBuilder>(
+                  getGameMessage(),
+                  getParentForChildren(),
+                  isClean());
+          gameMessage_ = null;
+        }
+        return gameMessageBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:proto.GenericMessage)
@@ -2034,16 +2244,18 @@ public final class GenericMessageProto {
   static {
     java.lang.String[] descriptorData = {
       "\n\024GenericMessage.proto\022\005proto\032\013Query.pro" +
-      "to\032\021ChatMessage.proto\032\016Entities.proto\"\217\002" +
-      "\n\016GenericMessage\022(\n\004type\030\001 \002(\0162\032.proto.G" +
-      "enericMessage.Type\022\'\n\013chatMessage\030\002 \001(\0132" +
-      "\022.proto.ChatMessage\022\033\n\005query\030\003 \001(\0132\014.pro" +
-      "to.Query\022,\n\016response_group\030\004 \001(\0132\024.proto" +
-      ".ResponseGroup\022\033\n\005group\030\005 \001(\0132\014.proto.Gr" +
-      "oup\"B\n\004Type\022\020\n\014CHAT_MESSAGE\020\001\022\t\n\005QUERY\020\002" +
-      "\022\022\n\016RESPONSE_GROUP\020\003\022\t\n\005GROUP\020\004\"8\n\rRespo" +
-      "nseGroup\022\'\n\010response\030\001 \003(\0132\025.proto.Gener",
-      "icMessageB\034\n\005protoB\023GenericMessageProto"
+      "to\032\021ChatMessage.proto\032\021GameMessage.proto" +
+      "\032\016Entities.proto\"\312\002\n\016GenericMessage\022(\n\004t" +
+      "ype\030\001 \002(\0162\032.proto.GenericMessage.Type\022\'\n" +
+      "\013chatMessage\030\002 \001(\0132\022.proto.ChatMessage\022\033" +
+      "\n\005query\030\003 \001(\0132\014.proto.Query\022,\n\016response_" +
+      "group\030\004 \001(\0132\024.proto.ResponseGroup\022\033\n\005gro" +
+      "up\030\005 \001(\0132\014.proto.Group\022\'\n\013gameMessage\030\006 " +
+      "\001(\0132\022.proto.GameMessage\"T\n\004Type\022\020\n\014CHAT_" +
+      "MESSAGE\020\001\022\t\n\005QUERY\020\002\022\022\n\016RESPONSE_GROUP\020\003",
+      "\022\t\n\005GROUP\020\004\022\020\n\014GAME_MESSAGE\020\005\"8\n\rRespons" +
+      "eGroup\022\'\n\010response\030\001 \003(\0132\025.proto.Generic" +
+      "MessageB\034\n\005protoB\023GenericMessageProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2058,6 +2270,7 @@ public final class GenericMessageProto {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           proto.QueryProto.getDescriptor(),
           proto.ChatMessageProto.getDescriptor(),
+          proto.GameMessageProto.getDescriptor(),
           proto.EntitiesProto.getDescriptor(),
         }, assigner);
     internal_static_proto_GenericMessage_descriptor =
@@ -2065,7 +2278,7 @@ public final class GenericMessageProto {
     internal_static_proto_GenericMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_GenericMessage_descriptor,
-        new java.lang.String[] { "Type", "ChatMessage", "Query", "ResponseGroup", "Group", });
+        new java.lang.String[] { "Type", "ChatMessage", "Query", "ResponseGroup", "Group", "GameMessage", });
     internal_static_proto_ResponseGroup_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_proto_ResponseGroup_fieldAccessorTable = new
@@ -2074,6 +2287,7 @@ public final class GenericMessageProto {
         new java.lang.String[] { "Response", });
     proto.QueryProto.getDescriptor();
     proto.ChatMessageProto.getDescriptor();
+    proto.GameMessageProto.getDescriptor();
     proto.EntitiesProto.getDescriptor();
   }
 

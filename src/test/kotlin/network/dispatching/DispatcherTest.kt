@@ -1,5 +1,8 @@
 package network.dispatching
 
+import getSampleChatMessage
+import getSampleGenericMessage
+import getSampleGenericQuery
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

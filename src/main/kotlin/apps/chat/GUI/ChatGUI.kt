@@ -5,6 +5,7 @@ package apps.chat.GUI
  */
 
 import apps.chat.Chat
+import apps.games.GameManager
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
@@ -16,7 +17,9 @@ class ChatGUI(internal var chat: Chat) {
 
     internal var appName: String = "P2P chat window(loading)"
     internal var chatFrame = JFrame(appName)
-    internal var sendMessage: JButton = JButton()
+    internal var sendMessage = JButton("Send Message")
+    //TODO - JComboBox game selection
+    internal var startGame: JButton = JButton("Start Game")
     internal var messageBox: JTextField = JTextField()
     internal var chatBox: JTextArea = JTextArea()
     var isClosed: Boolean = false
@@ -30,14 +33,22 @@ class ChatGUI(internal var chat: Chat) {
         val southPanel = JPanel()
         southPanel.background = Color.BLUE
         southPanel.layout = GridBagLayout()
+
+        val northPanel = JPanel()
+        northPanel.background = Color.BLUE
+        northPanel.layout = GridBagLayout()
+
         val listener = sendMessageButtonListener()
 
         messageBox = JTextField(30)
         messageBox.requestFocusInWindow()
         messageBox.addActionListener(listener)
 
-        sendMessage = JButton("Send Message")
+
         sendMessage.addActionListener(listener)
+
+        startGame.addActionListener(startGameButtonListener())
+
 
         chatBox = JTextArea()
         chatBox.isEditable = false
@@ -62,6 +73,9 @@ class ChatGUI(internal var chat: Chat) {
         southPanel.add(messageBox, left)
         southPanel.add(sendMessage, right)
 
+        northPanel.add(startGame, right)
+
+        mainPanel.add(BorderLayout.NORTH, northPanel)
         mainPanel.add(BorderLayout.SOUTH, southPanel)
 
         chatFrame.add(mainPanel)
@@ -101,6 +115,12 @@ class ChatGUI(internal var chat: Chat) {
                 messageBox.text = ""
             }
             messageBox.requestFocusInWindow()
+        }
+    }
+
+    internal inner class startGameButtonListener : ActionListener {
+        override fun actionPerformed(event: ActionEvent) {
+            GameManager.sendGameInitRequest(chat, "wololololo")
         }
     }
 

@@ -14,12 +14,13 @@ message GameMessage {
 
     optional GameInitMessage gameInitMessage = 2;
     optional GameStateMessage gameStateMessage = 3;
+    optional GameEndMessage gameEndMessage = 4;
 
 }
 
 message GameInitMessage {
     required User user = 1;
-    required int32 gameType = 2;
+    required string gameType = 2;
     required string gameID = 3;
     required int32 chatID = 4;
     required Group participants = 5;
@@ -35,5 +36,5 @@ message GameStateMessage {
 message GameEndMessage {
     required User user = 1;
     required string gameID = 2;
-    optional User winner = 3;
+    optional string reason = 3;
 }

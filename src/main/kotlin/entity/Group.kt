@@ -12,6 +12,12 @@ class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>
     constructor() : this(mutableSetOf()) {
     }
 
+    constructor(group: EntitiesProto.Group): this(mutableSetOf()){
+        for(user in group.usersList){
+            users.add(User(user))
+        }
+    }
+
     override fun getProto(): EntitiesProto.Group {
         val builder = EntitiesProto.Group.newBuilder()
         for (user in users) {
@@ -19,4 +25,21 @@ class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>
         }
         return builder.build()
     }
+
+    override fun equals(other: Any?): Boolean{
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+
+        other as Group
+
+        if (users != other.users) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int{
+        return users.hashCode()
+    }
+
+
 }

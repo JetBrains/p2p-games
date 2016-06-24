@@ -27,7 +27,7 @@ class Chat(val chatId: Int) : Runnable {
     /**
      * Receive and process general purpose message
      */
-    fun showMessage(msg: ChatMessageProto.ChatMessage) {
+    fun showMessage(msg: ChatMessage) {
         if(msg.chatId == chatId){
             chatGUI.displayMessage(msg.user.name, msg.message)
         }

@@ -2,6 +2,7 @@ package apps.chat
 
 import apps.chat.GUI.ChatGUI
 import apps.chat.GUI.ChatManagerGUI
+import entity.ChatMessage
 import entity.User
 import main
 import network.ConnectionManager
@@ -49,7 +50,7 @@ object ChatManager {
      */
     fun receiveMessage(msg: ChatMessageProto.ChatMessage) {
         val chat = getOrCreateChat(msg.chatId)
-        chat.showMessage(msg)
+        chat.showMessage(ChatMessage(msg))
         chat.addMember(User(InetSocketAddress(msg.user.hostname, msg.user.port), msg.user.name))
     }
 
@@ -64,12 +65,16 @@ object ChatManager {
         return chat
     }
 
+    @Synchronized fun getChatOrNull(chatId: Int): Chat?{
+        return chats.find { x -> x.chatId == chatId }
+    }
+
     /**
      * create chat with given Id(and gui for it)
      * @param chatId - id of chat to be created
      */
     @Synchronized fun getOrCreateChat(chatId: Int): Chat {
-        var chat = chats.find { x -> x.chatId == chatId }
+        var chat = getChatOrNull(chatId)
         if (chat == null) {
             chat = createChat(chatId)
         }
@@ -101,6 +106,9 @@ object ChatManager {
         return chat
     }
 
+    /**
+     * shutdown all connections
+     */
     @Synchronized fun close(){
         ConnectionManager.close()
     }

@@ -7,6 +7,8 @@ import proto.ChatMessageProto
  */
 
 class ChatMessage(val chatId: Int, val user: User, val message: String): ProtobufSerializable<ChatMessageProto.ChatMessage>{
+    constructor(msg: ChatMessageProto.ChatMessage): this(msg.chatId, User(msg.user), msg.message){}
+
     override fun getProto(): ChatMessageProto.ChatMessage {
         return ChatMessageProto.ChatMessage.newBuilder()
                                     .setChatId(chatId)

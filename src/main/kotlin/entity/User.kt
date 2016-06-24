@@ -9,7 +9,8 @@ import java.net.InetSocketAddress
 
 class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerializable<EntitiesProto.User> {
 
-
+    constructor(user: EntitiesProto.User) : this(InetSocketAddress(user.hostname, user.port), user.name) {
+    }
 
     override fun getProto(): EntitiesProto.User {
         return EntitiesProto.User.newBuilder()
@@ -25,7 +26,6 @@ class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerial
         other as User
 
         if (hostAddress != other.hostAddress) return false
-
         return true
     }
 
