@@ -21,8 +21,8 @@ object ConnectionManager{
         services.add(service)
     }
 
-    fun send(addr: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
-        client.send(addr, msg)
+    fun sendAsync(addr: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
+        client.sendAsync(addr, msg)
     }
 
     fun request(addr: InetSocketAddress, msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {

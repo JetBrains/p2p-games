@@ -79,7 +79,7 @@ class ChatGUI(internal var chat: Chat) {
         mainPanel.add(BorderLayout.SOUTH, southPanel)
 
         chatFrame.add(mainPanel)
-        chatFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        chatFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
         chatFrame.setSize(470, 300)
         chatFrame.isVisible = true
         chatFrame.addWindowListener(object: WindowAdapter() {

@@ -55,7 +55,7 @@ class Chat(val chatId: Int) : Runnable {
         val msg = GenericMessageProto.GenericMessage.newBuilder()
                 .setChatMessage(chatMessage.getProto())
                 .setType(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE).build()
-        groupBroker.broadcast(group, msg)
+        groupBroker.broadcastAsync(group, msg)
     }
 
     //todo

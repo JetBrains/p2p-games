@@ -1,9 +1,11 @@
 package apps.games
 
+import entity.ChatMessage
 import entity.User
 import proto.GameMessageProto
 import proto.GenericMessageProto
 import java.util.concurrent.BlockingDeque
+import java.util.concurrent.Callable
 import java.util.concurrent.LinkedBlockingDeque
 
 /**
@@ -11,11 +13,12 @@ import java.util.concurrent.LinkedBlockingDeque
  */
 
 
-class GameRunner(val game: Game): Runnable{
+class GameRunner(val game: Game): Callable<String>{
+
     val stateMessageQueue: BlockingDeque<GameMessageProto.GameStateMessage> = LinkedBlockingDeque()
     val endGameMessageQueue: BlockingDeque<GameMessageProto.GameEndMessage> = LinkedBlockingDeque()
     internal val nextStepMessages: MutableList<GameMessageProto.GameStateMessage> = mutableListOf()
-    internal var state = 0
+    internal var timestamp = 0
 
 
     /**
@@ -35,12 +38,13 @@ class GameRunner(val game: Game): Runnable{
                     game.group.users.remove(user)
                 }
                 pending.remove(user)
+                game.chat.showMessage(ChatMessage(game.chat.chatId, user, gameEndMessage.reason))
                 continue
             }
             val msg = stateMessageQueue.takeFirst()
-            if(msg.state > state + 1 || msg.state < state){
+            if(msg.timestamp > timestamp + 1 || msg.timestamp < timestamp){
                 throw GameStateExcetion("Impossible state message received")
-            } else if(msg.state == state + 1){ //Someone already finished next step computations
+            } else if(msg.timestamp == timestamp + 1){ //Someone already finished next step computations
                 nextStepMessages.add(msg)
             } else{
                 val user = User(msg.user)
@@ -50,7 +54,7 @@ class GameRunner(val game: Game): Runnable{
                 found.put(user, msg)
             }
         }
-        state ++
+        timestamp++
         return found.values.toMutableList()
     }
 
@@ -61,7 +65,7 @@ class GameRunner(val game: Game): Runnable{
         val msg = GameMessageProto.GameStateMessage
                 .newBuilder()
                 .setGameID(game.gameID)
-                .setState(state)
+                .setTimestamp(timestamp)
                 .setUser(User(Settings.hostAddress, game.chat.username).getProto())
                 .setValue(response).build()
         val gameMessage = GameMessageProto.GameMessage
@@ -73,12 +77,12 @@ class GameRunner(val game: Game): Runnable{
                 .setType(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE)
                 .setGameMessage(gameMessage)
                 .build()
-        game.chat.groupBroker.broadcast(game.group, genericMessage)
+        game.chat.groupBroker.broadcastAsync(game.group, genericMessage)
     }
 
-    override fun run() {
+    override fun call(): String? {
         //send initial info
-        sendResponse("GOGOGO")
+        sendResponse(game.getInitialMessage())
         //check response
         while(!game.isFinished()){
             val computed = game.evaluate(getResponsePack())
@@ -87,7 +91,16 @@ class GameRunner(val game: Game): Runnable{
             nextStepMessages.clear()
         }
         GameManager.sendEndGame(game.gameID,
-                "[${game.chat.username}] finished playing! Final result: ${game.getFinalResult()}")
+                "[${game.chat.username}] finished playing! Final result: ${game.getFinalMessage()}")
+        while(game.group.users.isNotEmpty()){
+            val msg: GameMessageProto.GameEndMessage = endGameMessageQueue.takeFirst()
+            val user = User(msg.user)
+            game.group.users.remove(user)
+            if(msg.reason.isNotEmpty()){
+                game.chat.showMessage(ChatMessage(game.chat.chatId, user, msg.reason))
+            }
+        }
+        return game.getResult()
     }
 
 }

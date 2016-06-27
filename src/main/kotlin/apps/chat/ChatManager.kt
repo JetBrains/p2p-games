@@ -2,6 +2,7 @@ package apps.chat
 
 import apps.chat.GUI.ChatGUI
 import apps.chat.GUI.ChatManagerGUI
+import apps.games.GameManager
 import entity.ChatMessage
 import entity.User
 import main
@@ -111,6 +112,7 @@ object ChatManager {
      */
     @Synchronized fun close(){
         ConnectionManager.close()
+        GameManager.close()
     }
 }
 

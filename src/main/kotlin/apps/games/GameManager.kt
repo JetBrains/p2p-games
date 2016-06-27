@@ -2,6 +2,7 @@ package apps.games
 
 import apps.chat.Chat
 import apps.chat.ChatManager
+import apps.games.primitives.MooGame
 import entity.Group
 import entity.User
 import network.ConnectionManager
@@ -11,17 +12,21 @@ import network.dispatching.EnumDispatcher
 import proto.GameMessageProto
 import proto.GenericMessageProto
 import random.randomString
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.ThreadPoolExecutor
 
 /**
  * Created by user on 6/24/16.
  */
 
 object GameManager {
-    val gameTypes: MutableMap<String, Class<Game>> = mutableMapOf()
     val games: MutableMap<String, Game> = mutableMapOf()
     val runners: MutableMap<String, GameRunner> = mutableMapOf()
+    internal val threadPool: ExecutorService = Executors.newCachedThreadPool()
 
-    final val INDETIFIER_LENGTH = 32
+    final val IDENTIFIER_LENGTH = 32
 
     /**
      * Initialize services, start listening to ports
@@ -43,7 +48,7 @@ object GameManager {
                 .newBuilder()
                 .setUser(User(Settings.hostAddress, chat.username).getProto())
                 .setChatID(chat.chatId)
-                .setGameID(randomString(INDETIFIER_LENGTH))
+                .setGameID(randomString(IDENTIFIER_LENGTH))
                 .setGameType(type)
                 .setParticipants(chat.group.getProto())
         val gameMessage = GameMessageProto.GameMessage
@@ -54,55 +59,60 @@ object GameManager {
                 .newBuilder()
                 .setType(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE)
                 .setGameMessage(gameMessage).build()
-        chat.groupBroker.broadcast(chat.group, finalMessage)
+        chat.groupBroker.broadcastAsync(chat.group, finalMessage)
     }
 
     /**
      * Someone initialized a game. Process request
      * and start local game
      */
-    fun initGame(msg: GameMessageProto.GameInitMessage){
+    fun initGame(msg: GameMessageProto.GameInitMessage): Future<String>? {
         val group = Group(msg.participants)
         val chat = ChatManager.getChatOrNull(msg.chatID)
         if(chat == null){
             //TODO - respond to someone
-            return
+            return null
         }
         val game = MooGame(chat, group, msg.gameID)
         games[msg.gameID] = game
         if(group != chat.group){
             sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch")
+            return null
         }else{
             val runner = GameRunner(game)
-            Thread(runner).start()
             runners[msg.gameID] = runner
+            return threadPool.submit(runner)
         }
     }
+
 
     /**
      * For somewhat reason game decided, that it
      * has ended for us. So we acknowledge everyone about it
      */
     fun sendEndGame(gameID: String, reason: String){
-        val game: Game? = games.remove(gameID)
-        if(game == null){
-            return
-        }
-        val endMessage = GameMessageProto.GameEndMessage
-                .newBuilder()
-                .setUser(User(Settings.hostAddress, game.chat.username).getProto())
-                .setGameID(gameID)
-                .setReason(reason)
+        val game: Game? = games[gameID]
+        if(game != null){
+            val endMessage = GameMessageProto.GameEndMessage
+                    .newBuilder()
+                    .setUser(User(Settings.hostAddress, game.chat.username).getProto())
+                    .setGameID(gameID)
+                    .setReason(reason)
 
-        val gameMessage = GameMessageProto.GameMessage
-                .newBuilder()
-                .setType(GameMessageProto.GameMessage.Type.GAME_END_MESSAGE)
-                .setGameEndMessage(endMessage)
-        val finalMessage = GenericMessageProto.GenericMessage
-                .newBuilder()
-                .setType(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE)
-                .setGameMessage(gameMessage).build()
-        game.chat.groupBroker.broadcast(game.chat.group, finalMessage)
+            val gameMessage = GameMessageProto.GameMessage
+                    .newBuilder()
+                    .setType(GameMessageProto.GameMessage.Type.GAME_END_MESSAGE)
+                    .setGameEndMessage(endMessage)
+            val finalMessage = GenericMessageProto.GenericMessage
+                    .newBuilder()
+                    .setType(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE)
+                    .setGameMessage(gameMessage).build()
+            game.chat.groupBroker.broadcastAsync(game.chat.group, finalMessage)
+        }
+    }
+
+    fun close(){
+        threadPool.shutdownNow()
     }
 }
 
@@ -125,7 +135,11 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
     }
 
     fun endGame(msg: GameMessageProto.GameEndMessage): GenericMessageProto.GenericMessage?{
-        //todo
+        val runner = manager.runners[msg.gameID]
+        println("[${Settings.hostAddress}] received endgame from [${msg.user.port}]")
+        if (runner != null) {
+            runner.endGameMessageQueue.add(msg)
+        }
         return null
     }
 
@@ -141,4 +155,3 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
 
     }
 }
-

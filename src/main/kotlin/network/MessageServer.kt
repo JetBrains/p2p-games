@@ -9,7 +9,9 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
+import io.netty.util.ReferenceCountUtil
 import network.dispatching.Dispatcher
+import proto.GameMessageProto
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 
@@ -47,6 +49,9 @@ class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.Generi
     var response: GenericMessageProto.GenericMessage? = null
     override fun channelRead0(ctx: ChannelHandlerContext?, msg: GenericMessageProto.GenericMessage?) {
         if (msg != null) {
+            if(msg.hasGameMessage() && msg.gameMessage.type == GameMessageProto.GameMessage.Type.GAME_END_MESSAGE){
+                println("Recieved End Game Message")
+            }
             response = dispatcher.dispatch(msg)
             if (response != null) {
                 ctx!!.write(response)

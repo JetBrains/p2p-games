@@ -2293,13 +2293,13 @@ public final class GameMessageProto {
         getGameIDBytes();
 
     /**
-     * <code>required int32 state = 3;</code>
+     * <code>required int32 timestamp = 3;</code>
      */
-    boolean hasState();
+    boolean hasTimestamp();
     /**
-     * <code>required int32 state = 3;</code>
+     * <code>required int32 timestamp = 3;</code>
      */
-    int getState();
+    int getTimestamp();
 
     /**
      * <code>optional string value = 4;</code>
@@ -2388,7 +2388,7 @@ public final class GameMessageProto {
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              state_ = input.readInt32();
+              timestamp_ = input.readInt32();
               break;
             }
             case 34: {
@@ -2500,19 +2500,19 @@ public final class GameMessageProto {
       }
     }
 
-    public static final int STATE_FIELD_NUMBER = 3;
-    private int state_;
+    public static final int TIMESTAMP_FIELD_NUMBER = 3;
+    private int timestamp_;
     /**
-     * <code>required int32 state = 3;</code>
+     * <code>required int32 timestamp = 3;</code>
      */
-    public boolean hasState() {
+    public boolean hasTimestamp() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required int32 state = 3;</code>
+     * <code>required int32 timestamp = 3;</code>
      */
-    public int getState() {
-      return state_;
+    public int getTimestamp() {
+      return timestamp_;
     }
 
     public static final int VALUE_FIELD_NUMBER = 4;
@@ -2560,7 +2560,7 @@ public final class GameMessageProto {
     private void initFields() {
       user_ = proto.EntitiesProto.User.getDefaultInstance();
       gameID_ = "";
-      state_ = 0;
+      timestamp_ = 0;
       value_ = "";
     }
     private byte memoizedIsInitialized = -1;
@@ -2577,7 +2577,7 @@ public final class GameMessageProto {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (!hasState()) {
+      if (!hasTimestamp()) {
         memoizedIsInitialized = 0;
         return false;
       }
@@ -2599,7 +2599,7 @@ public final class GameMessageProto {
         output.writeBytes(2, getGameIDBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, state_);
+        output.writeInt32(3, timestamp_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeBytes(4, getValueBytes());
@@ -2623,7 +2623,7 @@ public final class GameMessageProto {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, state_);
+          .computeInt32Size(3, timestamp_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -2755,7 +2755,7 @@ public final class GameMessageProto {
         bitField0_ = (bitField0_ & ~0x00000001);
         gameID_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        state_ = 0;
+        timestamp_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
         value_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -2802,7 +2802,7 @@ public final class GameMessageProto {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.state_ = state_;
+        result.timestamp_ = timestamp_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
@@ -2831,8 +2831,8 @@ public final class GameMessageProto {
           gameID_ = other.gameID_;
           onChanged();
         }
-        if (other.hasState()) {
-          setState(other.getState());
+        if (other.hasTimestamp()) {
+          setTimestamp(other.getTimestamp());
         }
         if (other.hasValue()) {
           bitField0_ |= 0x00000008;
@@ -2852,7 +2852,7 @@ public final class GameMessageProto {
           
           return false;
         }
-        if (!hasState()) {
+        if (!hasTimestamp()) {
           
           return false;
         }
@@ -3074,34 +3074,34 @@ public final class GameMessageProto {
         return this;
       }
 
-      private int state_ ;
+      private int timestamp_ ;
       /**
-       * <code>required int32 state = 3;</code>
+       * <code>required int32 timestamp = 3;</code>
        */
-      public boolean hasState() {
+      public boolean hasTimestamp() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required int32 state = 3;</code>
+       * <code>required int32 timestamp = 3;</code>
        */
-      public int getState() {
-        return state_;
+      public int getTimestamp() {
+        return timestamp_;
       }
       /**
-       * <code>required int32 state = 3;</code>
+       * <code>required int32 timestamp = 3;</code>
        */
-      public Builder setState(int value) {
+      public Builder setTimestamp(int value) {
         bitField0_ |= 0x00000004;
-        state_ = value;
+        timestamp_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required int32 state = 3;</code>
+       * <code>required int32 timestamp = 3;</code>
        */
-      public Builder clearState() {
+      public Builder clearTimestamp() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        state_ = 0;
+        timestamp_ = 0;
         onChanged();
         return this;
       }
@@ -4079,12 +4079,12 @@ public final class GameMessageProto {
       "\003\"\202\001\n\017GameInitMessage\022\031\n\004user\030\001 \002(\0132\013.pr" +
       "oto.User\022\020\n\010gameType\030\002 \002(\t\022\016\n\006gameID\030\003 \002",
       "(\t\022\016\n\006chatID\030\004 \002(\005\022\"\n\014participants\030\005 \002(\013" +
-      "2\014.proto.Group\"[\n\020GameStateMessage\022\031\n\004us" +
-      "er\030\001 \002(\0132\013.proto.User\022\016\n\006gameID\030\002 \002(\t\022\r\n" +
-      "\005state\030\003 \002(\005\022\r\n\005value\030\004 \001(\t\"K\n\016GameEndMe" +
-      "ssage\022\031\n\004user\030\001 \002(\0132\013.proto.User\022\016\n\006game" +
-      "ID\030\002 \002(\t\022\016\n\006reason\030\003 \001(\tB\031\n\005protoB\020GameM" +
-      "essageProto"
+      "2\014.proto.Group\"_\n\020GameStateMessage\022\031\n\004us" +
+      "er\030\001 \002(\0132\013.proto.User\022\016\n\006gameID\030\002 \002(\t\022\021\n" +
+      "\ttimestamp\030\003 \002(\005\022\r\n\005value\030\004 \001(\t\"K\n\016GameE" +
+      "ndMessage\022\031\n\004user\030\001 \002(\0132\013.proto.User\022\016\n\006" +
+      "gameID\030\002 \002(\t\022\016\n\006reason\030\003 \001(\tB\031\n\005protoB\020G" +
+      "ameMessageProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4116,7 +4116,7 @@ public final class GameMessageProto {
     internal_static_proto_GameStateMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_GameStateMessage_descriptor,
-        new java.lang.String[] { "User", "GameID", "State", "Value", });
+        new java.lang.String[] { "User", "GameID", "Timestamp", "Value", });
     internal_static_proto_GameEndMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_proto_GameEndMessage_fieldAccessorTable = new

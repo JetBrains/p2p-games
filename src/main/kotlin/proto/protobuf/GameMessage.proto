@@ -29,7 +29,7 @@ message GameInitMessage {
 message GameStateMessage {
     required User user = 1;
     required string gameID = 2;
-    required int32 state = 3;
+    required int32 timestamp = 3;
     optional string value = 4;
 }
 

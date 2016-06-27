@@ -25,11 +25,22 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
     abstract fun isFinished(): Boolean
 
     /**
+     * Message to send other players after the game has ended
+     */
+    fun getFinalMessage(): String{
+        return "GGWP"
+    }
+
+    /**
      * Some games might have endgame result.
      * E.G. reusable primitives
      */
-    fun getFinalResult(): String{
-        return "GGWP"
+    fun getResult(): String{
+        return ""
+    }
+
+    fun getInitialMessage(): String{
+        return "GL HF"
     }
 
     //TODO - fun to call nested games

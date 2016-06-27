@@ -11,6 +11,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
 import io.netty.util.concurrent.Future
 import io.netty.util.concurrent.FutureListener
+import proto.GameMessageProto
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 import java.util.concurrent.LinkedBlockingQueue
@@ -22,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class MessageClient(val addr: InetSocketAddress) {
     //Upstream connections
     private val bootstrap = Bootstrap()
+    private val connections: MutableMap<InetSocketAddress, ChannelFuture> = mutableMapOf()
 
     init {
         val group = NioEventLoopGroup();
@@ -38,11 +40,14 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param host - Server to receive message
      * @param msg - Protobuff message
      */
-    fun send(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
-        val f = bootstrap.connect(host, addr).sync()
+    fun sendAsync(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
+        var f = connections[host]
+        if(f == null || !f.channel().isOpen){
+            f = bootstrap.connect(host, addr).await().sync() ?: return
+            connections[host] = f
+        }
         f.channel().writeAndFlush(msg)
         //TODO reuse channels, not reopen them
-        f.channel().close().sync()
     }
 
     /**
@@ -52,10 +57,13 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param msg - Protobuff message
      */
     fun request(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
-        val f = bootstrap.connect(host, addr).await().sync()
+        var f = connections[host]
+        if(f == null || !f.channel().isOpen){
+            f = bootstrap.connect(host, addr).await().sync() ?: throw Exception("Something went wrong")
+            connections[host] = f
+        }
         val handler = f.channel().pipeline().get(MessageClientHandler::class.java)
         val response: GenericMessageProto.GenericMessage = handler.request(msg)
-        f.channel().close().sync()
         return response
     }
 
@@ -64,6 +72,9 @@ class MessageClient(val addr: InetSocketAddress) {
      */
     fun close() {
         bootstrap.group().shutdownGracefully()
+        for(channelFuture in connections.values){
+            channelFuture.channel().close().sync()
+        }
     }
 }
 

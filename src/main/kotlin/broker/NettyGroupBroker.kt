@@ -9,15 +9,16 @@ import proto.GenericMessageProto
  * Created by user on 6/20/16.
  */
 class NettyGroupBroker() : GroupBroker {
-
-
-    override fun broadcast(group: Group, msg: GenericMessageProto.GenericMessage) {
+    override fun broadcastAsync(group: Group, msg: GenericMessageProto.GenericMessage) {
         for (user in group.users) {
-            send(user, msg)
+            sendAsync(user, msg)
         }
     }
 
-    override fun send(user: User, msg: GenericMessageProto.GenericMessage) {
-        ConnectionManager.send(user.hostAddress, msg)
+
+    override fun sendAsync(user: User, msg: GenericMessageProto.GenericMessage) {
+        ConnectionManager.sendAsync(user.hostAddress, msg)
     }
+
+
 }

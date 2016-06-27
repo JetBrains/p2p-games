@@ -1,6 +1,7 @@
-package apps.games
+package apps.games.primitives
 
 import apps.chat.Chat
+import apps.games.Game
 import entity.ChatMessage
 import entity.Group
 import entity.User
