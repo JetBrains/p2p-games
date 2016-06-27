@@ -14,8 +14,14 @@ import java.net.InetSocketAddress
 
 fun main(args: Array<String>) {
     BasicConfigurator.configure();
-    val a1: InetSocketAddress = InetSocketAddress("localhost", 1235)
-    val a2: InetSocketAddress = InetSocketAddress("localhost", 1236)
+    val host: String
+    if(DEBUG){
+        host = "127.0.0.1"
+    }else{
+        host = "0.0.0.0"
+    }
+    val a1: InetSocketAddress = InetSocketAddress(host, 1235)
+    val a2: InetSocketAddress = InetSocketAddress(host, 1236)
     Settings.clientAddress = a1
     Settings.hostAddress = a2
     ChatManager.start()

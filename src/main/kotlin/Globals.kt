@@ -5,6 +5,7 @@ import java.net.InetSocketAddress
  */
 
 //TODO - better pattern
+val DEBUG = false
 object Settings{
     var clientAddress: InetSocketAddress = InetSocketAddress(1231)
     var hostAddress: InetSocketAddress = InetSocketAddress(1232)

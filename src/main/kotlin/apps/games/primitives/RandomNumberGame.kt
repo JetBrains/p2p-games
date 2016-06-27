@@ -2,7 +2,9 @@ package apps.games.primitives
 
 import apps.chat.Chat
 import apps.games.Game
+import entity.ChatMessage
 import entity.Group
+import entity.User
 import org.apache.commons.codec.digest.DigestUtils
 import proto.GameMessageProto
 import random.randomInt
@@ -34,7 +36,9 @@ class RandomNumberGame(chat: Chat, group: Group, gameID: String) : Game(chat, gr
             }
             State.GENERATE -> {
                 state = State.VALIDATE
+
                 for(msg in responses){
+                    chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "Hash: ${msg.value}"))
                     hashes.add(msg.value)
                 }
                 return myRandom.toString() + " " + salt
@@ -46,6 +50,7 @@ class RandomNumberGame(chat: Chat, group: Group, gameID: String) : Game(chat, gr
                         agreed = false
                         break
                     }
+                    chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "User data: ${msg.value}"))
                     answer += res
                 }
                 state = State.END
