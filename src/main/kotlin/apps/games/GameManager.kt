@@ -3,6 +3,7 @@ package apps.games
 import apps.chat.Chat
 import apps.chat.ChatManager
 import apps.games.primitives.MooGame
+import apps.games.primitives.RandomNumberGame
 import entity.Group
 import entity.User
 import network.ConnectionManager
@@ -73,7 +74,7 @@ object GameManager {
             //TODO - respond to someone
             return null
         }
-        val game = MooGame(chat, group, msg.gameID)
+        val game = RandomNumberGame(chat, group, msg.gameID)
         games[msg.gameID] = game
         if(group != chat.group){
             sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch")
@@ -85,6 +86,16 @@ object GameManager {
         }
     }
 
+    /**
+     * Init local game. Do not send any requests
+     */
+    fun initSubGame(group: Group, chat: Chat, gameID: String): Future<String>{
+        val game = RandomNumberGame(chat, group, gameID)
+        games[gameID] = game
+        val runner = GameRunner(game)
+        runners[gameID] = runner
+        return threadPool.submit(runner)
+    }
 
     /**
      * For somewhat reason game decided, that it

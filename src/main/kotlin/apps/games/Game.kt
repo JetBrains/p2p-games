@@ -27,7 +27,7 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
     /**
      * Message to send other players after the game has ended
      */
-    fun getFinalMessage(): String{
+    open fun getFinalMessage(): String{
         return "GGWP"
     }
 
@@ -35,11 +35,11 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
      * Some games might have endgame result.
      * E.G. reusable primitives
      */
-    fun getResult(): String{
+    open fun getResult(): String{
         return ""
     }
 
-    fun getInitialMessage(): String{
+    open fun getInitialMessage(): String{
         return "GL HF"
     }
 

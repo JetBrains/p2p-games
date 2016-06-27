@@ -13,7 +13,7 @@ import java.util.concurrent.LinkedBlockingDeque
  */
 
 
-class GameRunner(val game: Game): Callable<String>{
+class GameRunner(val game: Game, val verbose: Boolean = false): Callable<String>{
 
     val stateMessageQueue: BlockingDeque<GameMessageProto.GameStateMessage> = LinkedBlockingDeque()
     val endGameMessageQueue: BlockingDeque<GameMessageProto.GameEndMessage> = LinkedBlockingDeque()
@@ -38,7 +38,9 @@ class GameRunner(val game: Game): Callable<String>{
                     game.group.users.remove(user)
                 }
                 pending.remove(user)
-                game.chat.showMessage(ChatMessage(game.chat.chatId, user, gameEndMessage.reason))
+                if(!verbose){
+                    game.chat.showMessage(ChatMessage(game.chat.chatId, user, gameEndMessage.reason))
+                }
                 continue
             }
             val msg = stateMessageQueue.takeFirst()
@@ -91,12 +93,12 @@ class GameRunner(val game: Game): Callable<String>{
             nextStepMessages.clear()
         }
         GameManager.sendEndGame(game.gameID,
-                "[${game.chat.username}] finished playing! Final result: ${game.getFinalMessage()}")
+                "[${game.chat.username}] finished playing!\nWith final result:\n ${game.getFinalMessage()}")
         while(game.group.users.isNotEmpty()){
             val msg: GameMessageProto.GameEndMessage = endGameMessageQueue.takeFirst()
             val user = User(msg.user)
             game.group.users.remove(user)
-            if(msg.reason.isNotEmpty()){
+            if(!verbose && msg.reason.isNotEmpty()){
                 game.chat.showMessage(ChatMessage(game.chat.chatId, user, msg.reason))
             }
         }

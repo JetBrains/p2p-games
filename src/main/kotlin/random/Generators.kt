@@ -16,3 +16,7 @@ private val secureRandom = SecureRandom()
 fun randomString(n: Int): String{
     return BigInteger(6*n, secureRandom).toString(32).substring(n)
 }
+
+fun randomInt(): Int{
+    return BigInteger(32, secureRandom).toInt()
+}
