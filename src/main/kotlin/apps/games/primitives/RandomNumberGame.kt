@@ -24,7 +24,7 @@ class RandomNumberGame(chat: Chat, group: Group, gameID: String) : Game(chat, gr
     private var state: State = State.INIT
     private val myRandom: Int = randomInt()
     private var answer: Int = 0
-    private val salt: String = randomString(10)
+    private val salt: String = randomString(100)
     private val hashes: MutableSet<String> = mutableSetOf()
     private var agreed: Boolean = true
 

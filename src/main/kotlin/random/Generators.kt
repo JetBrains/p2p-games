@@ -17,6 +17,10 @@ fun randomString(n: Int): String{
     return BigInteger(6*n, secureRandom).toString(32).substring(n)
 }
 
-fun randomInt(): Int{
-    return BigInteger(32, secureRandom).toInt()
+fun randomInt(n: Int = Int.MAX_VALUE): Int{
+    var res = BigInteger(32, secureRandom).toInt() % n
+    if(res < 0){
+        res += n
+    }
+    return res
 }

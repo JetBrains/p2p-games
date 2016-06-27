@@ -124,7 +124,9 @@ class ChatGUI(internal var chat: Chat) {
         }
     }
 
-
+    fun getUserInput(description: String): String {
+        return JOptionPane.showInputDialog(chatFrame, description, "User input request", JOptionPane.QUESTION_MESSAGE)
+    }
 
 
 }

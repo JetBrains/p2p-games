@@ -38,14 +38,12 @@ class GameRunner(val game: Game, val verbose: Boolean = false): Callable<String>
                     game.group.users.remove(user)
                 }
                 pending.remove(user)
-                if(!verbose){
-                    game.chat.showMessage(ChatMessage(game.chat.chatId, user, gameEndMessage.reason))
-                }
+                game.evaluateGameEnd(gameEndMessage)
                 continue
             }
             val msg = stateMessageQueue.takeFirst()
             if(msg.timestamp > timestamp + 1 || msg.timestamp < timestamp){
-                throw GameStateExcetion("Impossible state message received")
+                throw GameStateException("Impossible state message received")
             } else if(msg.timestamp == timestamp + 1){ //Someone already finished next step computations
                 nextStepMessages.add(msg)
             } else{
@@ -98,9 +96,7 @@ class GameRunner(val game: Game, val verbose: Boolean = false): Callable<String>
             val msg: GameMessageProto.GameEndMessage = endGameMessageQueue.takeFirst()
             val user = User(msg.user)
             game.group.users.remove(user)
-            if(!verbose && msg.reason.isNotEmpty()){
-                game.chat.showMessage(ChatMessage(game.chat.chatId, user, msg.reason))
-            }
+            game.evaluateGameEnd(msg)
         }
         return game.getResult()
     }

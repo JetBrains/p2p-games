@@ -8,6 +8,6 @@ package apps.games
  * Someone tried to interfere with game state
  * (Impossible state reached)
  */
-class GameStateExcetion(msg: String): Exception(msg){
+class GameStateException(msg: String): Exception(msg){}
 
-}
+class GameInputException(msg: String): Exception(msg){}

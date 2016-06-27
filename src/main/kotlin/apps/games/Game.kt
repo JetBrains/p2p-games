@@ -1,6 +1,7 @@
 package apps.games
 
 import apps.chat.Chat
+import entity.ChatMessage
 import entity.Group
 import entity.User
 import proto.GameMessageProto
@@ -23,6 +24,16 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
      * We need to know, when to stop
      */
     abstract fun isFinished(): Boolean
+
+    /**
+     * Some other players might decide, that game
+     * is over. Process their messages
+     */
+    open fun evaluateGameEnd(msg: GameMessageProto.GameEndMessage){
+        if(msg.reason.isNotBlank()){
+            chat.showMessage(ChatMessage(chat.chatId, User(msg.user), msg.reason))
+        }
+    }
 
     /**
      * Message to send other players after the game has ended

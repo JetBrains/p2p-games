@@ -13,6 +13,7 @@ import java.net.InetSocketAddress
 fun main(args: Array<String>) {
     BasicConfigurator.configure();
     val host: String
+
     if(DEBUG){
         host = "127.0.0.1"
     }else{

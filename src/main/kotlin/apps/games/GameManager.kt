@@ -4,19 +4,20 @@ import apps.chat.Chat
 import apps.chat.ChatManager
 import apps.games.primitives.MooGame
 import apps.games.primitives.RandomNumberGame
+import apps.games.serious.Lotto
 import entity.Group
 import entity.User
 import network.ConnectionManager
 import network.Service
 import network.dispatching.Dispatcher
 import network.dispatching.EnumDispatcher
+import org.apache.commons.collections4.queue.CircularFifoQueue
 import proto.GameMessageProto
 import proto.GenericMessageProto
 import random.randomString
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.ThreadPoolExecutor
+import java.util.*
+import java.util.concurrent.*
+
 
 /**
  * Created by user on 6/24/16.
@@ -25,7 +26,9 @@ import java.util.concurrent.ThreadPoolExecutor
 object GameManager {
     val games: MutableMap<String, Game> = mutableMapOf()
     val runners: MutableMap<String, GameRunner> = mutableMapOf()
+    internal val LAG_MESSAGE_LIMIT = 100
     internal val threadPool: ExecutorService = Executors.newCachedThreadPool()
+    internal val unprocessed = CircularFifoQueue<GameMessageProto.GameStateMessage>(LAG_MESSAGE_LIMIT)
 
     final val IDENTIFIER_LENGTH = 32
 
@@ -63,6 +66,7 @@ object GameManager {
         chat.groupBroker.broadcastAsync(chat.group, finalMessage)
     }
 
+    //todo merge calls with initsubgame
     /**
      * Someone initialized a game. Process request
      * and start local game
@@ -74,17 +78,19 @@ object GameManager {
             //TODO - respond to someone
             return null
         }
-        val game = RandomNumberGame(chat, group, msg.gameID)
+        val game = Lotto(chat, group, msg.gameID)
         games[msg.gameID] = game
         if(group != chat.group){
             sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch")
             return null
         }else{
             val runner = GameRunner(game)
+            resolveLag(runner)
             runners[msg.gameID] = runner
             return threadPool.submit(runner)
         }
     }
+
 
     /**
      * Init local game. Do not send any requests
@@ -93,6 +99,7 @@ object GameManager {
         val game = RandomNumberGame(chat, group, gameID)
         games[gameID] = game
         val runner = GameRunner(game)
+        resolveLag(runner)
         runners[gameID] = runner
         return threadPool.submit(runner)
     }
@@ -125,12 +132,22 @@ object GameManager {
     fun close(){
         threadPool.shutdownNow()
     }
+
+    private fun resolveLag(gameRunner: GameRunner){
+        for(msg in unprocessed){
+            if(msg.gameID == gameRunner.game.gameID){
+                gameRunner.stateMessageQueue.add(msg)
+                unprocessed.remove(msg)
+            }
+        }
+    }
 }
 
 /**
  * Service for dispatching game messages
  */
 class GameMessageService(private val manager: GameManager) : Service<GameMessageProto.GameMessage> {
+
     fun startGame(msg: GameMessageProto.GameInitMessage): GenericMessageProto.GenericMessage?{
         manager.initGame(msg)
         return null
@@ -141,6 +158,8 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
         val runner = manager.runners[msg.gameID]
         if (runner != null) {
             runner.stateMessageQueue.add(msg)
+        }else{
+            manager.unprocessed.add(msg)
         }
         return null
     }

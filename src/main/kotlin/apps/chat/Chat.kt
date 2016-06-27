@@ -78,6 +78,14 @@ class Chat(val chatId: Int) : Runnable {
         chatGUI.display()
     }
 
+    fun getUserInput(description: String, condition: (String) -> (Boolean) = {x: String -> true}): String{
+        var res = chatGUI.getUserInput(description)
+        while(!condition(res)){
+            res = chatGUI.getUserInput(description)
+        }
+        return res
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
