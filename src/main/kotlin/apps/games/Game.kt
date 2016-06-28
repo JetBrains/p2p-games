@@ -5,6 +5,7 @@ import entity.ChatMessage
 import entity.Group
 import entity.User
 import proto.GameMessageProto
+import java.util.concurrent.Future
 
 /**
  * Created by user on 6/24/16.
@@ -13,6 +14,7 @@ import proto.GameMessageProto
  */
 
 abstract class Game(internal val chat: Chat, internal val group: Group, val gameID: String){
+    private var subGameCounter: Int = 0
 
     /**
      * Evaluate next game state based on responses from everyone
@@ -43,6 +45,13 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
     }
 
     /**
+     * Verifier for game end results(if needed)
+     */
+    open fun getVerifier(): String?{
+        return null
+    }
+
+    /**
      * Some games might have endgame result.
      * E.G. reusable primitives
      */
@@ -50,11 +59,24 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
         return ""
     }
 
+    /**
+     * Contains of first message sent to other
+     * players. Most typically -  simple
+     * handshake
+     */
     open fun getInitialMessage(): String{
         return "GL HF"
     }
 
-    //TODO - fun to call nested games
+    /**
+     * Ids to call subgame. At one moment
+     * game can have more then one
+     * direct subgame
+     */
+    fun subGameID(): String{
+        subGameCounter ++
+        return gameID + subGameCounter.toInt()
+    }
 
     override fun equals(other: Any?): Boolean{
         if (this === other) return true

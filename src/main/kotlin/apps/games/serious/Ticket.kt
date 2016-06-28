@@ -14,6 +14,36 @@ class Ticket(val ticketSize: Int){
      * List of ticket values
      */
     val numbers: MutableSet<Int> = mutableSetOf()
+    private val marked: MutableSet<Int> = mutableSetOf()
+
+    /**
+     * Chat if ticket contains give number
+     * @param n - number to search
+     */
+    fun contains(n: Int): Boolean{
+        return numbers.contains(n)
+    }
+
+    /**
+     * If ticket contains a number
+     * store it as marked
+     * @param n - number to mark
+     */
+    fun mark(n: Int): Boolean{
+        val res = contains(n)
+        if(res){
+            marked.add(n)
+        }
+        return res
+    }
+
+    /**
+     * check, whether game condition
+     * is satisfied
+     */
+    fun win(): Boolean{
+        return marked == numbers
+    }
 
     fun getMD5(): String{
         return DigestUtils.md5Hex(toString())

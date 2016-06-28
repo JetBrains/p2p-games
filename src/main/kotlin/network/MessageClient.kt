@@ -47,7 +47,6 @@ class MessageClient(val addr: InetSocketAddress) {
             connections[host] = f
         }
         f.channel().writeAndFlush(msg)
-        //TODO reuse channels, not reopen them
     }
 
     /**

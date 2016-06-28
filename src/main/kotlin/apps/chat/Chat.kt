@@ -48,7 +48,7 @@ class Chat(val chatId: Int) : Runnable {
      */
     fun sendMessage(message: String) {
         //TODO separate protobuf factory
-        val user = User(Settings.hostAddress, username)
+        val user = me()
 
         val chatMessage = ChatMessage(chatId, user, message)
 
@@ -58,16 +58,21 @@ class Chat(val chatId: Int) : Runnable {
         groupBroker.broadcastAsync(group, msg)
     }
 
-    //todo
     /**
      * self registration
      */
     fun register(username: String) {
         this.username = username
-        group.users.add(User(Settings.hostAddress, username))
+        group.users.add(me())
         chatGUI.refreshTitle("$username[${Settings.hostAddress.toString()}]Chat #$chatId")
     }
 
+    /**
+     * get user for self
+     */
+    fun me(): User{
+        return User(Settings.hostAddress, username)
+    }
     override fun run() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())

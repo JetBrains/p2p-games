@@ -81,10 +81,10 @@ object GameManager {
         val game = Lotto(chat, group, msg.gameID)
         games[msg.gameID] = game
         if(group != chat.group){
-            sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch")
+            sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch", game.getVerifier())
             return null
         }else{
-            val runner = GameRunner(game)
+            val runner = GameRunner(game, Int.MAX_VALUE)
             resolveLag(runner)
             runners[msg.gameID] = runner
             return threadPool.submit(runner)
@@ -95,20 +95,29 @@ object GameManager {
     /**
      * Init local game. Do not send any requests
      */
-    fun initSubGame(group: Group, chat: Chat, gameID: String): Future<String>{
-        val game = RandomNumberGame(chat, group, gameID)
-        games[gameID] = game
+    fun initSubGame(game: Game): Future<String>{
+        games[game.gameID] = game
         val runner = GameRunner(game)
         resolveLag(runner)
-        runners[gameID] = runner
+        runners[game.gameID] = runner
         return threadPool.submit(runner)
+    }
+
+    /**
+     * remove all links if the game
+     * based on it's gameId @see Game
+     * @param game - game to be removed
+     */
+    fun deleteGame(game:Game){
+        games.remove(game.gameID)
+        runners.remove(game.gameID)
     }
 
     /**
      * For somewhat reason game decided, that it
      * has ended for us. So we acknowledge everyone about it
      */
-    fun sendEndGame(gameID: String, reason: String){
+    fun sendEndGame(gameID: String, reason: String, verifier: String?){
         val game: Game? = games[gameID]
         if(game != null){
             val endMessage = GameMessageProto.GameEndMessage
@@ -116,6 +125,9 @@ object GameManager {
                     .setUser(User(Settings.hostAddress, game.chat.username).getProto())
                     .setGameID(gameID)
                     .setReason(reason)
+            if (verifier != null) {
+                endMessage.verifier = verifier
+            }
 
             val gameMessage = GameMessageProto.GameMessage
                     .newBuilder()
@@ -154,7 +166,6 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
     }
 
     fun processMessage(msg: GameMessageProto.GameStateMessage): GenericMessageProto.GenericMessage?{
-        //todo
         val runner = manager.runners[msg.gameID]
         if (runner != null) {
             runner.stateMessageQueue.add(msg)

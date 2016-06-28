@@ -30,7 +30,6 @@ object ChatManager {
         ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY,
                 ChatQueryService(this))
 
-        //TODO remove callbacks
         ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
                 ChatService(this))
 

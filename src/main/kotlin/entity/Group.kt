@@ -6,7 +6,7 @@ import proto.EntitiesProto
  * Created by user on 6/20/16.
  */
 
-class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>{
+class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>, Cloneable{
     val users: MutableSet<User> = users
 
     constructor() : this(mutableSetOf()) {
@@ -41,5 +41,7 @@ class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>
         return users.hashCode()
     }
 
-
+    override public fun clone(): Group {
+        return Group(getProto())
+    }
 }

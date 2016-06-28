@@ -3237,6 +3237,20 @@ public final class GameMessageProto {
      */
     com.google.protobuf.ByteString
         getReasonBytes();
+
+    /**
+     * <code>optional string verifier = 4 [default = ""];</code>
+     */
+    boolean hasVerifier();
+    /**
+     * <code>optional string verifier = 4 [default = ""];</code>
+     */
+    java.lang.String getVerifier();
+    /**
+     * <code>optional string verifier = 4 [default = ""];</code>
+     */
+    com.google.protobuf.ByteString
+        getVerifierBytes();
   }
   /**
    * Protobuf type {@code proto.GameEndMessage}
@@ -3313,6 +3327,12 @@ public final class GameMessageProto {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
               reason_ = bs;
+              break;
+            }
+            case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000008;
+              verifier_ = bs;
               break;
             }
           }
@@ -3460,10 +3480,53 @@ public final class GameMessageProto {
       }
     }
 
+    public static final int VERIFIER_FIELD_NUMBER = 4;
+    private java.lang.Object verifier_;
+    /**
+     * <code>optional string verifier = 4 [default = ""];</code>
+     */
+    public boolean hasVerifier() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string verifier = 4 [default = ""];</code>
+     */
+    public java.lang.String getVerifier() {
+      java.lang.Object ref = verifier_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          verifier_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string verifier = 4 [default = ""];</code>
+     */
+    public com.google.protobuf.ByteString
+        getVerifierBytes() {
+      java.lang.Object ref = verifier_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        verifier_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       user_ = proto.EntitiesProto.User.getDefaultInstance();
       gameID_ = "";
       reason_ = "";
+      verifier_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3499,6 +3562,9 @@ public final class GameMessageProto {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, getReasonBytes());
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getVerifierBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3519,6 +3585,10 @@ public final class GameMessageProto {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, getReasonBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getVerifierBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3648,6 +3718,8 @@ public final class GameMessageProto {
         bitField0_ = (bitField0_ & ~0x00000002);
         reason_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        verifier_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -3692,6 +3764,10 @@ public final class GameMessageProto {
           to_bitField0_ |= 0x00000004;
         }
         result.reason_ = reason_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.verifier_ = verifier_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3719,6 +3795,11 @@ public final class GameMessageProto {
         if (other.hasReason()) {
           bitField0_ |= 0x00000004;
           reason_ = other.reason_;
+          onChanged();
+        }
+        if (other.hasVerifier()) {
+          bitField0_ |= 0x00000008;
+          verifier_ = other.verifier_;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -4028,6 +4109,82 @@ public final class GameMessageProto {
         return this;
       }
 
+      private java.lang.Object verifier_ = "";
+      /**
+       * <code>optional string verifier = 4 [default = ""];</code>
+       */
+      public boolean hasVerifier() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string verifier = 4 [default = ""];</code>
+       */
+      public java.lang.String getVerifier() {
+        java.lang.Object ref = verifier_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            verifier_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string verifier = 4 [default = ""];</code>
+       */
+      public com.google.protobuf.ByteString
+          getVerifierBytes() {
+        java.lang.Object ref = verifier_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          verifier_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string verifier = 4 [default = ""];</code>
+       */
+      public Builder setVerifier(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        verifier_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string verifier = 4 [default = ""];</code>
+       */
+      public Builder clearVerifier() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        verifier_ = getDefaultInstance().getVerifier();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string verifier = 4 [default = ""];</code>
+       */
+      public Builder setVerifierBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        verifier_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:proto.GameEndMessage)
     }
 
@@ -4081,10 +4238,10 @@ public final class GameMessageProto {
       "(\t\022\016\n\006chatID\030\004 \002(\005\022\"\n\014participants\030\005 \002(\013" +
       "2\014.proto.Group\"_\n\020GameStateMessage\022\031\n\004us" +
       "er\030\001 \002(\0132\013.proto.User\022\016\n\006gameID\030\002 \002(\t\022\021\n" +
-      "\ttimestamp\030\003 \002(\005\022\r\n\005value\030\004 \001(\t\"K\n\016GameE" +
+      "\ttimestamp\030\003 \002(\005\022\r\n\005value\030\004 \001(\t\"_\n\016GameE" +
       "ndMessage\022\031\n\004user\030\001 \002(\0132\013.proto.User\022\016\n\006" +
-      "gameID\030\002 \002(\t\022\016\n\006reason\030\003 \001(\tB\031\n\005protoB\020G" +
-      "ameMessageProto"
+      "gameID\030\002 \002(\t\022\016\n\006reason\030\003 \001(\t\022\022\n\010verifier" +
+      "\030\004 \001(\t:\000B\031\n\005protoB\020GameMessageProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4122,7 +4279,7 @@ public final class GameMessageProto {
     internal_static_proto_GameEndMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_GameEndMessage_descriptor,
-        new java.lang.String[] { "User", "GameID", "Reason", });
+        new java.lang.String[] { "User", "GameID", "Reason", "Verifier", });
     proto.EntitiesProto.getDescriptor();
   }
 

@@ -24,8 +24,6 @@ class ChatGUI(internal var chat: Chat) {
     internal var chatBox: JTextArea = JTextArea()
     var isClosed: Boolean = false
 
-    //Todo - remove callbacks
-
     fun display() {
         val mainPanel = JPanel()
         mainPanel.layout = BorderLayout()

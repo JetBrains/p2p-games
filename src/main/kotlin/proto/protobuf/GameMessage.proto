@@ -37,4 +37,5 @@ message GameEndMessage {
     required User user = 1;
     required string gameID = 2;
     optional string reason = 3;
+    optional string verifier = 4 [default = ""];
 }

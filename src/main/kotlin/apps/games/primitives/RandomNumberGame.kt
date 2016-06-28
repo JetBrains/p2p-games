@@ -14,16 +14,23 @@ import random.randomString
  * Created by user on 6/27/16.
  */
 
-class RandomNumberGame(chat: Chat, group: Group, gameID: String) : Game(chat, group, gameID) {
+class RandomNumberGame(chat: Chat, group: Group,
+                       gameID: String, val minValue: Long = Int.MIN_VALUE.toLong(),
+                       val maxValue: Long = Int.MAX_VALUE.toLong()) : Game(chat, group, gameID) {
+
+
+    private val offset = minValue
+    private val n: Long = maxValue - minValue + 1
+
     private enum class State{
         INIT,
         GENERATE,
         VALIDATE,
         END
     }
-    private var state: State = State.INIT
+        private var state: State = State.INIT
     private val myRandom: Int = randomInt()
-    private var answer: Int = 0
+    private var answer: Long = 0
     private val salt: String = randomString(100)
     private val hashes: MutableSet<String> = mutableSetOf()
     private var agreed: Boolean = true
@@ -52,6 +59,11 @@ class RandomNumberGame(chat: Chat, group: Group, gameID: String) : Game(chat, gr
                     }
                     chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "User data: ${msg.value}"))
                     answer += res
+                    answer %= n
+                    if(answer < 0){
+                        answer += n
+                    }
+                    answer += offset
                 }
                 state = State.END
                 return ""

@@ -7,7 +7,6 @@ import java.net.InetSocketAddress
 /**
  * Created by user on 6/22/16.
  */
-//TODO move to singleton
 object ConnectionManager{
     val dispatcher = EnumDispatcher(GenericMessageProto.GenericMessage.getDefaultInstance())
 

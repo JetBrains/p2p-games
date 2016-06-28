@@ -111,7 +111,6 @@ class ChatManagerGUI() {
             } catch(ignored: URISyntaxException){
                 System.err.println("Malformed host address")
             }
-            //todo better register
 
         }
 

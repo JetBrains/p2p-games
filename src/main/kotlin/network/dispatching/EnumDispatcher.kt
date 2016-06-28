@@ -8,7 +8,6 @@ import proto.GenericMessageProto
 /**
  * Created by user on 6/21/16.
  */
-//TODO - better way to dispatch
 /**
  * Dispatch messages for given aggregator type
  *
@@ -35,14 +34,12 @@ import proto.GenericMessageProto
 
 
 class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
-    // Todo: mb somehow infere type(Get rid of Any).
     // Problem: we dont want to specify both Enum type and GeneratedMessage, as one
     // is inferior to the other
 
     /**
      * storage for lsiteners
      */
-    //Todo - maybe we need to return PromiseFuture/execute in pool. Proof of concept for now
     private val listeners: Map<Descriptors.EnumValueDescriptor, MutableList<Dispatcher<*>>>
 
     /**
