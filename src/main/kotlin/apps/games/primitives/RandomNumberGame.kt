@@ -9,6 +9,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import proto.GameMessageProto
 import random.randomInt
 import random.randomString
+import java.util.*
 
 /**
  * Created by user on 6/27/16.
@@ -17,6 +18,8 @@ import random.randomString
 class RandomNumberGame(chat: Chat, group: Group,
                        gameID: String, val minValue: Long = Int.MIN_VALUE.toLong(),
                        val maxValue: Long = Int.MAX_VALUE.toLong()) : Game(chat, group, gameID) {
+    override val name: String
+        get() = "Random Number Generator"
 
 
     private val offset = minValue
@@ -36,7 +39,7 @@ class RandomNumberGame(chat: Chat, group: Group,
     private var agreed: Boolean = true
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        when(state){
+        when (state) {
             State.INIT -> {
                 state = State.GENERATE
                 return DigestUtils.md5Hex(myRandom.toString() + salt)
@@ -44,23 +47,23 @@ class RandomNumberGame(chat: Chat, group: Group,
             State.GENERATE -> {
                 state = State.VALIDATE
 
-                for(msg in responses){
+                for (msg in responses) {
                     chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "Hash: ${msg.value}"))
                     hashes.add(msg.value)
                 }
                 return myRandom.toString() + " " + salt
             }
             State.VALIDATE -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val res = checkAnswer(msg.value)
-                    if(res == null){
+                    if (res == null) {
                         agreed = false
                         break
                     }
                     chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "User data: ${msg.value}"))
                     answer += res
                     answer %= n
-                    if(answer < 0){
+                    if (answer < 0) {
                         answer += n
                     }
                     answer += offset
@@ -72,6 +75,7 @@ class RandomNumberGame(chat: Chat, group: Group,
                 return ""
             }
         }
+
     }
 
     override fun isFinished(): Boolean {

@@ -11,3 +11,5 @@ package apps.games
 class GameStateException(msg: String): Exception(msg){}
 
 class GameInputException(msg: String): Exception(msg){}
+
+class GameExecutionException(msg: String): Exception(msg){}

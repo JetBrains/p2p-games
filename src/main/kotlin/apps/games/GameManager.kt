@@ -109,8 +109,12 @@ object GameManager {
      * @param game - game to be removed
      */
     fun deleteGame(game:Game){
-        games.remove(game.gameID)
-        runners.remove(game.gameID)
+        synchronized(games){
+            synchronized(runners){
+                games.remove(game.gameID)
+                runners.remove(game.gameID)
+            }
+        }
     }
 
     /**
@@ -176,11 +180,8 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
     }
 
     fun endGame(msg: GameMessageProto.GameEndMessage): GenericMessageProto.GenericMessage?{
-        val runner = manager.runners[msg.gameID]
         println("[${Settings.hostAddress}] received endgame from [${msg.user.port}]")
-        if (runner != null) {
-            runner.endGameMessageQueue.add(msg)
-        }
+        manager.runners[msg.gameID]?.processEndGame(msg)
         return null
     }
 

@@ -13,6 +13,8 @@ import proto.GameMessageProto
  * Say moo, succeed
  */
 class MooGame(chat: Chat, group: Group, gameID: String) : Game(chat, group, gameID) {
+    override val name: String
+        get() = "MOO Game"
     var finished = 0
 
     override fun isFinished(): Boolean {
