@@ -27,8 +27,8 @@ class ChatManagerGUI() {
 
     fun display() {
         enterFrame = JFrame(appName)
-        usernameChooser = JTextField("Alice", 20)
-        hostAddressChooser = JTextField("127.0.0.1:1232", 20)
+        usernameChooser = JTextField(Settings.defaultUsername, 20)
+        hostAddressChooser = JTextField("${Settings.hostAddress.hostName}:${Settings.hostAddress.port}", 20)
         chatIDChooser = JFormattedTextField(NumberFormat.getNumberInstance())
         chatIDChooser.text = "666"
         chatIDChooser.columns = 4
