@@ -4,10 +4,11 @@ import proto.EntitiesProto
 
 /**
  * Created by user on 6/20/16.
+ * * Open - for mockito testing purposes
  */
 
-class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>, Cloneable{
-    val users: MutableSet<User> = users
+open class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>, Cloneable{
+    open val users: MutableSet<User> = users
 
     constructor() : this(mutableSetOf()) {
     }

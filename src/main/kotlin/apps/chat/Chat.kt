@@ -15,19 +15,24 @@ import javax.swing.UIManager
 /**
  * Created by user on 6/22/16.
  * Represents logic behind chat
+ * Open - for mockito testing purposes
  */
-class Chat(val chatId: Int) : Runnable {
+open class Chat(val chatId: Int) : Runnable {
     // chat users in this group
-    val group = Group(mutableSetOf())
-    val groupBroker = NettyGroupBroker()
+    open val group = Group(mutableSetOf())
+    open val groupBroker = NettyGroupBroker()
     var username: String = "Unknown"
     val chatGUI = ChatGUI(this)
     var finatilzed = false
 
     /**
      * Receive and process general purpose message
+     * we pass nullable parameter for mocking purposes
      */
-    fun showMessage(msg: ChatMessage) {
+    open fun showMessage(msg: ChatMessage?) {
+        if(msg == null){
+            return
+        }
         if(msg.chatId == chatId){
             chatGUI.displayMessage(msg.user.name, msg.message)
         }
@@ -73,6 +78,7 @@ class Chat(val chatId: Int) : Runnable {
     fun me(): User{
         return User(Settings.hostAddress, username)
     }
+
     override fun run() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
@@ -83,7 +89,13 @@ class Chat(val chatId: Int) : Runnable {
         chatGUI.display()
     }
 
-    fun getUserInput(description: String, condition: (String) -> (Boolean) = {x: String -> true}): String{
+    /**
+     * get Input from
+     */
+    open fun getUserInput(description: String, condition: ((String) -> (Boolean))? = {x: String -> true}): String{
+        if(condition == null){
+            throw UnsupportedOperationException("Invalid null condition provided")
+        }
         var res = chatGUI.getUserInput(description)
         while(!condition(res)){
             res = chatGUI.getUserInput(description)

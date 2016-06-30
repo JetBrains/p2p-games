@@ -157,11 +157,25 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
     }
 
     /**
+     * check if we won
+     */
+    fun win(): Boolean{
+        return ticket.win()
+    }
+
+    /**
+     * set Ticket to given value
+     */
+    fun setTicket(ticket: Ticket){
+        this.ticket = ticket
+    }
+
+    /**
      * Given a ticket - verify, that it
      * 1)Was mentioned before game
      * 2)Contains only used numbers
      */
-    private fun verifyTicket(ticket: Ticket): Boolean{
+    fun verifyTicket(ticket: Ticket): Boolean{
         val validator = Ticket.getValidator(ticketSize, maxValue)
         if(!validator(ticket.toString())){
             return false
