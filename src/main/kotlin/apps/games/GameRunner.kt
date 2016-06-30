@@ -120,6 +120,7 @@ class GameRunner(val game: Game, val maxRetires:Int = 10): Callable<String>{
         }
         val result = game.getResult()
         GameManager.deleteGame(game)
+        game.chat.showMessage(ChatMessage(game.chat, "Game completed: ${game.name}"))
         return result
 
 
