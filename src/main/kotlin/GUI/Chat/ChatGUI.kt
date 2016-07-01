@@ -1,4 +1,4 @@
-package apps.chat.GUI
+package GUI.Chat
 
 /**
  * Created by user on 6/22/16.

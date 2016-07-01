@@ -42,7 +42,7 @@ class RandomNumberGame(chat: Chat, group: Group,
         when (state) {
             State.INIT -> {
                 state = State.GENERATE
-                return DigestUtils.md5Hex(myRandom.toString() + salt)
+                return DigestUtils.sha256Hex(myRandom.toString() + salt)
             }
             State.GENERATE -> {
                 state = State.VALIDATE
@@ -99,8 +99,8 @@ class RandomNumberGame(chat: Chat, group: Group,
         if(split.size != 2){
             return null
         }
-        val tomd5: String = split.joinToString("")
-        if(!hashes.contains(DigestUtils.md5Hex(tomd5))){
+        val toSHA256: String = split.joinToString("")
+        if(!hashes.contains(DigestUtils.sha256Hex(toSHA256))){
             return null
         }
         return split[0].toInt()

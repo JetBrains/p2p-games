@@ -25,6 +25,16 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    appName = "my-gdx-game"
+    gdxVersion = '1.9.3'
+    roboVMVersion = '2.1.0'
+    box2DLightsVersion = '1.4'
+    ashleyVersion = '1.7.0'
+    aiVersion = '1.8.0'
+}
+project.ext.assetsDir = new File("src/main/resoures/");
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:1.0.2-1"
     compile group: 'io.netty', name: 'netty-all', version: '4.0.4.Final'
@@ -36,6 +46,17 @@ dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
     compile group: 'org.mockito', name: 'mockito-all', version: '1.8.4'
+
+    //libgdx core
+    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+    compile "net.dermetfan.libgdx-utils:libgdx-utils:0.13.3"
+    compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.3"
+
+    //libgdx desktop
+    compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }

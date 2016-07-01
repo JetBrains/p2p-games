@@ -45,8 +45,8 @@ class Ticket(val ticketSize: Int){
         return marked == numbers
     }
 
-    fun getMD5(): String{
-        return DigestUtils.md5Hex(toString())
+    fun getSHA256(): String{
+        return DigestUtils.sha256Hex(toString())
     }
 
     override fun toString(): String {

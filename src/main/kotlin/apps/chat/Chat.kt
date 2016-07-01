@@ -1,6 +1,6 @@
 package apps.chat
 
-import apps.chat.GUI.ChatGUI
+import GUI.Chat.ChatGUI
 import broker.NettyGroupBroker
 import entity.ChatMessage
 import entity.Group

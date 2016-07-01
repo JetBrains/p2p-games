@@ -58,13 +58,13 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
         when(state){
             State.INIT -> { //Game just started. Generate initial ticket
                 state = State.GENERATE_TICKET
-                return ticket.getMD5()
+                return ticket.getSHA256()
             }
             State.GENERATE_TICKET -> { // Generate
                 val hashes = responses.map { x -> x.value }
                 if(hashes.distinct().size != hashes.size){
                     ticket = generateTicket()
-                    return ticket.getMD5()
+                    return ticket.getSHA256()
                 }
                 for(msg in responses){
                     initialTicketHashes[User(msg.user)] = msg.value
@@ -140,7 +140,7 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
         val validator = Ticket.getValidator(ticketSize, maxValue)
         if(validator(msg.verifier)){
             val ticket = Ticket.from(ticketSize, maxValue, msg.verifier)
-            if(initialTicketHashes[User(msg.user)] != ticket.getMD5()){
+            if(initialTicketHashes[User(msg.user)] != ticket.getSHA256()){
                 chat.sendMessage("[${msg.user.name}] Cheated!!! It was not his initial ticket")
             }
             if(!verifyTicket(ticket)){

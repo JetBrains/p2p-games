@@ -1,4 +1,4 @@
-package apps.chat.GUI
+package GUI.Chat
 
 import apps.chat.ChatManager
 import java.awt.BorderLayout
