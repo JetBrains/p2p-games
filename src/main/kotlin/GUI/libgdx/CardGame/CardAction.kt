@@ -8,7 +8,13 @@ import com.badlogic.gdx.utils.Array
  * Created by user on 7/1/16.
  */
 
-
+/**
+ * Class represents card translation
+ * Moves cards on table rotating them
+ * around Z axis - toAngle/From angle
+ * around Y axis - around Y axis
+ * (toRatation degrees)
+ */
 class CardAction(var parent: CardActions) {
     lateinit var card: Card
     val fromPosition = Vector3()
@@ -17,6 +23,7 @@ class CardAction(var parent: CardActions) {
     var toAngle: Float = 0.toFloat()
     var speed: Float = 0.toFloat()
     var alpha: Float = 0.toFloat()
+    var toRotation: Float = 0.toFloat()
 
     fun reset(card: Card) {
         this.card = card
@@ -33,10 +40,15 @@ class CardAction(var parent: CardActions) {
         }
         card.position.set(fromPosition).lerp(toPosition, alpha)
         card.angle = fromAngle + alpha * (toAngle - fromAngle)
+        card.rotation = toRotation*alpha
         card.update()
     }
 }
 
+/***
+ * Card action manager. Keeps all
+ * cards movements
+ */
 class CardActions {
     internal var actionPool: Pool<CardAction> = object : Pool<CardAction>() {
         override fun newObject(): CardAction {
@@ -56,12 +68,13 @@ class CardActions {
         }
     }
 
-    fun animate(card: Card, x: Float, y: Float, z: Float, angle: Float, speed: Float) {
+    fun animate(card: Card, x: Float, y: Float, z: Float, angle: Float, speed: Float, rotation: Float = 0f) {
         val action: CardAction = actionPool.obtain()
         action.reset(card)
         action.toPosition.set(x, y, z)
         action.toAngle = angle
         action.speed = speed
+        action.toRotation = rotation
         actions.add(action)
     }
 }
