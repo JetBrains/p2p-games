@@ -2,8 +2,8 @@ package apps.games.serious
 
 import apps.games.GameInputException
 import org.apache.commons.codec.digest.DigestUtils
-import random.randomInt
-import random.randomString
+import crypto.random.randomInt
+import crypto.random.randomString
 
 /**
  * Created by user on 6/27/16.
@@ -58,7 +58,7 @@ class Ticket(val ticketSize: Int){
      */
     companion object Factory{
         /**
-         * create random ticket
+         * create crypto.random ticket
          * @param ticketSize - size of ticket
          * @param maxValue - Maximum value of number in ticket
          */

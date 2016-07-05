@@ -5,12 +5,12 @@ import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameInputException
 import apps.games.GameManager
-import apps.games.primitives.RandomNumberGame
+import apps.games.primitives.protocols.RandomNumberGame
 import entity.ChatMessage
 import entity.Group
 import entity.User
 import proto.GameMessageProto
-import random.randomInt
+import crypto.random.randomInt
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
@@ -30,7 +30,7 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
      * GENERATE_TICKET - all players
      * generate distinct Lotto tickets
      *
-     * RUNNING - polling random numbers
+     * RUNNING - polling crypto.random numbers
      *
      * END - someone won
      */

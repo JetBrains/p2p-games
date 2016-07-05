@@ -2,8 +2,10 @@ package apps.games
 
 import apps.chat.Chat
 import apps.chat.ChatManager
-import apps.games.primitives.MooGame
-import apps.games.primitives.RandomNumberGame
+import apps.games.primitives.protocols.CardShuffleGame
+import apps.games.primitives.protocols.MooGame
+import apps.games.primitives.protocols.RandomDeckGame
+import apps.games.primitives.protocols.RandomNumberGame
 import apps.games.serious.Lotto
 import entity.Group
 import entity.User
@@ -14,7 +16,8 @@ import network.dispatching.EnumDispatcher
 import org.apache.commons.collections4.queue.CircularFifoQueue
 import proto.GameMessageProto
 import proto.GenericMessageProto
-import random.randomString
+import crypto.random.randomString
+import org.bouncycastle.jce.ECNamedCurveTable
 import java.util.*
 import java.util.concurrent.*
 
@@ -78,7 +81,8 @@ object GameManager {
             //TODO - respond to someone
             return null
         }
-        val game = Lotto(chat, group, msg.gameID)
+        val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
+        val game = RandomDeckGame(chat, group, msg.gameID, ECParams, 3)
         games[msg.gameID] = game
         if(group != chat.group){
             sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch", game.getVerifier())

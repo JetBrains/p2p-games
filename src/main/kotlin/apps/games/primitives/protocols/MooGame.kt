@@ -1,4 +1,4 @@
-package apps.games.primitives
+package apps.games.primitives.protocols
 
 import apps.chat.Chat
 import apps.games.Game

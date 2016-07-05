@@ -1,4 +1,4 @@
-package apps.games.primitives
+package apps.games.primitives.protocols
 
 import apps.chat.Chat
 import apps.games.Game
@@ -7,8 +7,10 @@ import entity.Group
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
 import proto.GameMessageProto
-import random.randomInt
-import random.randomString
+import crypto.random.randomBigInt
+import crypto.random.randomInt
+import crypto.random.randomString
+import java.math.BigInteger
 import java.util.*
 
 /**
@@ -16,14 +18,22 @@ import java.util.*
  */
 
 class RandomNumberGame(chat: Chat, group: Group,
-                       gameID: String, val minValue: Long = Int.MIN_VALUE.toLong(),
-                       val maxValue: Long = Int.MAX_VALUE.toLong()) : Game(chat, group, gameID) {
+                       gameID: String, minValue: BigInteger = BigInteger.valueOf(Int.MIN_VALUE.toLong()),
+                       maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong())) : Game(chat, group, gameID) {
     override val name: String
         get() = "Random Number Generator"
 
+    constructor(chat: Chat, group: Group,
+                gameID: String,
+                minValue: Long,
+                maxValue: Long) : this(chat, group, gameID, BigInteger.valueOf(minValue), BigInteger.valueOf(maxValue)){}
+
+    constructor(chat: Chat, group: Group, gameID: String, bits: Int): this(chat, group, gameID,
+                                                                          BigInteger.ZERO, BigInteger.valueOf(2).pow(bits)) { }
+
 
     private val offset = minValue
-    private val n: Long = maxValue - minValue + 1
+    private val n: BigInteger = maxValue - minValue + BigInteger.ONE
 
     private enum class State{
         INIT,
@@ -32,8 +42,8 @@ class RandomNumberGame(chat: Chat, group: Group,
         END
     }
         private var state: State = State.INIT
-    private val myRandom: Int = randomInt()
-    private var answer: Long = 0
+    private val myRandom: BigInteger = randomBigInt(n)
+    private var answer: BigInteger = BigInteger.ZERO
     private val salt: String = randomString(100)
     private val hashes: MutableSet<String> = mutableSetOf()
     private var agreed: Boolean = true
@@ -63,7 +73,7 @@ class RandomNumberGame(chat: Chat, group: Group,
                     chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "User data: ${msg.value}"))
                     answer += res
                     answer %= n
-                    if (answer < 0) {
+                    if (answer < BigInteger.ZERO) {
                         answer += n
                     }
                     answer += offset
@@ -94,7 +104,7 @@ class RandomNumberGame(chat: Chat, group: Group,
         return answer.toString()
     }
 
-    private fun checkAnswer(s: String): Int?{
+    private fun checkAnswer(s: String): BigInteger?{
         val split = s.split(" ")
         if(split.size != 2){
             return null
@@ -103,7 +113,7 @@ class RandomNumberGame(chat: Chat, group: Group,
         if(!hashes.contains(DigestUtils.sha256Hex(toSHA256))){
             return null
         }
-        return split[0].toInt()
+        return BigInteger(split[0])
     }
 
 }

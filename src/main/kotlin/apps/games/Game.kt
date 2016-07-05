@@ -1,7 +1,7 @@
 package apps.games
 
 import apps.chat.Chat
-import apps.games.primitives.RandomNumberGame
+import apps.games.primitives.protocols.RandomNumberGame
 import entity.ChatMessage
 import entity.Group
 import entity.User
