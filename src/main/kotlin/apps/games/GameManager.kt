@@ -3,11 +3,12 @@ package apps.games
 import apps.chat.Chat
 import apps.chat.ChatManager
 import apps.games.primitives.Deck
-import apps.games.primitives.protocols.CardShuffleGame
+import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.MooGame
 import apps.games.primitives.protocols.RandomDeckGame
 import apps.games.primitives.protocols.RandomNumberGame
 import apps.games.serious.Lotto
+import apps.games.serious.Preference
 import entity.Group
 import entity.User
 import network.ConnectionManager
@@ -75,15 +76,14 @@ object GameManager {
      * Someone initialized a game. Process request
      * and start local game
      */
-    fun initGame(msg: GameMessageProto.GameInitMessage): Future<Deck>? {
+    fun initGame(msg: GameMessageProto.GameInitMessage): Future<Unit>? {
         val group = Group(msg.participants)
         val chat = ChatManager.getChatOrNull(msg.chatID)
         if(chat == null){
             //TODO - respond to someone
             return null
         }
-        val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
-        val game = RandomDeckGame(chat, group, msg.gameID, ECParams, 3)
+        val game = Preference(chat, group, msg.gameID)
         games[msg.gameID] = game
         if(group != chat.group){
             sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch", game.getVerifier())

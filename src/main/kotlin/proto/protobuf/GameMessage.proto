@@ -31,6 +31,7 @@ message GameStateMessage {
     required string gameID = 2;
     required int32 timestamp = 3;
     optional string value = 4;
+    repeated bytes data = 5;
 }
 
 message GameEndMessage {

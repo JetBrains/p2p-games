@@ -1,5 +1,6 @@
 package apps.games
 
+import com.google.protobuf.ByteString
 import entity.ChatMessage
 import entity.User
 import proto.GameMessageProto
@@ -56,13 +57,14 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 10): Callable<T>{
     /**
      * broadcast result of game state computation
      */
-    @Synchronized fun sendResponse(response: String){
+    @Synchronized fun sendResponse(response: String, data: List<ByteArray>){
         val msg = GameMessageProto.GameStateMessage
                 .newBuilder()
                 .setGameID(game.gameID)
                 .setTimestamp(timestamp)
                 .setUser(User(Settings.hostAddress, game.chat.username).getProto())
-                .setValue(response).build()
+                .setValue(response)
+                .addAllData(data.map { x -> ByteString.copyFrom(x) })
         val gameMessage = GameMessageProto.GameMessage
                 .newBuilder()
                 .setType(GameMessageProto.GameMessage.Type.GAME_STATE_MESSAGE)
@@ -92,7 +94,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 10): Callable<T>{
      * Run game
      */
     override fun call(): T {
-        sendResponse(game.getInitialMessage())
+        sendResponse(game.getInitialMessage(), game.getData())
         while(!game.isFinished()){
             val responses: List<GameMessageProto.GameStateMessage>
             responses = getResponsePack()
@@ -106,7 +108,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 10): Callable<T>{
                 throw GameExecutionException("Failed to receive response from everyone")
             }
             val computed = game.evaluate(responses)
-            sendResponse(computed)
+            sendResponse(computed, game.getData())
 
             stateMessageQueue.addAll(nextStepMessages)
             nextStepMessages.clear()

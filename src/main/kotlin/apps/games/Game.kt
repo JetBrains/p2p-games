@@ -107,6 +107,15 @@ abstract class Game<T>(internal val chat: Chat, internal val group: Group, val g
 
     }
 
+    /**
+     * Some protocols might want to send some
+     * binary data. Then they need to override
+     * this function
+     */
+    open fun getData(): List<ByteArray>{
+        return listOf()
+    }
+
     override fun equals(other: Any?): Boolean{
         if (this === other) return true
         if (other?.javaClass != javaClass) return false

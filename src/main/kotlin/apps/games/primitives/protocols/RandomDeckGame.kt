@@ -60,7 +60,7 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
                     }
                     val point: ECPoint = ECParams.g.multiply(multiplier)
                     if(!deck.contains(point)){
-                        deck.set(set, point)
+                        deck.cards[set] = point
                         set ++
                     }
                 }

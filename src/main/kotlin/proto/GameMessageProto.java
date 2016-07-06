@@ -2314,6 +2314,19 @@ public final class GameMessageProto {
      */
     com.google.protobuf.ByteString
         getValueBytes();
+
+    /**
+     * <code>repeated bytes data = 5;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getDataList();
+    /**
+     * <code>repeated bytes data = 5;</code>
+     */
+    int getDataCount();
+    /**
+     * <code>repeated bytes data = 5;</code>
+     */
+    com.google.protobuf.ByteString getData(int index);
   }
   /**
    * Protobuf type {@code proto.GameStateMessage}
@@ -2397,6 +2410,14 @@ public final class GameMessageProto {
               value_ = bs;
               break;
             }
+            case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                data_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              data_.add(input.readBytes());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2405,6 +2426,9 @@ public final class GameMessageProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          data_ = java.util.Collections.unmodifiableList(data_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -2557,11 +2581,34 @@ public final class GameMessageProto {
       }
     }
 
+    public static final int DATA_FIELD_NUMBER = 5;
+    private java.util.List<com.google.protobuf.ByteString> data_;
+    /**
+     * <code>repeated bytes data = 5;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getDataList() {
+      return data_;
+    }
+    /**
+     * <code>repeated bytes data = 5;</code>
+     */
+    public int getDataCount() {
+      return data_.size();
+    }
+    /**
+     * <code>repeated bytes data = 5;</code>
+     */
+    public com.google.protobuf.ByteString getData(int index) {
+      return data_.get(index);
+    }
+
     private void initFields() {
       user_ = proto.EntitiesProto.User.getDefaultInstance();
       gameID_ = "";
       timestamp_ = 0;
       value_ = "";
+      data_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -2604,6 +2651,9 @@ public final class GameMessageProto {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeBytes(4, getValueBytes());
       }
+      for (int i = 0; i < data_.size(); i++) {
+        output.writeBytes(5, data_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -2628,6 +2678,15 @@ public final class GameMessageProto {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(4, getValueBytes());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < data_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(data_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getDataList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2759,6 +2818,8 @@ public final class GameMessageProto {
         bitField0_ = (bitField0_ & ~0x00000004);
         value_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
+        data_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -2807,6 +2868,11 @@ public final class GameMessageProto {
           to_bitField0_ |= 0x00000008;
         }
         result.value_ = value_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          data_ = java.util.Collections.unmodifiableList(data_);
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.data_ = data_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2837,6 +2903,16 @@ public final class GameMessageProto {
         if (other.hasValue()) {
           bitField0_ |= 0x00000008;
           value_ = other.value_;
+          onChanged();
+        }
+        if (!other.data_.isEmpty()) {
+          if (data_.isEmpty()) {
+            data_ = other.data_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensureDataIsMutable();
+            data_.addAll(other.data_);
+          }
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -3178,6 +3254,78 @@ public final class GameMessageProto {
   }
   bitField0_ |= 0x00000008;
         value_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.google.protobuf.ByteString> data_ = java.util.Collections.emptyList();
+      private void ensureDataIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          data_ = new java.util.ArrayList<com.google.protobuf.ByteString>(data_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getDataList() {
+        return java.util.Collections.unmodifiableList(data_);
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public int getDataCount() {
+        return data_.size();
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public com.google.protobuf.ByteString getData(int index) {
+        return data_.get(index);
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public Builder setData(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureDataIsMutable();
+        data_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public Builder addData(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureDataIsMutable();
+        data_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public Builder addAllData(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureDataIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, data_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes data = 5;</code>
+       */
+      public Builder clearData() {
+        data_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
         return this;
       }
@@ -4236,12 +4384,13 @@ public final class GameMessageProto {
       "\003\"\202\001\n\017GameInitMessage\022\031\n\004user\030\001 \002(\0132\013.pr" +
       "oto.User\022\020\n\010gameType\030\002 \002(\t\022\016\n\006gameID\030\003 \002",
       "(\t\022\016\n\006chatID\030\004 \002(\005\022\"\n\014participants\030\005 \002(\013" +
-      "2\014.proto.Group\"_\n\020GameStateMessage\022\031\n\004us" +
+      "2\014.proto.Group\"m\n\020GameStateMessage\022\031\n\004us" +
       "er\030\001 \002(\0132\013.proto.User\022\016\n\006gameID\030\002 \002(\t\022\021\n" +
-      "\ttimestamp\030\003 \002(\005\022\r\n\005value\030\004 \001(\t\"_\n\016GameE" +
-      "ndMessage\022\031\n\004user\030\001 \002(\0132\013.proto.User\022\016\n\006" +
-      "gameID\030\002 \002(\t\022\016\n\006reason\030\003 \001(\t\022\022\n\010verifier" +
-      "\030\004 \001(\t:\000B\031\n\005protoB\020GameMessageProto"
+      "\ttimestamp\030\003 \002(\005\022\r\n\005value\030\004 \001(\t\022\014\n\004data\030" +
+      "\005 \003(\014\"_\n\016GameEndMessage\022\031\n\004user\030\001 \002(\0132\013." +
+      "proto.User\022\016\n\006gameID\030\002 \002(\t\022\016\n\006reason\030\003 \001" +
+      "(\t\022\022\n\010verifier\030\004 \001(\t:\000B\031\n\005protoB\020GameMes" +
+      "sageProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4273,7 +4422,7 @@ public final class GameMessageProto {
     internal_static_proto_GameStateMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_GameStateMessage_descriptor,
-        new java.lang.String[] { "User", "GameID", "Timestamp", "Value", });
+        new java.lang.String[] { "User", "GameID", "Timestamp", "Value", "Data", });
     internal_static_proto_GameEndMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_proto_GameEndMessage_fieldAccessorTable = new
