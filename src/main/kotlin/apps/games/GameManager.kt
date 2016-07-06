@@ -7,8 +7,8 @@ import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.MooGame
 import apps.games.primitives.protocols.RandomDeckGame
 import apps.games.primitives.protocols.RandomNumberGame
-import apps.games.serious.Lotto
-import apps.games.serious.Preference
+import apps.games.serious.lotto.Lotto
+import apps.games.serious.preference.Preference
 import entity.Group
 import entity.User
 import network.ConnectionManager
@@ -47,7 +47,7 @@ object GameManager {
     /**
      * send initial request to start game
      * GameInitMessage will be sent to all
-     * users of Chat
+     * users of GUI
      * @param chat - where to conduct game
      * @param type - game type
      */
@@ -86,7 +86,7 @@ object GameManager {
         val game = Preference(chat, group, msg.gameID)
         games[msg.gameID] = game
         if(group != chat.group){
-            sendEndGame(msg.gameID, "Chat member lists of [${msg.user.name}] and [${chat.username}] mismatch", game.getVerifier())
+            sendEndGame(msg.gameID, "GUI member lists of [${msg.user.name}] and [${chat.username}] mismatch", game.getVerifier())
             return null
         }else{
             val runner = GameRunner(game, Int.MAX_VALUE)

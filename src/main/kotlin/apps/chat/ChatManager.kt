@@ -1,7 +1,7 @@
 package apps.chat
 
-import GUI.Chat.ChatGUI
-import GUI.Chat.ChatManagerGUI
+import apps.chat.GUI.ChatGUI
+import apps.chat.GUI.ChatManagerGUI
 import apps.games.GameManager
 import entity.ChatMessage
 import entity.User

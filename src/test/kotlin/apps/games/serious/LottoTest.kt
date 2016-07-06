@@ -2,6 +2,7 @@ package apps.games.serious
 
 import apps.chat.Chat
 import apps.games.GameManager
+import apps.games.serious.lotto.Lotto
 import broker.GroupBroker
 import broker.NettyGroupBroker
 import entity.ChatMessage

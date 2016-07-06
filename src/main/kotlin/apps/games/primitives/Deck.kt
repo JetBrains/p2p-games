@@ -104,4 +104,4 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52){
     }
 }
 
-class EncryptedDeck(val deck: Deck, val keys: List<BigInteger>)
+class EncryptedDeck(val shuffled: Deck, val keys: List<BigInteger>)

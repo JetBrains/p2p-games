@@ -4,7 +4,7 @@ import apps.chat.Chat
 import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.primitives.Deck
-import apps.games.serious.Lotto
+import apps.games.serious.lotto.Lotto
 import com.sun.xml.internal.fastinfoset.util.StringArray
 import crypto.random.randomECPoint
 import crypto.random.randomString
@@ -21,6 +21,19 @@ import java.util.concurrent.ExecutionException
 
 /**
  * Created by user on 7/5/16.
+ *
+ * Class describes protocol for generating common
+ * random deck of given number of cards(Size)
+ *
+ * Algorithm has three stages
+ *
+ * INIT - all players agree on deck(generate (Size) common
+ * random numbers using RandomNumberGame
+ *
+ * VALIDATE - compare deck hashes to ensure everyone has
+ * the same deck
+ *
+ * END - end of the protocol
  */
 
 

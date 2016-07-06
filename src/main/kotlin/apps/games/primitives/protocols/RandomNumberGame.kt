@@ -15,6 +15,24 @@ import java.util.*
 
 /**
  * Created by user on 6/27/16.
+ *
+ *
+ * Class describes protocol for generating common
+ * random number.
+ *
+ * Algorithm has four stages:
+ *
+ * INIT - protocol just started, each player generates his own
+ * random number and broadcasts it
+ *
+ * GENERATE - each player processes random numbers received from
+ * other players and computes their sum - that is common random
+ * number
+ *
+ * VALIDATE - all players verify, that everyone have the same
+ * result
+ *
+ * END - end the protocol
  */
 
 class RandomNumberGame(chat: Chat, group: Group,
@@ -41,7 +59,8 @@ class RandomNumberGame(chat: Chat, group: Group,
         VALIDATE,
         END
     }
-        private var state: State = State.INIT
+
+    private var state: State = State.INIT
     private val myRandom: BigInteger = randomBigInt(n)
     private var answer: BigInteger = BigInteger.ZERO
     private val salt: String = randomString(100)

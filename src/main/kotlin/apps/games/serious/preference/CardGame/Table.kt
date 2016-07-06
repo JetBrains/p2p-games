@@ -1,4 +1,4 @@
-package GUI.libgdx.CardGame
+package apps.games.serious.preference.CardGame
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g3d.Model

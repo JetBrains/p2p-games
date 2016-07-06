@@ -1,4 +1,4 @@
-package apps.games.serious
+package apps.games.serious.lotto
 
 import apps.games.GameInputException
 import org.apache.commons.codec.digest.DigestUtils
@@ -17,7 +17,7 @@ class Ticket(val ticketSize: Int){
     private val marked: MutableSet<Int> = mutableSetOf()
 
     /**
-     * Chat if ticket contains give number
+     * GUI if ticket contains give number
      * @param n - number to search
      */
     fun contains(n: Int): Boolean{
@@ -46,7 +46,7 @@ class Ticket(val ticketSize: Int){
     }
 
     fun getSHA256(): String{
-        return DigestUtils.sha256Hex(toString())
+        return org.apache.commons.codec.digest.DigestUtils.sha256Hex(toString())
     }
 
     override fun toString(): String {
@@ -62,10 +62,10 @@ class Ticket(val ticketSize: Int){
          * @param ticketSize - size of ticket
          * @param maxValue - Maximum value of number in ticket
          */
-        fun randomTicket(ticketSize: Int, maxValue: Int): Ticket{
-            val res = Ticket(ticketSize)
+        fun randomTicket(ticketSize: Int, maxValue: Int): apps.games.serious.lotto.Ticket {
+            val res = apps.games.serious.lotto.Ticket(ticketSize)
             while(res.numbers.size < ticketSize){
-                res.numbers.add(randomInt(maxValue))
+                res.numbers.add(crypto.random.randomInt(maxValue))
             }
             return res
         }
@@ -78,16 +78,16 @@ class Ticket(val ticketSize: Int){
          * @throws GameInputException - if provided list values
          * is inconsistent with other restrictions
          */
-        fun buildTicket(ticketSize: Int, maxValue: Int, values: List<Int>): Ticket {
-            val res = Ticket(ticketSize)
+        fun buildTicket(ticketSize: Int, maxValue: Int, values: List<Int>): apps.games.serious.lotto.Ticket {
+            val res = apps.games.serious.lotto.Ticket(ticketSize)
             for(value in values){
                 if(value > maxValue){
-                    throw GameInputException("Malformed game user input. Out of bound value found")
+                    throw apps.games.GameInputException("Malformed game user input. Out of bound value found")
                 }
                 res.numbers.add(value)
             }
             if(res.numbers.size != ticketSize){
-                throw GameInputException("Malformed game user input. Ticked length doesn't correspond to game rules")
+                throw apps.games.GameInputException("Malformed game user input. Ticked length doesn't correspond to game rules")
             }
             return res
         }
@@ -100,8 +100,8 @@ class Ticket(val ticketSize: Int){
          * @throws GameInputException - if provided list values
          * is inconsistent with other restrictions
          */
-        fun from(ticketSize: Int, maxValue: Int, s: String): Ticket {
-            if(!getValidator(ticketSize, maxValue)(s)){
+        fun from(ticketSize: Int, maxValue: Int, s: String): apps.games.serious.lotto.Ticket {
+            if(!(apps.games.serious.lotto.Ticket.Factory.getValidator(ticketSize, maxValue))(s)){
                 throw GameInputException("String $s is not a valid ticket")
             }
             val split: List<String> = s.split(" ")

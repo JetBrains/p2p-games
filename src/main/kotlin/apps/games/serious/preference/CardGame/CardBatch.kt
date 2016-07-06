@@ -1,4 +1,4 @@
-package GUI.libgdx.CardGame
+package apps.games.serious.preference.CardGame
 
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Mesh

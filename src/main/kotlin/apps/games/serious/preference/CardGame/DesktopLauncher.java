@@ -1,6 +1,6 @@
-package GUI.libgdx;
+package apps.games.serious.preference.CardGame;
 
-import GUI.libgdx.CardGame.CardGame;
+import apps.games.serious.preference.CardGame.CardGame;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 

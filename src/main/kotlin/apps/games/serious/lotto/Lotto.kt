@@ -1,4 +1,4 @@
-package apps.games.serious
+package apps.games.serious.lotto
 
 import apps.chat.Chat
 import apps.games.Game
@@ -192,7 +192,7 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
     /**
      * get ticket from user
      */
-    private fun generateTicket(): Ticket{
+    private fun generateTicket(): Ticket {
         val validator = Ticket.getValidator(ticketSize, maxValue)
         val s = chat.getUserInput("Please generate ticket: type in five values non greater than 30", validator)
         return Ticket.from(ticketSize, maxValue, s)

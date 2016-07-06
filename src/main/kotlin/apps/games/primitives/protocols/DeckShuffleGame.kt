@@ -14,6 +14,20 @@ import java.math.BigInteger
 
 /**
  * Created by user on 7/4/16.
+ *
+ * Class describes protocol for Shuffling privided
+ * deck
+ *
+ * Algorithm has four stages
+ *
+ * INIT - all players ensure, everyone has the same deck
+ *
+ * SHUFFLE, LOCK - create shuffle deck using algorithms from
+ * http://www.clee.kr/thesis.pdf
+ *
+ * VALIDATE - ensure everyone got the same result
+ *
+ * END - finish the game
  */
 
 
