@@ -12,7 +12,7 @@ import java.util.*
  */
 
 
-class Deck(val ECParams: ECParameterSpec,val size: Int = 52){
+class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
     val cards = Array<ECPoint>(size, { i -> ECParams.g})
 
     /**
@@ -75,13 +75,31 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52){
      * @param keys - Collection of keys
      * to decrypt cards
      */
-    fun dectyptSeparate(keys: Collection<BigInteger>){
+    fun decryptSeparate(keys: Collection<BigInteger>){
         if(keys.size < size){
             throw IndexOutOfBoundsException("Insufficient number of keys provided")
         }
         for(i in 0..size-1){
             cards[i] = cards[i].multiply(keys.elementAt(i).modInverse(ECParams.n))
         }
+    }
+
+    /**
+     * encrypt a single card with give key
+     * @param n - id of card to decrypt
+     * @param key - encryption key
+     */
+    fun encryptCardWithKey(n: Int, key: BigInteger){
+        cards[n] = cards[n].multiply(key)
+    }
+
+    /**
+     * Decrypt a single card with give key
+     * @param n - id of card to decrypt
+     * @param key - decryption key
+     */
+    fun decryptCardWithKey(n: Int, key: BigInteger){
+        cards[n] = cards[n].multiply(key.modInverse(ECParams.n))
     }
 
     override fun equals(other: Any?): Boolean{
@@ -102,6 +120,14 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52){
     override fun toString(): String{
         return "Deck(cards=${Arrays.toString(cards)})"
     }
+
+    override public fun clone(): Deck {
+        val res = Deck(ECParams, size)
+        for(i in 0..size-1){
+            res.cards[i] = cards[i]
+        }
+        return res
+    }
 }
 
-class EncryptedDeck(val shuffled: Deck, val keys: List<BigInteger>)
+data class EncryptedDeck(val deck: Deck, val keys: List<BigInteger>)

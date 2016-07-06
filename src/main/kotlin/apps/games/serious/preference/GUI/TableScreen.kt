@@ -1,4 +1,4 @@
-package apps.games.serious.preference.CardGame
+package apps.games.serious.preference.GUI
 
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
@@ -14,13 +14,16 @@ import com.badlogic.gdx.graphics.g3d.loader.ObjLoader
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
+import com.badlogic.gdx.math.Vector3
+import java.util.concurrent.BlockingDeque
+import java.util.concurrent.ConcurrentLinkedDeque
 
 /**
  * Created by user on 7/1/16.
  */
 
 
-class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
+class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
 
     private val cam3d = PerspectiveCamera()
@@ -33,6 +36,10 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
     private val environment = Environment()
 
     private var selecting: Card? = null
+
+    //queue of cards to spawn: Card - what to spawn
+    //Vector3 - where
+    val spawnQueue = ConcurrentLinkedDeque<CardTarget>()
 
     val deck = CardDeck(atlas, 2)
     val cards: CardBatch
@@ -72,8 +79,6 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
 
 
     private var spawnTimer = -1f
-    private var playerId = 0
-    private var toSpawn: Int = table.players[playerId].hand.MAX_HAND_SIZE
 
     /**
      * Render everything. Also in charge of spawning cards on timer
@@ -84,7 +89,7 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         camController.update()
-        if(toSpawn > 0){
+        if(spawnQueue.isNotEmpty()){
             if (spawnTimer < 0) {
                 if (Gdx.input.justTouched())
                     spawnTimer = 1f
@@ -92,16 +97,10 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
                 spawnTimer -= delta
                 if(spawnTimer < 0){
                     spawnTimer = 0.25f
-                    giveCard(table.players[playerId])
-                    toSpawn --
+                    spawnCard()
                 }
             }
 
-        }else{
-            playerId ++
-            if(playerId < table.players.size){
-                toSpawn = table.players[playerId].hand.MAX_HAND_SIZE
-            }
         }
 
 
@@ -114,7 +113,19 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
 
     }
 
+    @Synchronized fun dealPlayer(player: Player, card: Card){
+        card.position.set(table.deckPosition)
+        val handPos = player.hand.nextCardPosition()
+        val angle = player.getAngle()
+        player.hand.size ++
+        card.angle = 180f
+        cards.add(card)
+        spawnQueue.add(CardTarget(card, handPos, angle))
+    }
 
+    @Synchronized fun dealPlayer(player: Int, card: Card){
+        dealPlayer(table.players[player], card)
+    }
 
 
     override fun resize(width: Int, height: Int) {
@@ -132,37 +143,23 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
     }
 
 
-    //TODO REMOVE - testing purposes only
-    var pipIdx = 0
-    var suitIdx = 1
-    var spawnZ = 0f
-
     /**
      * Spawn a card from the deck and give it to player
      */
-    fun giveCard(player: Player) {
+    fun spawnCard() {
         //sample code
-        if (++pipIdx >= Pip.values().size) {
-            pipIdx = 0
-            suitIdx = (suitIdx + 1) % Suit.values().size
-        }
-        val suit = Suit.values()[suitIdx]
-        val pip = Pip.values()[pipIdx]
+        val record = spawnQueue.pollFirst()
+        val card = record.card
+        val suit = card.suit
+        val pip = card.pip
         Gdx.app.log("Spawn", suit.type + " - " + pip)
 
         //spawn card from deck
-        val card = deck.getCard(suit, pip)
-        card.position.set(table.deckPosition)
-        card.angle = 180f
-        cards.add(card)
-        spawnZ += 0.01f
-        if(spawnZ*100 > player.hand.MAX_HAND_SIZE){
-            spawnZ = 0.01f
-        }
-        val handPos = player.hand.nextCardPosition()
-        val angle = player.getAngle()
-        actions.animate(card, handPos.x, handPos.y, handPos.z + spawnZ, 0f, 1f, angle)
-        player.hand.size ++
+
+        val pos = record.position
+
+        actions.animate(card, pos.x, pos.y, pos.z , 0f, 1f, record.rotation)
+
     }
 
 
@@ -185,7 +182,7 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
      */
     private fun setSelected(selecting: Card) {
         val pos = table.getMainPlayer().getCardspace()
-        actions.animate(selecting, pos.x, pos.y, 0.01f, 180f, 1f, 0f)
+        actions.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f)
     }
 
     /**
@@ -257,6 +254,6 @@ class CardGameScreen(val game: CardGame): InputAdapter(), Screen {
         atlas.dispose()
         cards.dispose()
     }
-
-
 }
+
+data class CardTarget(val card: Card, val position: Vector3, val rotation: Float)

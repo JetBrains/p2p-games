@@ -1,4 +1,4 @@
-package apps.games.serious.preference.CardGame
+package apps.games.serious.preference.GUI
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g3d.Model
@@ -99,6 +99,7 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val player: Player
         val normal = Vector3(player.direction).crs(0f, 0f, 1f).nor()
         val step = MAX_HAND_WIDTH / MAX_HAND_SIZE
         result.add(normal.scl(step*size - 1.4f))
+        result.z += (size + 1)*0.01f
         return result
     }
 }
