@@ -24,12 +24,13 @@ import java.util.concurrent.ExecutionException
  */
 
 
-class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec, val deckSize: Int = 52) : Game(chat, group, gameID){
+class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec, val deckSize: Int = 52) : Game<Deck>(chat, group, gameID){
     override val name: String
         get() = "Random Deck Generator"
 
     private enum class State{
         INIT,
+        VALIDATE,
         END
     }
 
@@ -39,7 +40,7 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
         return state == State.END
     }
 
-    private val cards = Deck(ECParams, deckSize)
+    private val deck = Deck(ECParams, deckSize)
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         when(state){
@@ -47,9 +48,9 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
                 var set: Int = 0
                 while(set < deckSize) {
                     val rngFuture = runSubGame(RandomNumberGame(chat, group.clone(), subGameID(), BigInteger.ONE, ECParams.n))
-                    val result: String
+                    val multiplier: BigInteger
                     try {
-                        result = rngFuture.get()
+                        multiplier = rngFuture.get()
                     } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
                         state = State.END
                         return ""
@@ -57,29 +58,32 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
                         chat.showMessage(ChatMessage(chat, e.message ?: "Something went wrong"))
                         throw GameExecutionException("Subgame failed")
                     }
-                    val multiplier: BigInteger
-                    try {
-                        multiplier = BigInteger(result)
-                    } catch(e: Exception) {
-                        throw GameExecutionException("Subgame returned unexpected result")
-                    }
                     val point: ECPoint = ECParams.g.multiply(multiplier)
-                    if(!cards.contains(point)){
-                        cards.set(set, point)
-                        set ++;
+                    if(!deck.contains(point)){
+                        deck.set(set, point)
+                        set ++
                     }
+                }
+                state = State.VALIDATE
+                return deck.hashCode().toString()
+            }
+            State.VALIDATE -> {
+                val hashes = responses.map { x -> x.value }
+                if(hashes.distinct().size != 1){
+                    throw GameExecutionException("Someone has a different deck")
                 }
                 state = State.END
             }
-            //TODO - maybe add validation. I.E - sort points, compute hash and send it
-            State.END -> {
-                return ""
-            }
+            State.END -> { }
         }
         return ""
     }
 
     override fun getFinalMessage(): String {
-        return "Everything appears to be OK. My deck is: \n ${cards.toString()}"
+        return "Everything appears to be OK. My deck is: \n ${deck.toString()}"
+    }
+
+    override fun getResult(): Deck {
+        return deck
     }
 }

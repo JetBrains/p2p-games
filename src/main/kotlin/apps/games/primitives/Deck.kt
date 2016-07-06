@@ -9,8 +9,8 @@ import java.util.*
  */
 
 
-class Deck(ECParams: ECParameterSpec, maxDeckSize: Int = 52){
-    private val cards = Array<ECPoint>(maxDeckSize, {i -> ECParams.g})
+class Deck(val ECParams: ECParameterSpec,val size: Int = 52){
+    private val cards = Array<ECPoint>(size, { i -> ECParams.g})
 
     fun contains(card: ECPoint): Boolean{
         return cards.contains(card)

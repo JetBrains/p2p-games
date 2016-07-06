@@ -11,6 +11,7 @@ import entity.Group
 import entity.User
 import proto.GameMessageProto
 import crypto.random.randomInt
+import java.math.BigInteger
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
@@ -19,7 +20,7 @@ import java.util.concurrent.Future
  * Created by user on 6/27/16.
  */
 
-class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, val maxValue:Int = 30) : Game(chat, group, gameID) {
+class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, val maxValue:Int = 30) : Game<Unit>(chat, group, gameID) {
     override val name: String
         get() = "Lotto"
 
@@ -35,13 +36,14 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
      * END - someone won
      */
     private enum class State{
+
         INIT,
         GENERATE_TICKET,
         RUNNING,
         END
     }
-
     private var state: State = State.INIT
+
     private var ticket: Ticket = generateTicket()
     private val initialTicketHashes: MutableMap<User, String> = mutableMapOf()
     val unused: MutableList<Int> = mutableListOf()
@@ -50,7 +52,6 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
             unused.add(i)
         }
     }
-
     /**
      * Simple DFA describes Lotto game
      */
@@ -73,7 +74,7 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
             }
             State.RUNNING -> {
                 val rngFuture = runSubGame(RandomNumberGame(chat, group.clone(), subGameID(), 1, maxValue.toLong()))
-                val result: String
+                val result: BigInteger
                 try{
                     result = rngFuture.get()
                 }catch(e: CancellationException){ // Task was cancelled - means that we need to stop. NOW!
@@ -195,5 +196,12 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
         val validator = Ticket.getValidator(ticketSize, maxValue)
         val s = chat.getUserInput("Please generate ticket: type in five values non greater than 30", validator)
         return Ticket.from(ticketSize, maxValue, s)
+    }
+
+    /**
+     * empty result
+     */
+    override fun getResult() {
+        return Unit
     }
 }

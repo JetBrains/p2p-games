@@ -2,6 +2,7 @@ package apps.games
 
 import apps.chat.Chat
 import apps.chat.ChatManager
+import apps.games.primitives.Deck
 import apps.games.primitives.protocols.CardShuffleGame
 import apps.games.primitives.protocols.MooGame
 import apps.games.primitives.protocols.RandomDeckGame
@@ -27,8 +28,8 @@ import java.util.concurrent.*
  */
 
 object GameManager {
-    val games: MutableMap<String, Game> = mutableMapOf()
-    val runners: MutableMap<String, GameRunner> = mutableMapOf()
+    val games: MutableMap<String, Game<*>> = mutableMapOf()
+    val runners: MutableMap<String, GameRunner<*>> = mutableMapOf()
     internal val LAG_MESSAGE_LIMIT = 100
     internal val threadPool: ExecutorService = Executors.newCachedThreadPool()
     internal val unprocessed = CircularFifoQueue<GameMessageProto.GameStateMessage>(LAG_MESSAGE_LIMIT)
@@ -69,12 +70,12 @@ object GameManager {
         chat.groupBroker.broadcastAsync(chat.group, finalMessage)
     }
 
-    //todo merge calls with initsubgame
+    //todo game choise
     /**
      * Someone initialized a game. Process request
      * and start local game
      */
-    fun initGame(msg: GameMessageProto.GameInitMessage): Future<String>? {
+    fun initGame(msg: GameMessageProto.GameInitMessage): Future<Deck>? {
         val group = Group(msg.participants)
         val chat = ChatManager.getChatOrNull(msg.chatID)
         if(chat == null){
@@ -99,7 +100,7 @@ object GameManager {
     /**
      * Init local game. Do not send any requests
      */
-    fun initSubGame(game: Game): Future<String>{
+    fun <T>initSubGame(game: Game<T>): Future<T>{
         games[game.gameID] = game
         val runner = GameRunner(game)
         resolveLag(runner)
@@ -112,7 +113,7 @@ object GameManager {
      * based on it's gameId @see Game
      * @param game - game to be removed
      */
-    fun deleteGame(game:Game){
+    fun deleteGame(game:Game<*>){
         synchronized(games){
             synchronized(runners){
                 games.remove(game.gameID)
@@ -126,7 +127,7 @@ object GameManager {
      * has ended for us. So we acknowledge everyone about it
      */
     fun sendEndGame(gameID: String, reason: String, verifier: String?){
-        val game: Game? = games[gameID]
+        val game: Game<*>? = games[gameID]
         if(game != null){
             val endMessage = GameMessageProto.GameEndMessage
                     .newBuilder()
@@ -153,7 +154,7 @@ object GameManager {
         threadPool.shutdownNow()
     }
 
-    private fun resolveLag(gameRunner: GameRunner){
+    private fun resolveLag(gameRunner: GameRunner<*>){
         for(msg in unprocessed){
             if(msg.gameID == gameRunner.game.gameID){
                 gameRunner.stateMessageQueue.add(msg)

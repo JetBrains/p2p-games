@@ -19,7 +19,7 @@ import java.util.*
 
 class RandomNumberGame(chat: Chat, group: Group,
                        gameID: String, minValue: BigInteger = BigInteger.valueOf(Int.MIN_VALUE.toLong()),
-                       maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong())) : Game(chat, group, gameID) {
+                       maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong())) : Game<BigInteger>(chat, group, gameID) {
     override val name: String
         get() = "Random Number Generator"
 
@@ -100,8 +100,8 @@ class RandomNumberGame(chat: Chat, group: Group,
         }
     }
 
-    override fun getResult(): String {
-        return answer.toString()
+    override fun getResult(): BigInteger {
+        return answer
     }
 
     private fun checkAnswer(s: String): BigInteger?{

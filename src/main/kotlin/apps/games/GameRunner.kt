@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
  */
 
 
-class GameRunner(val game: Game, val maxRetires:Int = 10): Callable<String>{
+class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 10): Callable<T>{
 
     val stateMessageQueue: BlockingDeque<GameMessageProto.GameStateMessage> = LinkedBlockingDeque()
     val endGameMessageQueue: BlockingDeque<GameMessageProto.GameEndMessage> = LinkedBlockingDeque()
@@ -34,7 +34,7 @@ class GameRunner(val game: Game, val maxRetires:Int = 10): Callable<String>{
         while(pending.isNotEmpty() && failures < retries){
             val msg = stateMessageQueue.pollFirst(500, TimeUnit.MILLISECONDS)
             if(msg == null){
-                failures ++;
+                failures ++
                 continue
             }
             if(msg.timestamp == timestamp){
@@ -91,13 +91,13 @@ class GameRunner(val game: Game, val maxRetires:Int = 10): Callable<String>{
     /**
      * Run game
      */
-    override fun call(): String? {
+    override fun call(): T {
         sendResponse(game.getInitialMessage())
         while(!game.isFinished()){
             val responses: List<GameMessageProto.GameStateMessage>
             responses = getResponsePack()
             if(game.isFinished()){
-                break;
+                break
             }
             if(responses.size < game.group.users.size){
                 if(game.isFinished()){

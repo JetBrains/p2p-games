@@ -14,9 +14,9 @@ import java.util.concurrent.Future
  * @param group - group of active game participants(can ve cahnged during game)
  */
 
-abstract class Game(internal val chat: Chat, internal val group: Group, val gameID: String){
+abstract class Game<T>(internal val chat: Chat, internal val group: Group, val gameID: String){
     private var subGameCounter: Int = 0
-    private var nestedGames: MutableList<GameResult> = mutableListOf()
+    private var nestedGames: MutableList<GameResult<*>> = mutableListOf()
     /**
      * Evaluate next game state based on responses from everyone
      * @param responses - results of previous state of all players
@@ -59,9 +59,7 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
      * Some games might have endgame result.
      * E.G. reusable primitives
      */
-    open fun getResult(): String{
-        return ""
-    }
+    abstract fun getResult(): T
 
     /**
      * Contains of first message sent to other
@@ -86,8 +84,8 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
      * Init subgame.
      * @param game - game to start
      */
-    fun runSubGame(game: Game): Future<String> {
-        val result: Future<String> = GameManager.initSubGame(game)
+    fun <S> runSubGame(game: Game<S>): Future<S> {
+        val result: Future<S> = GameManager.initSubGame(game)
         synchronized(nestedGames){
             nestedGames.add(GameResult(game, result))
         }
@@ -113,7 +111,7 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
-        other as Game
+        other as Game<*>
 
         if (gameID != other.gameID) return false
 
@@ -128,4 +126,4 @@ abstract class Game(internal val chat: Chat, internal val group: Group, val game
 /**
  * class for representation of game results(e.g. for nested games)
  */
-class GameResult(val game: Game, val result: Future<String>){}
+class GameResult<T>(val game: Game<T>, val result: Future<T>){}
