@@ -1,5 +1,7 @@
 package apps.games.serious.preference.GUI
 
+import apps.games.serious.preference.Pip
+import apps.games.serious.preference.Suit
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
@@ -11,38 +13,7 @@ import com.badlogic.gdx.math.Vector3
  * Created by user on 7/1/16.
  */
 
-/**
- * Card Suit representation
- */
-enum class Suit(val type: String, val index: Int){
-    UNKNOWN("unknown", -1),
-    CLUBS("clubs", 0),
-    DIAMONDS("diamonds", 1),
-    HEARTS("hearts", 2),
-    SPADES("spades", 3)
-}
 
-/**
- * Card Pip representation
- */
-enum class Pip(val value: Int){
-    UNKNOWN(-1),
-    ACE(1),
-    TWO(2),
-    THREE(3),
-    FOUR(4),
-    FIVE(5),
-    SIX(6),
-    SEVEN(7),
-    EIGHT(8),
-    NINE(9),
-    TEN(10),
-    JACK(11),
-    QUEEN(12),
-    KING(13);
-
-    val index = value - 1
-}
 
 /**
  * We need this to get meshes of cards

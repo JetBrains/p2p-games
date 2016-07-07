@@ -1,7 +1,11 @@
 package apps.games.serious.preference.GUI
 
+import apps.games.serious.preference.Pip
+import apps.games.serious.preference.Suit
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Game
+import com.badlogic.gdx.backends.lwjgl.LwjglApplication
+import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.ModelBatch
@@ -23,7 +27,24 @@ class PreferenceGame : Game() {
         loaded = true
     }
 
-    fun dealCard(player: Int, cardID: Int){
+    /**
+     * Give a player with specified ID
+     * a card from a 32 card deck
+     */
+    fun dealPlayer(player: Int, cardID: Int){
+        tableScreen.dealPlayer(player, getCardById(cardID))
+    }
+
+    /**
+     * Deal a common card. For example
+     * TALON in Prefenernce or cards
+     * in Texas Holdem Poker
+     */
+    fun dealCommon(cardID: Int){
+        tableScreen.dealCommon(getCardById(cardID))
+    }
+
+    private fun getCardById(cardID: Int): Card{
         val card: Card
         if(cardID == -1){
             card = tableScreen.deck.getCard(Suit.UNKNOWN, Pip.UNKNOWN)
@@ -37,8 +58,7 @@ class PreferenceGame : Game() {
             card = tableScreen.deck.getCard(Suit.values().first { x -> x.index == suitId },
                     Pip.values().first{x -> x.index == pipId})
         }
-
-        tableScreen.dealPlayer(player, card)
+        return card
     }
 
     override fun render() {
@@ -50,4 +70,14 @@ class PreferenceGame : Game() {
         batch.dispose()
         font.dispose()
     }
+}
+
+fun main(args: Array<String>) {
+    val config = LwjglApplicationConfiguration()
+    config.width = 1024
+    config.height = 1024
+    config.forceExit = false
+    val gameGUI = PreferenceGame()
+    LwjglApplication(gameGUI, config)
+    println("6 \u2660")
 }

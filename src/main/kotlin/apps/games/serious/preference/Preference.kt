@@ -30,7 +30,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
     private enum class State{
         INIT,
         ROUND_INIT,
-        DECRYPT,
+        DECRYPT_HAND,
         END
     }
 
@@ -40,11 +40,12 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
     private lateinit var gameGUI: PreferenceGame
 
     private val DECK_SIZE = 32
+    //TALON - always last two cards of the deck
     private val TALON = 2
 
     //to sorted array to preserve order
     private val playerOrder: List<User> = group.users.sortedBy { x -> x.name }
-    private val id = playerOrder.indexOf(chat.me())
+    private val playerID = playerOrder.indexOf(chat.me())
 
     //Required - three players.
     //TODO - add checker for number of players
@@ -93,40 +94,24 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
                 for(i in 0..deck.originalDeck.size-1-TALON){
                     val holder = i % N
                     cardHolders[i] = holder
-                    if(holder != id){
-                        resultKeys.add(deck.encryptedDeck.keys[i])
+                    if(holder != playerID){
+                        resultKeys.add(deck.encrypted.keys[i])
                     }
                 }
-                state = State.DECRYPT
+                state = State.DECRYPT_HAND
                 return resultKeys.joinToString(" ")
             }
-            State.DECRYPT -> {
-                deck.encryptedDeck.deck.decryptSeparate(deck.encryptedDeck.keys)
+            State.DECRYPT_HAND -> {
+                deck.encrypted.deck.decryptSeparate(deck.encrypted.keys)
                 for(msg in responses){
                     // do not process messages from self
                     if(User(msg.user) == chat.me()){
                         continue
                     }
-                    val keys = msg.value.split(" ")
-                    val positions = mutableListOf<Int>()
-                    for(key in cardHolders.keys){
-                        if(cardHolders[key] != getUserID(User(msg.user))){
-                            positions.add(key)
-                        }
-                    }
-                    if(positions.size != keys.size){
-                        throw GameExecutionException("Someone failed to provide correct keys for encrypted cards")
-                    }
-                    for(i in 0..positions.size-1){
-                        val position = positions[i]
-                        val key = BigInteger(keys[i])
-                        deck.encryptedDeck.deck.decryptCardWithKey(position, key)
-                        val card = deck.encryptedDeck.deck.cards[position]
-                        if(deck.originalDeck.contains(card)){
-                            gameGUI.dealCard(0, deck.originalDeck.cards.indexOf(card))
-                        }
-                    }
+                    val keys = msg.value.split(" ").map { x -> BigInteger(x) }
+                    decryptWithUserKeys(User(msg.user), keys)
                 }
+                dealHands()
                 state = State.END
             }
             State.END -> {}
@@ -175,6 +160,58 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
         }
         return ShuffledDeck(deck, shuffled)
     }
+
+    /**
+     * Take a list of keys sent by user,
+     * keys should correspond to cards, that are not
+     * by that user. I.E. If player holds cards
+     * 1, 4, 7 in shuffled deck, keys - contains
+     * key for every card, that is not in TALON,
+     * and are not possesed by that user
+     */
+    private fun decryptWithUserKeys(user: User, keys: List<BigInteger>){
+        val positions = mutableListOf<Int>()
+        for(key in cardHolders.keys){
+            if(cardHolders[key] != getUserID(user)){
+                positions.add(key)
+            }
+        }
+        if(positions.size != keys.size){
+            throw GameExecutionException("Someone failed to provide correct keys for encrypted cards")
+        }
+        for(i in 0..positions.size-1){
+            val position = positions[i]
+            deck.encrypted.deck.decryptCardWithKey(position, keys[i])
+        }
+    }
+
+    /**
+     * Give each player cards, that
+     * belong to his hand(GUI)
+     */
+    private fun dealHands(){
+        gameGUI.tableScreen.showDeck()
+        for(i in 0..DECK_SIZE-TALON-1){
+            val cardID: Int
+            if(cardHolders[i] == playerID){
+                cardID = deck.originalDeck.cards.indexOf(deck.encrypted.deck.cards[i])
+            }else{
+                cardID = -1
+            }
+            var currentPlayerId: Int = cardHolders[i]?: throw GameExecutionException("Invalid card distribution")
+            currentPlayerId -= playerID
+            if(currentPlayerId < 0){
+                currentPlayerId += N
+            }
+            gameGUI.dealPlayer(currentPlayerId, cardID)
+        }
+        //Deal unknown Talon cards
+        for(i in 1..TALON){
+            gameGUI.dealCommon(-1)
+        }
+        gameGUI.tableScreen.hideDeck()
+    }
+
 }
 
-data class ShuffledDeck(val originalDeck: Deck,val encryptedDeck: EncryptedDeck)
+data class ShuffledDeck(val originalDeck: Deck,val encrypted: EncryptedDeck)

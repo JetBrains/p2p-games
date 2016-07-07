@@ -1,5 +1,7 @@
 package apps.games.serious.preference.GUI
 
+import apps.games.serious.preference.Pip
+import apps.games.serious.preference.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.Sprite
@@ -44,8 +46,12 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     val deck = CardDeck(atlas, 2)
     val cards: CardBatch
     var actions = CardActions()
+    val topDeck: Card
+    var showDeck = true
+    val hud = BiddingOverlay()
 
     init{
+        hud.create()
         //Init cards
         val material = Material(
                 TextureAttribute.createDiffuse(atlas.textures.first()),
@@ -61,19 +67,20 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
 
 
         //init deck placement
-        val card = deck.getCard(Suit.UNKNOWN, Pip.UNKNOWN)
-        card.position.set(table.deckPosition)
-        card.angle = 180f
-        card.update()
-        cards.add(card)
+        topDeck = deck.getCard(Suit.UNKNOWN, Pip.UNKNOWN)
+        topDeck.position.set(table.deckPosition)
+        topDeck.angle = 180f
+        topDeck.update()
+        cards.add(topDeck)
 
         //Init Envirenment
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
         environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -.4f, -.4f, -.4f))
 
+
         //Init Camera
         camController.setVelocity(10f)
-        Gdx.input.inputProcessor = InputMultiplexer(this, camController)
+        Gdx.input.inputProcessor = InputMultiplexer(this, hud.stage, camController)
 
     }
 
@@ -96,7 +103,7 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
             } else{
                 spawnTimer -= delta
                 if(spawnTimer < 0){
-                    spawnTimer = 0.25f
+                    spawnTimer = 0.125f
                     spawnCard()
                 }
             }
@@ -110,9 +117,14 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         game.batch.render(cards, environment)
         game.batch.render(table.tableTop, environment)
         game.batch.end()
-
+        hud.render(getCam())
     }
 
+    /**
+     * Deal specified card to a specified player
+     * @param player - receives the card
+     * @param card - card to give
+     */
     @Synchronized fun dealPlayer(player: Player, card: Card){
         card.position.set(table.deckPosition)
         val handPos = player.hand.nextCardPosition()
@@ -123,12 +135,49 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         spawnQueue.add(CardTarget(card, handPos, angle))
     }
 
+    /**
+     * Deal specified card to a player with a give playerId
+     * @param player - id of the player that receives the card
+     * @param card - card to give
+     */
     @Synchronized fun dealPlayer(player: Int, card: Card){
         dealPlayer(table.players[player], card)
     }
 
 
+    /**
+     * Deal a card common to all players(e.g.
+     * TALON in Preference, or cards in texas holdem poker)
+     */
+    @Synchronized fun dealCommon(card: Card){
+        card.position.set(table.deckPosition)
+        val handPos = table.commonHand.nextCardPosition()
+        val angle = table.getMainPlayer().getAngle()
+        table.commonHand.size ++
+        card.angle = 180f
+        cards.add(card)
+        spawnQueue.add(CardTarget(card, handPos, angle))
+    }
+
+    @Synchronized fun hideDeck(){
+        if(showDeck){
+            spawnQueue.add(CardTarget(topDeck, Vector3(topDeck.position).add(0f, 0f, -1f), 0f))
+            showDeck = true
+        }
+
+    }
+
+    @Synchronized fun showDeck(){
+        if(!showDeck){
+            spawnQueue.add(CardTarget(topDeck, Vector3(topDeck.position).add(0f, 0f, 1f), 0f))
+            showDeck = false
+        }
+
+    }
+
+
     override fun resize(width: Int, height: Int) {
+        hud.resize(width, height)
         cam3d.viewportWidth = width.toFloat()
         cam3d.viewportHeight = height.toFloat()
         cam3d.position.set(0f, -12f, 12f) //experimental constants

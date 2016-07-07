@@ -22,7 +22,8 @@ class Table(val playersCount: Int, val handSize: Int): Disposable{
     val MAX_PLAYERS = 8
     val playerSpots: Array<Player>
     val players: Array<Player>
-
+    //cards, that belong to noone, but still on the table
+    val commonHand: Hand
     init{
         val angle = 360f / MAX_PLAYERS
         playerSpots = Array(MAX_PLAYERS, {i -> Player(Vector3(-1.2f, -8.3f, 0f), Vector3(0f, 1f, 0f), handSize, 0, this)})
@@ -32,6 +33,7 @@ class Table(val playersCount: Int, val handSize: Int): Disposable{
             playerSpots[i] = Player(initPos.rotate(Vector3.Z, - angle*i), initVec.rotate(Vector3.Z, - angle*i), handSize, i, this)
         }
         players = Array(playersCount, {i -> playerSpots[i*(MAX_PLAYERS/playersCount)]})
+        commonHand = Hand(Vector3(-1f, -1f, 0f), 6, getMainPlayer().direction, 6f)
     }
 
     init {
@@ -49,13 +51,14 @@ class Table(val playersCount: Int, val handSize: Int): Disposable{
     }
 
 
+
     override fun dispose() {
         tableTopModel.dispose()
     }
 }
 
 class Player(val position: Vector3, val direction: Vector3, handSize: Int,  val Id: Int, val talbe: Table){
-    val hand = Hand(position, handSize, this)
+    val hand = Hand(position, handSize, direction)
 
     /**
      * get angle between player and center of the table
@@ -89,14 +92,13 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int,  val 
 
 }
 
-class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val player: Player){
-    val MAX_HAND_WIDTH = 3f
+class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6,val direction: Vector3, val MAX_HAND_WIDTH: Float = 3f){
     var size: Int = 0
 
     fun nextCardPosition(): Vector3{
         val result = Vector3(position)
         //get perpendicular vector in Z=0 plane
-        val normal = Vector3(player.direction).crs(0f, 0f, 1f).nor()
+        val normal = Vector3(direction).crs(0f, 0f, 1f).nor()
         val step = MAX_HAND_WIDTH / MAX_HAND_SIZE
         result.add(normal.scl(step*size - 1.4f))
         result.z += (size + 1)*0.01f
