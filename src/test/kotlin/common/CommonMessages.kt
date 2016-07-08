@@ -1,3 +1,5 @@
+package common
+
 import proto.ChatMessageProto
 import proto.EntitiesProto
 import proto.GenericMessageProto
@@ -47,7 +49,7 @@ fun getSampleGenericMessage(): GenericMessageProto.GenericMessage {
 
 fun getSampleQuery(): QueryProto.Query {
     val chatQuery = QueryProto.ChatMemberQuery.newBuilder().setChatID(666).build()
-    val query = QueryProto.Query.newBuilder().setQuery(chatQuery).setType(QueryProto.Query.Type.CHAT_MEMBER_QUERY).build()
+    val query = QueryProto.Query.newBuilder().setChatMemberQuery(chatQuery).setType(QueryProto.Query.Type.CHAT_MEMBER_QUERY).build()
     return query
 }
 

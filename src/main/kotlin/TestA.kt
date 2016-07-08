@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
         try{
             val s = Socket("google.com", 80);
             host = s.localAddress.hostAddress;
-            s.close();
+            s.close()
         }catch(ignored: Exception){
             host = InetAddress.getLocalHost().hostAddress
         }

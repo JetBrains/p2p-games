@@ -25,7 +25,7 @@ class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerial
 
         other as User
 
-        if (hostAddress != other.hostAddress) return false
+        if (hostAddress != other.hostAddress || name != other.name) return false
         return true
     }
 

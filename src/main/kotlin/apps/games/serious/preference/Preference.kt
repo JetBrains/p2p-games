@@ -144,6 +144,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
             return null
         }catch(e: ExecutionException){
             chat.showMessage(ChatMessage(chat, e.message?: "Something went wrong"))
+            e.printStackTrace()
             throw GameExecutionException("Subgame failed")
         }
 
@@ -156,6 +157,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
             return null
         }catch(e: ExecutionException){
             chat.showMessage(ChatMessage(chat, e.message?: "Something went wrong"))
+            e.printStackTrace()
             throw GameExecutionException("Subgame failed")
         }
         return ShuffledDeck(deck, shuffled)

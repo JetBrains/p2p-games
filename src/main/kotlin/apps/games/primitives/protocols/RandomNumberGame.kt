@@ -2,6 +2,8 @@ package apps.games.primitives.protocols
 
 import apps.chat.Chat
 import apps.games.Game
+import apps.games.GameManager
+import apps.games.GameManagerClass
 import entity.ChatMessage
 import entity.Group
 import entity.User
@@ -37,17 +39,20 @@ import java.util.*
 
 class RandomNumberGame(chat: Chat, group: Group,
                        gameID: String, minValue: BigInteger = BigInteger.valueOf(Int.MIN_VALUE.toLong()),
-                       maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong())) : Game<BigInteger>(chat, group, gameID) {
+                       maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong()),
+                       gameManager: GameManagerClass = GameManager) : Game<BigInteger>(chat, group, gameID, gameManager) {
     override val name: String
         get() = "Random Number Generator"
 
     constructor(chat: Chat, group: Group,
                 gameID: String,
                 minValue: Long,
-                maxValue: Long) : this(chat, group, gameID, BigInteger.valueOf(minValue), BigInteger.valueOf(maxValue)){}
+                maxValue: Long,
+                gameManager: GameManagerClass = GameManager) : this(chat, group, gameID, BigInteger.valueOf(minValue),
+                                                                BigInteger.valueOf(maxValue), gameManager){}
 
-    constructor(chat: Chat, group: Group, gameID: String, bits: Int): this(chat, group, gameID,
-                                                                          BigInteger.ZERO, BigInteger.valueOf(2).pow(bits)) { }
+    constructor(chat: Chat, group: Group, gameID: String, bits: Int, gameManager: GameManagerClass = GameManager):
+                                this(chat, group, gameID, BigInteger.ZERO, BigInteger.valueOf(2).pow(bits), gameManager) {}
 
 
     private val offset = minValue

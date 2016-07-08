@@ -15,6 +15,7 @@ import proto.GameMessageProto
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Mark Geller on 6/21/16.
@@ -88,7 +89,7 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
     fun request(msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
         channel!!.writeAndFlush(msg)
         var interrupted = false
-        val response: GenericMessageProto.GenericMessage
+        val response: GenericMessageProto.GenericMessage?
         while (true) {
             try {
                 response = responses.take()
@@ -100,7 +101,7 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
         if (interrupted) {
             Thread.currentThread().interrupt()
         }
-        return response
+        return response?: GenericMessageProto.GenericMessage.getDefaultInstance()
     }
 
     override fun channelRegistered(ctx: ChannelHandlerContext?) {

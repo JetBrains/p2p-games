@@ -14,9 +14,11 @@ import java.util.concurrent.Future
  * @param group - group of active game participants(can ve cahnged during game)
  */
 
-abstract class Game<T>(internal val chat: Chat, internal val group: Group, val gameID: String){
+abstract class Game<out T>(internal val chat: Chat, internal val group: Group, val gameID: String,
+                           var gameManager: GameManagerClass = GameManager){
     private var subGameCounter: Int = 0
     private var nestedGames: MutableList<GameResult<*>> = mutableListOf()
+    val stopedPlaying = Group()
     /**
      * Evaluate next game state based on responses from everyone
      * @param responses - results of previous state of all players
@@ -30,12 +32,21 @@ abstract class Game<T>(internal val chat: Chat, internal val group: Group, val g
 
     abstract val name: String
 
+
+    fun evaluateGameEnd(msg: GameMessageProto.GameEndMessage){
+        synchronized(stopedPlaying){
+            stopedPlaying.users.add(User(msg.user))
+        }
+        verifyGameEnd(msg)
+    }
+
     /**
      * Some other players might decide, that game
      * is over. Process their messages
+     *
+     * this method is called after `evaluateGameEnd`
      */
-    open fun evaluateGameEnd(msg: GameMessageProto.GameEndMessage){
-        group.users.remove(User(msg.user))
+    open fun verifyGameEnd(msg: GameMessageProto.GameEndMessage){
         if(msg.reason.isNotBlank()){
             chat.showMessage(ChatMessage(chat.chatId, User(msg.user), msg.reason))
         }
@@ -85,12 +96,16 @@ abstract class Game<T>(internal val chat: Chat, internal val group: Group, val g
      * @param game - game to start
      */
     fun <S> runSubGame(game: Game<S>): Future<S> {
-        val result: Future<S> = GameManager.initSubGame(game)
+        val result: Future<S>
+        result = gameManager.initSubGame(game)
         synchronized(nestedGames){
             nestedGames.add(GameResult(game, result))
         }
+
         chat.showMessage(ChatMessage(chat, "Initiated subgame: ${game.name}"))
         return result
+
+
     }
 
     /**
@@ -100,7 +115,7 @@ abstract class Game<T>(internal val chat: Chat, internal val group: Group, val g
         for(gameResult in nestedGames){
             if(!gameResult.game.isFinished() && !gameResult.result.isDone){
                 gameResult.game.cancelSubgames()
-                GameManager.deleteGame(gameResult.game)
+                gameManager.deleteGame(gameResult.game)
                 gameResult.result.cancel(true)
             }
         }

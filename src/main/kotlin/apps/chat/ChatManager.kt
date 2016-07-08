@@ -95,7 +95,7 @@ object ChatManager {
                 .setType(GenericMessageProto.GenericMessage.Type.QUERY)
                 .setQuery(QueryProto.Query.newBuilder()
                         .setType(QueryProto.Query.Type.CHAT_MEMBER_QUERY)
-                        .setQuery(QueryProto.ChatMemberQuery.newBuilder().setChatID(chatId).build())).build()
+                        .setChatMemberQuery(QueryProto.ChatMemberQuery.newBuilder().setChatID(chatId).build())).build()
         val request = ConnectionManager.request(memberAddr, query)
         val chat = getOrCreateChat(chatId)
         chat.register(username)

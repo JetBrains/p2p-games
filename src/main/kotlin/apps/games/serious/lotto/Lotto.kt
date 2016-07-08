@@ -132,12 +132,9 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
     }
 
     /**
-     * remove user from game group - we don't
-     * expect any messages from him anymore.
      * If he claimed, that he won - check it
      */
-    override fun evaluateGameEnd(msg: GameMessageProto.GameEndMessage) {
-        group.users.remove(User(msg.user))
+    override fun verifyGameEnd(msg: GameMessageProto.GameEndMessage) {
         val validator = Ticket.getValidator(ticketSize, maxValue)
         if(validator(msg.verifier)){
             val ticket = Ticket.from(ticketSize, maxValue, msg.verifier)

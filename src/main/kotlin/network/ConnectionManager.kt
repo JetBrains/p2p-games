@@ -7,11 +7,14 @@ import java.net.InetSocketAddress
 /**
  * Created by user on 6/22/16.
  */
-object ConnectionManager{
+object ConnectionManager: ConnectionManagerClass(Settings.clientAddress, Settings.hostAddress){
+}
+
+open class ConnectionManagerClass(client: InetSocketAddress, host: InetSocketAddress){
     val dispatcher = EnumDispatcher(GenericMessageProto.GenericMessage.getDefaultInstance())
 
-    private val client = MessageClient(Settings.clientAddress)
-    private val server = MessageServer(Settings.hostAddress, dispatcher)
+    private val client = MessageClient(client)
+    private val server = MessageServer(host, dispatcher)
 
     val services = mutableSetOf<Service<*>>()
 

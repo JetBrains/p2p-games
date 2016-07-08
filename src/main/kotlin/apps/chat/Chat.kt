@@ -75,7 +75,7 @@ open class Chat(val chatId: Int) : Runnable {
     /**
      * get user for self
      */
-    fun me(): User{
+    open fun me(): User{
         return User(Settings.hostAddress, username)
     }
 

@@ -19,7 +19,9 @@ import org.apache.commons.collections4.queue.CircularFifoQueue
 import proto.GameMessageProto
 import proto.GenericMessageProto
 import crypto.random.randomString
+import org.apache.commons.collections4.map.LRUMap
 import org.bouncycastle.jce.ECNamedCurveTable
+import proto.QueryProto
 import java.util.*
 import java.util.concurrent.*
 
@@ -28,20 +30,23 @@ import java.util.concurrent.*
  * Created by user on 6/24/16.
  */
 
-object GameManager {
-    val games: MutableMap<String, Game<*>> = mutableMapOf()
-    val runners: MutableMap<String, GameRunner<*>> = mutableMapOf()
-    internal val LAG_MESSAGE_LIMIT = 100
+object GameManager: GameManagerClass(ConnectionManager){}
+
+open class GameManagerClass(private val connectionManager: network.ConnectionManagerClass) {
+    val games = LRUMap<String, Game<*>>(1000)
+    val runners = LRUMap<String, GameRunner<*>>(1000)
+    internal val LAG_MESSAGE_LIMIT = 1000
     internal val threadPool: ExecutorService = Executors.newCachedThreadPool()
     internal val unprocessed = CircularFifoQueue<GameMessageProto.GameStateMessage>(LAG_MESSAGE_LIMIT)
 
-    final val IDENTIFIER_LENGTH = 32
+    val IDENTIFIER_LENGTH = 32
 
     /**
      * Initialize services, start listening to ports
      */
     fun start() {
-        ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE, GameMessageService(this))
+        connectionManager.addService(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE, GameMessageService(this))
+        connectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY, GameQueryService(this))
     }
 
     /**
@@ -101,37 +106,35 @@ object GameManager {
      * Init local game. Do not send any requests
      */
     fun <T>initSubGame(game: Game<T>): Future<T>{
+        val runner: GameRunner<*>
         games[game.gameID] = game
-        val runner = GameRunner(game)
+        runner = GameRunner(game)
+
         resolveLag(runner)
+
         runners[game.gameID] = runner
         return threadPool.submit(runner)
+
+
     }
 
     /**
-     * remove all links if the game
-     * based on it's gameId @see Game
+     * currenty - no need to do anything
      * @param game - game to be removed
      */
     fun deleteGame(game:Game<*>){
-        synchronized(games){
-            synchronized(runners){
-                games.remove(game.gameID)
-                runners.remove(game.gameID)
-            }
-        }
     }
 
     /**
      * For somewhat reason game decided, that it
      * has ended for us. So we acknowledge everyone about it
      */
-    fun sendEndGame(gameID: String, reason: String, verifier: String?){
+    fun sendEndGame(gameID: String, reason: String, verifier: String?): GenericMessageProto.GenericMessage?{
         val game: Game<*>? = games[gameID]
         if(game != null){
             val endMessage = GameMessageProto.GameEndMessage
                     .newBuilder()
-                    .setUser(User(Settings.hostAddress, game.chat.username).getProto())
+                    .setUser(game.chat.me().getProto())
                     .setGameID(gameID)
                     .setReason(reason)
             if (verifier != null) {
@@ -147,7 +150,9 @@ object GameManager {
                     .setType(GenericMessageProto.GenericMessage.Type.GAME_MESSAGE)
                     .setGameMessage(gameMessage).build()
             game.chat.groupBroker.broadcastAsync(game.chat.group, finalMessage)
+            return finalMessage
         }
+        return null
     }
 
     fun close(){
@@ -155,19 +160,61 @@ object GameManager {
     }
 
     private fun resolveLag(gameRunner: GameRunner<*>){
-        for(msg in unprocessed){
-            if(msg.gameID == gameRunner.game.gameID){
-                gameRunner.stateMessageQueue.add(msg)
-                unprocessed.remove(msg)
+        synchronized(unprocessed){
+            val it = unprocessed.iterator()
+            while (it.hasNext()){
+                val msg = it.next()
+                if(msg.gameID == gameRunner.game.gameID){
+                    gameRunner.stateMessageQueue.add(msg)
+                    it.remove()
+                }
+
             }
         }
+    }
+
+
+    fun requestUpdate(receiver: User, game: Game<*>, timestamp: Int): GenericMessageProto.GenericMessage? {
+        val statusQuery = QueryProto.GameStatusQuery
+                .newBuilder()
+                .setGameID(game.gameID)
+                .setUser(game.chat.me().getProto())
+                .setTimestamp(timestamp)
+        val query = QueryProto.Query
+                .newBuilder()
+                .setType(QueryProto.Query.Type.GAME_STATUS_QUERY)
+                .setGameStatusQuery(statusQuery)
+        val genericMessage = GenericMessageProto.GenericMessage
+                .newBuilder()
+                .setType(GenericMessageProto.GenericMessage.Type.QUERY)
+                .setQuery(query)
+                .build()
+        return connectionManager.request(receiver.hostAddress, genericMessage)
+    }
+
+}
+
+class GameQueryService(private val manager: GameManagerClass) : Service<QueryProto.Query> {
+    fun queryStatus(msg: QueryProto.GameStatusQuery): GenericMessageProto.GenericMessage?{
+        val runner = manager.runners[msg.gameID]
+        if(runner == null || runner.messageLog[msg.timestamp] == null){
+            return errorMessage
+        }
+        return runner.messageLog[msg.timestamp]
+    }
+
+    override fun getDispatcher(): Dispatcher<QueryProto.Query> {
+        val queryDispatcher = EnumDispatcher(QueryProto.Query.getDefaultInstance())
+        queryDispatcher.register(QueryProto.Query.Type.GAME_STATUS_QUERY,
+                {x: QueryProto.GameStatusQuery -> queryStatus(x)})
+        return queryDispatcher
     }
 }
 
 /**
  * Service for dispatching game messages
  */
-class GameMessageService(private val manager: GameManager) : Service<GameMessageProto.GameMessage> {
+class GameMessageService(private val manager: GameManagerClass) : Service<GameMessageProto.GameMessage> {
 
     fun startGame(msg: GameMessageProto.GameInitMessage): GenericMessageProto.GenericMessage?{
         manager.initGame(msg)
@@ -179,7 +226,9 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
         if (runner != null) {
             runner.stateMessageQueue.add(msg)
         }else{
-            manager.unprocessed.add(msg)
+            synchronized(manager.unprocessed){
+                manager.unprocessed.add(msg)
+            }
         }
         return null
     }
@@ -191,14 +240,14 @@ class GameMessageService(private val manager: GameManager) : Service<GameMessage
     }
 
     override fun getDispatcher(): Dispatcher<GameMessageProto.GameMessage> {
-        val queryDispatcher = EnumDispatcher(GameMessageProto.GameMessage.getDefaultInstance())
-        queryDispatcher.register(GameMessageProto.GameMessage.Type.GAME_INIT_MESSAGE,
+        val messageDispatcher = EnumDispatcher(GameMessageProto.GameMessage.getDefaultInstance())
+        messageDispatcher.register(GameMessageProto.GameMessage.Type.GAME_INIT_MESSAGE,
                 {x: GameMessageProto.GameInitMessage -> startGame(x)})
-        queryDispatcher.register(GameMessageProto.GameMessage.Type.GAME_STATE_MESSAGE,
+        messageDispatcher.register(GameMessageProto.GameMessage.Type.GAME_STATE_MESSAGE,
                 {x: GameMessageProto.GameStateMessage -> processMessage(x)})
-        queryDispatcher.register(GameMessageProto.GameMessage.Type.GAME_END_MESSAGE,
+        messageDispatcher.register(GameMessageProto.GameMessage.Type.GAME_END_MESSAGE,
                 {x: GameMessageProto.GameEndMessage -> endGame(x)})
-        return queryDispatcher
+        return messageDispatcher
 
     }
 }

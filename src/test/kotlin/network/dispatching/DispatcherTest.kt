@@ -1,8 +1,8 @@
 package network.dispatching
 
-import getSampleChatMessage
-import getSampleGenericMessage
-import getSampleGenericQuery
+import common.getSampleChatMessage
+import common.getSampleGenericMessage
+import common.getSampleGenericQuery
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

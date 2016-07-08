@@ -22,17 +22,30 @@ public final class QueryProto {
     proto.QueryProto.Query.Type getType();
 
     /**
-     * <code>optional .proto.ChatMemberQuery query = 2;</code>
+     * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
      */
-    boolean hasQuery();
+    boolean hasChatMemberQuery();
     /**
-     * <code>optional .proto.ChatMemberQuery query = 2;</code>
+     * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
      */
-    proto.QueryProto.ChatMemberQuery getQuery();
+    proto.QueryProto.ChatMemberQuery getChatMemberQuery();
     /**
-     * <code>optional .proto.ChatMemberQuery query = 2;</code>
+     * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
      */
-    proto.QueryProto.ChatMemberQueryOrBuilder getQueryOrBuilder();
+    proto.QueryProto.ChatMemberQueryOrBuilder getChatMemberQueryOrBuilder();
+
+    /**
+     * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+     */
+    boolean hasGameStatusQuery();
+    /**
+     * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+     */
+    proto.QueryProto.GameStatusQuery getGameStatusQuery();
+    /**
+     * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+     */
+    proto.QueryProto.GameStatusQueryOrBuilder getGameStatusQueryOrBuilder();
   }
   /**
    * Protobuf type {@code proto.Query}
@@ -100,14 +113,27 @@ public final class QueryProto {
             case 18: {
               proto.QueryProto.ChatMemberQuery.Builder subBuilder = null;
               if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                subBuilder = query_.toBuilder();
+                subBuilder = chatMemberQuery_.toBuilder();
               }
-              query_ = input.readMessage(proto.QueryProto.ChatMemberQuery.PARSER, extensionRegistry);
+              chatMemberQuery_ = input.readMessage(proto.QueryProto.ChatMemberQuery.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(query_);
-                query_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(chatMemberQuery_);
+                chatMemberQuery_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000002;
+              break;
+            }
+            case 26: {
+              proto.QueryProto.GameStatusQuery.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = gameStatusQuery_.toBuilder();
+              }
+              gameStatusQuery_ = input.readMessage(proto.QueryProto.GameStatusQuery.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(gameStatusQuery_);
+                gameStatusQuery_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
               break;
             }
           }
@@ -158,12 +184,20 @@ public final class QueryProto {
        * <code>CHAT_MEMBER_QUERY = 1;</code>
        */
       CHAT_MEMBER_QUERY(0, 1),
+      /**
+       * <code>GAME_STATUS_QUERY = 2;</code>
+       */
+      GAME_STATUS_QUERY(1, 2),
       ;
 
       /**
        * <code>CHAT_MEMBER_QUERY = 1;</code>
        */
       public static final int CHAT_MEMBER_QUERY_VALUE = 1;
+      /**
+       * <code>GAME_STATUS_QUERY = 2;</code>
+       */
+      public static final int GAME_STATUS_QUERY_VALUE = 2;
 
 
       public final int getNumber() { return value; }
@@ -171,6 +205,7 @@ public final class QueryProto {
       public static Type valueOf(int value) {
         switch (value) {
           case 1: return CHAT_MEMBER_QUERY;
+          case 2: return GAME_STATUS_QUERY;
           default: return null;
         }
       }
@@ -238,30 +273,52 @@ public final class QueryProto {
       return type_;
     }
 
-    public static final int QUERY_FIELD_NUMBER = 2;
-    private proto.QueryProto.ChatMemberQuery query_;
+    public static final int CHATMEMBERQUERY_FIELD_NUMBER = 2;
+    private proto.QueryProto.ChatMemberQuery chatMemberQuery_;
     /**
-     * <code>optional .proto.ChatMemberQuery query = 2;</code>
+     * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
      */
-    public boolean hasQuery() {
+    public boolean hasChatMemberQuery() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional .proto.ChatMemberQuery query = 2;</code>
+     * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
      */
-    public proto.QueryProto.ChatMemberQuery getQuery() {
-      return query_;
+    public proto.QueryProto.ChatMemberQuery getChatMemberQuery() {
+      return chatMemberQuery_;
     }
     /**
-     * <code>optional .proto.ChatMemberQuery query = 2;</code>
+     * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
      */
-    public proto.QueryProto.ChatMemberQueryOrBuilder getQueryOrBuilder() {
-      return query_;
+    public proto.QueryProto.ChatMemberQueryOrBuilder getChatMemberQueryOrBuilder() {
+      return chatMemberQuery_;
+    }
+
+    public static final int GAMESTATUSQUERY_FIELD_NUMBER = 3;
+    private proto.QueryProto.GameStatusQuery gameStatusQuery_;
+    /**
+     * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+     */
+    public boolean hasGameStatusQuery() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+     */
+    public proto.QueryProto.GameStatusQuery getGameStatusQuery() {
+      return gameStatusQuery_;
+    }
+    /**
+     * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+     */
+    public proto.QueryProto.GameStatusQueryOrBuilder getGameStatusQueryOrBuilder() {
+      return gameStatusQuery_;
     }
 
     private void initFields() {
       type_ = proto.QueryProto.Query.Type.CHAT_MEMBER_QUERY;
-      query_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
+      chatMemberQuery_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
+      gameStatusQuery_ = proto.QueryProto.GameStatusQuery.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -273,8 +330,14 @@ public final class QueryProto {
         memoizedIsInitialized = 0;
         return false;
       }
-      if (hasQuery()) {
-        if (!getQuery().isInitialized()) {
+      if (hasChatMemberQuery()) {
+        if (!getChatMemberQuery().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasGameStatusQuery()) {
+        if (!getGameStatusQuery().isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -290,7 +353,10 @@ public final class QueryProto {
         output.writeEnum(1, type_.getNumber());
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, query_);
+        output.writeMessage(2, chatMemberQuery_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(3, gameStatusQuery_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -307,7 +373,11 @@ public final class QueryProto {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, query_);
+          .computeMessageSize(2, chatMemberQuery_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, gameStatusQuery_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -418,7 +488,8 @@ public final class QueryProto {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getQueryFieldBuilder();
+          getChatMemberQueryFieldBuilder();
+          getGameStatusQueryFieldBuilder();
         }
       }
       private static Builder create() {
@@ -429,12 +500,18 @@ public final class QueryProto {
         super.clear();
         type_ = proto.QueryProto.Query.Type.CHAT_MEMBER_QUERY;
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (queryBuilder_ == null) {
-          query_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
+        if (chatMemberQueryBuilder_ == null) {
+          chatMemberQuery_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
         } else {
-          queryBuilder_.clear();
+          chatMemberQueryBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
+        if (gameStatusQueryBuilder_ == null) {
+          gameStatusQuery_ = proto.QueryProto.GameStatusQuery.getDefaultInstance();
+        } else {
+          gameStatusQueryBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -470,10 +547,18 @@ public final class QueryProto {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        if (queryBuilder_ == null) {
-          result.query_ = query_;
+        if (chatMemberQueryBuilder_ == null) {
+          result.chatMemberQuery_ = chatMemberQuery_;
         } else {
-          result.query_ = queryBuilder_.build();
+          result.chatMemberQuery_ = chatMemberQueryBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (gameStatusQueryBuilder_ == null) {
+          result.gameStatusQuery_ = gameStatusQuery_;
+        } else {
+          result.gameStatusQuery_ = gameStatusQueryBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -494,8 +579,11 @@ public final class QueryProto {
         if (other.hasType()) {
           setType(other.getType());
         }
-        if (other.hasQuery()) {
-          mergeQuery(other.getQuery());
+        if (other.hasChatMemberQuery()) {
+          mergeChatMemberQuery(other.getChatMemberQuery());
+        }
+        if (other.hasGameStatusQuery()) {
+          mergeGameStatusQuery(other.getGameStatusQuery());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -506,8 +594,14 @@ public final class QueryProto {
           
           return false;
         }
-        if (hasQuery()) {
-          if (!getQuery().isInitialized()) {
+        if (hasChatMemberQuery()) {
+          if (!getChatMemberQuery().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasGameStatusQuery()) {
+          if (!getGameStatusQuery().isInitialized()) {
             
             return false;
           }
@@ -569,120 +663,236 @@ public final class QueryProto {
         return this;
       }
 
-      private proto.QueryProto.ChatMemberQuery query_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
+      private proto.QueryProto.ChatMemberQuery chatMemberQuery_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
-          proto.QueryProto.ChatMemberQuery, proto.QueryProto.ChatMemberQuery.Builder, proto.QueryProto.ChatMemberQueryOrBuilder> queryBuilder_;
+          proto.QueryProto.ChatMemberQuery, proto.QueryProto.ChatMemberQuery.Builder, proto.QueryProto.ChatMemberQueryOrBuilder> chatMemberQueryBuilder_;
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public boolean hasQuery() {
+      public boolean hasChatMemberQuery() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public proto.QueryProto.ChatMemberQuery getQuery() {
-        if (queryBuilder_ == null) {
-          return query_;
+      public proto.QueryProto.ChatMemberQuery getChatMemberQuery() {
+        if (chatMemberQueryBuilder_ == null) {
+          return chatMemberQuery_;
         } else {
-          return queryBuilder_.getMessage();
+          return chatMemberQueryBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public Builder setQuery(proto.QueryProto.ChatMemberQuery value) {
-        if (queryBuilder_ == null) {
+      public Builder setChatMemberQuery(proto.QueryProto.ChatMemberQuery value) {
+        if (chatMemberQueryBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          query_ = value;
+          chatMemberQuery_ = value;
           onChanged();
         } else {
-          queryBuilder_.setMessage(value);
+          chatMemberQueryBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public Builder setQuery(
+      public Builder setChatMemberQuery(
           proto.QueryProto.ChatMemberQuery.Builder builderForValue) {
-        if (queryBuilder_ == null) {
-          query_ = builderForValue.build();
+        if (chatMemberQueryBuilder_ == null) {
+          chatMemberQuery_ = builderForValue.build();
           onChanged();
         } else {
-          queryBuilder_.setMessage(builderForValue.build());
+          chatMemberQueryBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public Builder mergeQuery(proto.QueryProto.ChatMemberQuery value) {
-        if (queryBuilder_ == null) {
+      public Builder mergeChatMemberQuery(proto.QueryProto.ChatMemberQuery value) {
+        if (chatMemberQueryBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
-              query_ != proto.QueryProto.ChatMemberQuery.getDefaultInstance()) {
-            query_ =
-              proto.QueryProto.ChatMemberQuery.newBuilder(query_).mergeFrom(value).buildPartial();
+              chatMemberQuery_ != proto.QueryProto.ChatMemberQuery.getDefaultInstance()) {
+            chatMemberQuery_ =
+              proto.QueryProto.ChatMemberQuery.newBuilder(chatMemberQuery_).mergeFrom(value).buildPartial();
           } else {
-            query_ = value;
+            chatMemberQuery_ = value;
           }
           onChanged();
         } else {
-          queryBuilder_.mergeFrom(value);
+          chatMemberQueryBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000002;
         return this;
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public Builder clearQuery() {
-        if (queryBuilder_ == null) {
-          query_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
+      public Builder clearChatMemberQuery() {
+        if (chatMemberQueryBuilder_ == null) {
+          chatMemberQuery_ = proto.QueryProto.ChatMemberQuery.getDefaultInstance();
           onChanged();
         } else {
-          queryBuilder_.clear();
+          chatMemberQueryBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public proto.QueryProto.ChatMemberQuery.Builder getQueryBuilder() {
+      public proto.QueryProto.ChatMemberQuery.Builder getChatMemberQueryBuilder() {
         bitField0_ |= 0x00000002;
         onChanged();
-        return getQueryFieldBuilder().getBuilder();
+        return getChatMemberQueryFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
-      public proto.QueryProto.ChatMemberQueryOrBuilder getQueryOrBuilder() {
-        if (queryBuilder_ != null) {
-          return queryBuilder_.getMessageOrBuilder();
+      public proto.QueryProto.ChatMemberQueryOrBuilder getChatMemberQueryOrBuilder() {
+        if (chatMemberQueryBuilder_ != null) {
+          return chatMemberQueryBuilder_.getMessageOrBuilder();
         } else {
-          return query_;
+          return chatMemberQuery_;
         }
       }
       /**
-       * <code>optional .proto.ChatMemberQuery query = 2;</code>
+       * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           proto.QueryProto.ChatMemberQuery, proto.QueryProto.ChatMemberQuery.Builder, proto.QueryProto.ChatMemberQueryOrBuilder> 
-          getQueryFieldBuilder() {
-        if (queryBuilder_ == null) {
-          queryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          getChatMemberQueryFieldBuilder() {
+        if (chatMemberQueryBuilder_ == null) {
+          chatMemberQueryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               proto.QueryProto.ChatMemberQuery, proto.QueryProto.ChatMemberQuery.Builder, proto.QueryProto.ChatMemberQueryOrBuilder>(
-                  getQuery(),
+                  getChatMemberQuery(),
                   getParentForChildren(),
                   isClean());
-          query_ = null;
+          chatMemberQuery_ = null;
         }
-        return queryBuilder_;
+        return chatMemberQueryBuilder_;
+      }
+
+      private proto.QueryProto.GameStatusQuery gameStatusQuery_ = proto.QueryProto.GameStatusQuery.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          proto.QueryProto.GameStatusQuery, proto.QueryProto.GameStatusQuery.Builder, proto.QueryProto.GameStatusQueryOrBuilder> gameStatusQueryBuilder_;
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public boolean hasGameStatusQuery() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public proto.QueryProto.GameStatusQuery getGameStatusQuery() {
+        if (gameStatusQueryBuilder_ == null) {
+          return gameStatusQuery_;
+        } else {
+          return gameStatusQueryBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public Builder setGameStatusQuery(proto.QueryProto.GameStatusQuery value) {
+        if (gameStatusQueryBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          gameStatusQuery_ = value;
+          onChanged();
+        } else {
+          gameStatusQueryBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public Builder setGameStatusQuery(
+          proto.QueryProto.GameStatusQuery.Builder builderForValue) {
+        if (gameStatusQueryBuilder_ == null) {
+          gameStatusQuery_ = builderForValue.build();
+          onChanged();
+        } else {
+          gameStatusQueryBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public Builder mergeGameStatusQuery(proto.QueryProto.GameStatusQuery value) {
+        if (gameStatusQueryBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              gameStatusQuery_ != proto.QueryProto.GameStatusQuery.getDefaultInstance()) {
+            gameStatusQuery_ =
+              proto.QueryProto.GameStatusQuery.newBuilder(gameStatusQuery_).mergeFrom(value).buildPartial();
+          } else {
+            gameStatusQuery_ = value;
+          }
+          onChanged();
+        } else {
+          gameStatusQueryBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000004;
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public Builder clearGameStatusQuery() {
+        if (gameStatusQueryBuilder_ == null) {
+          gameStatusQuery_ = proto.QueryProto.GameStatusQuery.getDefaultInstance();
+          onChanged();
+        } else {
+          gameStatusQueryBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public proto.QueryProto.GameStatusQuery.Builder getGameStatusQueryBuilder() {
+        bitField0_ |= 0x00000004;
+        onChanged();
+        return getGameStatusQueryFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      public proto.QueryProto.GameStatusQueryOrBuilder getGameStatusQueryOrBuilder() {
+        if (gameStatusQueryBuilder_ != null) {
+          return gameStatusQueryBuilder_.getMessageOrBuilder();
+        } else {
+          return gameStatusQuery_;
+        }
+      }
+      /**
+       * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          proto.QueryProto.GameStatusQuery, proto.QueryProto.GameStatusQuery.Builder, proto.QueryProto.GameStatusQueryOrBuilder> 
+          getGameStatusQueryFieldBuilder() {
+        if (gameStatusQueryBuilder_ == null) {
+          gameStatusQueryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              proto.QueryProto.GameStatusQuery, proto.QueryProto.GameStatusQuery.Builder, proto.QueryProto.GameStatusQueryOrBuilder>(
+                  getGameStatusQuery(),
+                  getParentForChildren(),
+                  isClean());
+          gameStatusQuery_ = null;
+        }
+        return gameStatusQueryBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:proto.Query)
@@ -1101,6 +1311,781 @@ public final class QueryProto {
     // @@protoc_insertion_point(class_scope:proto.ChatMemberQuery)
   }
 
+  public interface GameStatusQueryOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:proto.GameStatusQuery)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>required string gameID = 1;</code>
+     */
+    boolean hasGameID();
+    /**
+     * <code>required string gameID = 1;</code>
+     */
+    java.lang.String getGameID();
+    /**
+     * <code>required string gameID = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getGameIDBytes();
+
+    /**
+     * <code>required .proto.User user = 2;</code>
+     */
+    boolean hasUser();
+    /**
+     * <code>required .proto.User user = 2;</code>
+     */
+    proto.EntitiesProto.User getUser();
+    /**
+     * <code>required .proto.User user = 2;</code>
+     */
+    proto.EntitiesProto.UserOrBuilder getUserOrBuilder();
+
+    /**
+     * <code>required int32 timestamp = 3;</code>
+     */
+    boolean hasTimestamp();
+    /**
+     * <code>required int32 timestamp = 3;</code>
+     */
+    int getTimestamp();
+  }
+  /**
+   * Protobuf type {@code proto.GameStatusQuery}
+   */
+  public static final class GameStatusQuery extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:proto.GameStatusQuery)
+      GameStatusQueryOrBuilder {
+    // Use GameStatusQuery.newBuilder() to construct.
+    private GameStatusQuery(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GameStatusQuery(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GameStatusQuery defaultInstance;
+    public static GameStatusQuery getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GameStatusQuery getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GameStatusQuery(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              gameID_ = bs;
+              break;
+            }
+            case 18: {
+              proto.EntitiesProto.User.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = user_.toBuilder();
+              }
+              user_ = input.readMessage(proto.EntitiesProto.User.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(user_);
+                user_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              timestamp_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return proto.QueryProto.internal_static_proto_GameStatusQuery_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return proto.QueryProto.internal_static_proto_GameStatusQuery_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              proto.QueryProto.GameStatusQuery.class, proto.QueryProto.GameStatusQuery.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GameStatusQuery> PARSER =
+        new com.google.protobuf.AbstractParser<GameStatusQuery>() {
+      public GameStatusQuery parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GameStatusQuery(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GameStatusQuery> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int GAMEID_FIELD_NUMBER = 1;
+    private java.lang.Object gameID_;
+    /**
+     * <code>required string gameID = 1;</code>
+     */
+    public boolean hasGameID() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string gameID = 1;</code>
+     */
+    public java.lang.String getGameID() {
+      java.lang.Object ref = gameID_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          gameID_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string gameID = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGameIDBytes() {
+      java.lang.Object ref = gameID_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        gameID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int USER_FIELD_NUMBER = 2;
+    private proto.EntitiesProto.User user_;
+    /**
+     * <code>required .proto.User user = 2;</code>
+     */
+    public boolean hasUser() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required .proto.User user = 2;</code>
+     */
+    public proto.EntitiesProto.User getUser() {
+      return user_;
+    }
+    /**
+     * <code>required .proto.User user = 2;</code>
+     */
+    public proto.EntitiesProto.UserOrBuilder getUserOrBuilder() {
+      return user_;
+    }
+
+    public static final int TIMESTAMP_FIELD_NUMBER = 3;
+    private int timestamp_;
+    /**
+     * <code>required int32 timestamp = 3;</code>
+     */
+    public boolean hasTimestamp() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int32 timestamp = 3;</code>
+     */
+    public int getTimestamp() {
+      return timestamp_;
+    }
+
+    private void initFields() {
+      gameID_ = "";
+      user_ = proto.EntitiesProto.User.getDefaultInstance();
+      timestamp_ = 0;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (!hasGameID()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasUser()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasTimestamp()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!getUser().isInitialized()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getGameIDBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, user_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, timestamp_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getGameIDBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, user_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, timestamp_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static proto.QueryProto.GameStatusQuery parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static proto.QueryProto.GameStatusQuery parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static proto.QueryProto.GameStatusQuery parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static proto.QueryProto.GameStatusQuery parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(proto.QueryProto.GameStatusQuery prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code proto.GameStatusQuery}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:proto.GameStatusQuery)
+        proto.QueryProto.GameStatusQueryOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return proto.QueryProto.internal_static_proto_GameStatusQuery_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return proto.QueryProto.internal_static_proto_GameStatusQuery_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                proto.QueryProto.GameStatusQuery.class, proto.QueryProto.GameStatusQuery.Builder.class);
+      }
+
+      // Construct using proto.QueryProto.GameStatusQuery.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getUserFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        gameID_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (userBuilder_ == null) {
+          user_ = proto.EntitiesProto.User.getDefaultInstance();
+        } else {
+          userBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        timestamp_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return proto.QueryProto.internal_static_proto_GameStatusQuery_descriptor;
+      }
+
+      public proto.QueryProto.GameStatusQuery getDefaultInstanceForType() {
+        return proto.QueryProto.GameStatusQuery.getDefaultInstance();
+      }
+
+      public proto.QueryProto.GameStatusQuery build() {
+        proto.QueryProto.GameStatusQuery result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public proto.QueryProto.GameStatusQuery buildPartial() {
+        proto.QueryProto.GameStatusQuery result = new proto.QueryProto.GameStatusQuery(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.gameID_ = gameID_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (userBuilder_ == null) {
+          result.user_ = user_;
+        } else {
+          result.user_ = userBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.timestamp_ = timestamp_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof proto.QueryProto.GameStatusQuery) {
+          return mergeFrom((proto.QueryProto.GameStatusQuery)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(proto.QueryProto.GameStatusQuery other) {
+        if (other == proto.QueryProto.GameStatusQuery.getDefaultInstance()) return this;
+        if (other.hasGameID()) {
+          bitField0_ |= 0x00000001;
+          gameID_ = other.gameID_;
+          onChanged();
+        }
+        if (other.hasUser()) {
+          mergeUser(other.getUser());
+        }
+        if (other.hasTimestamp()) {
+          setTimestamp(other.getTimestamp());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasGameID()) {
+          
+          return false;
+        }
+        if (!hasUser()) {
+          
+          return false;
+        }
+        if (!hasTimestamp()) {
+          
+          return false;
+        }
+        if (!getUser().isInitialized()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        proto.QueryProto.GameStatusQuery parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (proto.QueryProto.GameStatusQuery) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object gameID_ = "";
+      /**
+       * <code>required string gameID = 1;</code>
+       */
+      public boolean hasGameID() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string gameID = 1;</code>
+       */
+      public java.lang.String getGameID() {
+        java.lang.Object ref = gameID_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            gameID_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string gameID = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGameIDBytes() {
+        java.lang.Object ref = gameID_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          gameID_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string gameID = 1;</code>
+       */
+      public Builder setGameID(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        gameID_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string gameID = 1;</code>
+       */
+      public Builder clearGameID() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        gameID_ = getDefaultInstance().getGameID();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string gameID = 1;</code>
+       */
+      public Builder setGameIDBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        gameID_ = value;
+        onChanged();
+        return this;
+      }
+
+      private proto.EntitiesProto.User user_ = proto.EntitiesProto.User.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          proto.EntitiesProto.User, proto.EntitiesProto.User.Builder, proto.EntitiesProto.UserOrBuilder> userBuilder_;
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public boolean hasUser() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public proto.EntitiesProto.User getUser() {
+        if (userBuilder_ == null) {
+          return user_;
+        } else {
+          return userBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public Builder setUser(proto.EntitiesProto.User value) {
+        if (userBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          user_ = value;
+          onChanged();
+        } else {
+          userBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public Builder setUser(
+          proto.EntitiesProto.User.Builder builderForValue) {
+        if (userBuilder_ == null) {
+          user_ = builderForValue.build();
+          onChanged();
+        } else {
+          userBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public Builder mergeUser(proto.EntitiesProto.User value) {
+        if (userBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              user_ != proto.EntitiesProto.User.getDefaultInstance()) {
+            user_ =
+              proto.EntitiesProto.User.newBuilder(user_).mergeFrom(value).buildPartial();
+          } else {
+            user_ = value;
+          }
+          onChanged();
+        } else {
+          userBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public Builder clearUser() {
+        if (userBuilder_ == null) {
+          user_ = proto.EntitiesProto.User.getDefaultInstance();
+          onChanged();
+        } else {
+          userBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public proto.EntitiesProto.User.Builder getUserBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getUserFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      public proto.EntitiesProto.UserOrBuilder getUserOrBuilder() {
+        if (userBuilder_ != null) {
+          return userBuilder_.getMessageOrBuilder();
+        } else {
+          return user_;
+        }
+      }
+      /**
+       * <code>required .proto.User user = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          proto.EntitiesProto.User, proto.EntitiesProto.User.Builder, proto.EntitiesProto.UserOrBuilder> 
+          getUserFieldBuilder() {
+        if (userBuilder_ == null) {
+          userBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              proto.EntitiesProto.User, proto.EntitiesProto.User.Builder, proto.EntitiesProto.UserOrBuilder>(
+                  getUser(),
+                  getParentForChildren(),
+                  isClean());
+          user_ = null;
+        }
+        return userBuilder_;
+      }
+
+      private int timestamp_ ;
+      /**
+       * <code>required int32 timestamp = 3;</code>
+       */
+      public boolean hasTimestamp() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int32 timestamp = 3;</code>
+       */
+      public int getTimestamp() {
+        return timestamp_;
+      }
+      /**
+       * <code>required int32 timestamp = 3;</code>
+       */
+      public Builder setTimestamp(int value) {
+        bitField0_ |= 0x00000004;
+        timestamp_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 timestamp = 3;</code>
+       */
+      public Builder clearTimestamp() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        timestamp_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:proto.GameStatusQuery)
+    }
+
+    static {
+      defaultInstance = new GameStatusQuery(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:proto.GameStatusQuery)
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_proto_Query_descriptor;
   private static
@@ -1111,6 +2096,11 @@ public final class QueryProto {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_proto_ChatMemberQuery_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_proto_GameStatusQuery_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_proto_GameStatusQuery_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1120,11 +2110,16 @@ public final class QueryProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\013Query.proto\022\005proto\"n\n\005Query\022\037\n\004type\030\001 " +
-      "\002(\0162\021.proto.Query.Type\022%\n\005query\030\002 \001(\0132\026." +
-      "proto.ChatMemberQuery\"\035\n\004Type\022\025\n\021CHAT_ME" +
-      "MBER_QUERY\020\001\"!\n\017ChatMemberQuery\022\016\n\006chatI" +
-      "D\030\001 \002(\005B\023\n\005protoB\nQueryProto"
+      "\n\013Query.proto\022\005proto\032\016Entities.proto\"\300\001\n" +
+      "\005Query\022\037\n\004type\030\001 \002(\0162\021.proto.Query.Type\022" +
+      "/\n\017chatMemberQuery\030\002 \001(\0132\026.proto.ChatMem" +
+      "berQuery\022/\n\017gameStatusQuery\030\003 \001(\0132\026.prot" +
+      "o.GameStatusQuery\"4\n\004Type\022\025\n\021CHAT_MEMBER" +
+      "_QUERY\020\001\022\025\n\021GAME_STATUS_QUERY\020\002\"!\n\017ChatM" +
+      "emberQuery\022\016\n\006chatID\030\001 \002(\005\"O\n\017GameStatus" +
+      "Query\022\016\n\006gameID\030\001 \002(\t\022\031\n\004user\030\002 \002(\0132\013.pr" +
+      "oto.User\022\021\n\ttimestamp\030\003 \002(\005B\023\n\005protoB\nQu" +
+      "eryProto"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1137,19 +2132,27 @@ public final class QueryProto {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          proto.EntitiesProto.getDescriptor(),
         }, assigner);
     internal_static_proto_Query_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_proto_Query_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_Query_descriptor,
-        new java.lang.String[] { "Type", "Query", });
+        new java.lang.String[] { "Type", "ChatMemberQuery", "GameStatusQuery", });
     internal_static_proto_ChatMemberQuery_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_proto_ChatMemberQuery_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_proto_ChatMemberQuery_descriptor,
         new java.lang.String[] { "ChatID", });
+    internal_static_proto_GameStatusQuery_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_proto_GameStatusQuery_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_proto_GameStatusQuery_descriptor,
+        new java.lang.String[] { "GameID", "User", "Timestamp", });
+    proto.EntitiesProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

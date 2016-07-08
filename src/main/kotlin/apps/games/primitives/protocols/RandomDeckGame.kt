@@ -3,6 +3,8 @@ package apps.games.primitives.protocols
 import apps.chat.Chat
 import apps.games.Game
 import apps.games.GameExecutionException
+import apps.games.GameManager
+import apps.games.GameManagerClass
 import apps.games.primitives.Deck
 import apps.games.serious.lotto.Lotto
 import com.sun.xml.internal.fastinfoset.util.StringArray
@@ -14,10 +16,12 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.math.ec.ECCurve
 import org.bouncycastle.math.ec.ECPoint
+import org.mockito.internal.matchers.Null
 import proto.GameMessageProto
 import java.math.BigInteger
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
 
 /**
  * Created by user on 7/5/16.
@@ -37,7 +41,8 @@ import java.util.concurrent.ExecutionException
  */
 
 
-class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec, val deckSize: Int = 52) : Game<Deck>(chat, group, gameID){
+class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec,
+                     val deckSize: Int = 52, gameManager: GameManagerClass = GameManager) : Game<Deck>(chat, group, gameID, gameManager = gameManager){
     override val name: String
         get() = "Random Deck Generator"
 
@@ -60,8 +65,9 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
             State.INIT -> {
                 var set: Int = 0
                 while(set < deckSize) {
-                    val rngFuture = runSubGame(RandomNumberGame(chat, group.clone(), subGameID(), BigInteger.ONE, ECParams.n))
                     val multiplier: BigInteger
+                    val rngFuture = runSubGame(RandomNumberGame(chat, group.clone(), subGameID(), BigInteger.ONE, ECParams.n, gameManager))
+
                     try {
                         multiplier = rngFuture.get()
                     } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
@@ -69,13 +75,15 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
                         return ""
                     } catch(e: ExecutionException) {
                         chat.showMessage(ChatMessage(chat, e.message ?: "Something went wrong"))
-                        throw GameExecutionException("Subgame failed")
+                        e.printStackTrace()
+                        throw GameExecutionException("[${chat.me().name}] Subgame failed")
                     }
                     val point: ECPoint = ECParams.g.multiply(multiplier)
-                    if(!deck.contains(point)){
+                    if (!deck.contains(point)) {
                         deck.cards[set] = point
-                        set ++
+                        set++
                     }
+
                 }
                 state = State.VALIDATE
                 return deck.hashCode().toString()

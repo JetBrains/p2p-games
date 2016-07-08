@@ -1,17 +1,26 @@
 package proto;
 option java_package = "proto";
 option java_outer_classname = "QueryProto";
+import "Entities.proto";
 
 message Query {
     enum Type {
         CHAT_MEMBER_QUERY = 1;
+        GAME_STATUS_QUERY = 2;
     }
 
     required Type type = 1;
 
-    optional ChatMemberQuery query = 2;
+    optional ChatMemberQuery chatMemberQuery = 2;
+    optional GameStatusQuery gameStatusQuery = 3;
 }
 
 message ChatMemberQuery {
     required int32 chatID = 1;
+}
+
+message GameStatusQuery{
+    required string gameID = 1;
+    required User user = 2;
+    required int32 timestamp = 3;
 }

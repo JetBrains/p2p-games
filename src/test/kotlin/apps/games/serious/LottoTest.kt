@@ -3,6 +3,7 @@ package apps.games.serious
 import apps.chat.Chat
 import apps.games.GameManager
 import apps.games.serious.lotto.Lotto
+import apps.games.serious.lotto.Ticket
 import broker.GroupBroker
 import broker.NettyGroupBroker
 import entity.ChatMessage
@@ -36,7 +37,7 @@ class LottoTest{
         val sampleUser = User(Settings.hostAddress, "TestUser")
 
         @BeforeClass @JvmStatic fun setup() {
-            BasicConfigurator.configure();
+            BasicConfigurator.configure()
             GameManager.start()
         }
 
@@ -50,6 +51,7 @@ class LottoTest{
         chat = mock(Chat::class.java) ?: throw AssertionError("Initialization error")
         (chat as Chat).username = "TestUser"
         group = mock(Group::class.java) ?: throw AssertionError("Initialization error")
+        doReturn(User(Settings.hostAddress, chat!!.username)).`when`(chat)?.me()
 
         doReturn("1 2 3 4 5").`when`(chat)?.getUserInput(anyString(), any(Ticket.getValidator(5, 30).javaClass))
         doReturn(NettyGroupBroker()).`when`(chat)?.groupBroker

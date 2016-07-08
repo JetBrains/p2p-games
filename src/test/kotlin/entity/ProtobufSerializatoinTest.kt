@@ -1,7 +1,7 @@
 package entity
 
-import getSampleUser1
-import getSmapleGroup
+import common.getSampleUser1
+import common.getSmapleGroup
 import org.junit.Assert.*
 import org.junit.Test
 import proto.EntitiesProto
