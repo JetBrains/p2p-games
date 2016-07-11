@@ -18,6 +18,7 @@ import proto.GameMessageProto
 import java.math.BigInteger
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * Created by user on 7/6/16.
@@ -31,6 +32,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
         INIT,
         ROUND_INIT,
         DECRYPT_HAND,
+        BIDDING,
         END
     }
 
@@ -38,6 +40,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
     private var state: State = State.INIT
 
     private lateinit var gameGUI: PreferenceGame
+    private lateinit var application: LwjglApplication
 
     private val DECK_SIZE = 32
     //TALON - always last two cards of the deck
@@ -53,8 +56,15 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
     private val N = 3
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
 
+    //player whose turn is right now
+    private var currentPlayer: Int = 0
+    private val bets = Array(N, {i -> Bet.UNKNOWN})
+
     //shuffled Deck
     private lateinit var deck: ShuffledDeck
+
+    //Receive bets
+    private val betQueue = LinkedBlockingQueue<Bet>(1)
 
     override fun getInitialMessage(): String {
         return playerOrder.hashCode().toString()
@@ -77,8 +87,9 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
                 config.width = 1024
                 config.height = 1024
                 config.forceExit = false
+                config.title = "Preference Game[${chat.username}]"
                 gameGUI = PreferenceGame()
-                LwjglApplication(gameGUI, config)
+                application = LwjglApplication(gameGUI, config)
                 while(!gameGUI.loaded){
                     Thread.sleep(200)
                 }
@@ -112,19 +123,46 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
                     decryptWithUserKeys(User(msg.user), keys)
                 }
                 dealHands()
-                state = State.END
+                gameGUI.showBiddingOverlay()
+                gameGUI.disableAllBets()
+                registerCallbacks()
+                currentPlayer = -1
+                state = State.BIDDING
             }
-            State.END -> {}
+            State.BIDDING ->{
+                betQueue.clear()
+                for(msg in responses){
+                    // TODO - digital signatures on player
+                    val userID = getUserID(User(msg.user))
+                    if(userID == currentPlayer){
+                        bets[userID] = Bet.values().first { x -> x.value == msg.value.toInt()}
+                    }
+                }
+                currentPlayer = (currentPlayer + 1) % N
+                if(currentBet() != Bet.UNKNOWN){
+                    state = State.END
+                    chat.sendMessage("We will play ${currentBet().type}")
+                    application.stop()
+                    return ""
+                }
+                val toDisplay = Array(N, {i -> Pair(playerOrder[i], bets[i])})
+                //display bets of players, also disables them
+                gameGUI.displayBets(*toDisplay)
+                if(playerID == currentPlayer){
+                    gameGUI.enableAllBets()
+                    gameGUI.displayBets(*toDisplay)
+                    //you can choose what chose last time
+                    gameGUI.enableBets(bets[playerID], Bet.PASS)
+                    val bet = betQueue.take()
+                    gameGUI.disableAllBets()
+                    return bet.value.toString()
+                }
+
+            }
+            State.END -> {
+            }
         }
         return ""
-    }
-
-    fun getUserID(user: User): Int{
-        return playerOrder.indexOf(user)
-    }
-
-    override fun getResult() {
-        return Unit
     }
 
     /**
@@ -212,9 +250,39 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
             gameGUI.dealCommon(-1)
         }
         gameGUI.tableScreen.hideDeck()
-        gameGUI.showBiddingOverlay()
     }
 
+    /**
+     * Get current bet result:
+     * UNKNOWN - if agreement is not met yet
+     * or round is not finished
+     *
+     * Otherwise - return Bet that is played
+     */
+    private fun currentBet(): Bet{
+        if(currentPlayer != 0 || bets.contains(Bet.UNKNOWN)){
+            return Bet.UNKNOWN
+        }
+        when(bets.count { x -> x == Bet.PASS }){
+            N -> return Bet.PASS
+            N-1 -> return bets.first { x -> x != Bet.PASS }
+            else -> return Bet.UNKNOWN
+        }
+    }
+
+    fun registerCallbacks(){
+        val callback = {x: Bet ->
+            betQueue.offer(x)}
+        gameGUI.registerCallback(callback, *Bet.values())
+    }
+
+    fun getUserID(user: User): Int{
+        return playerOrder.indexOf(user)
+    }
+
+    override fun getResult() {
+        return Unit
+    }
 }
 
 data class ShuffledDeck(val originalDeck: Deck,val encrypted: EncryptedDeck)

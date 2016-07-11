@@ -1,5 +1,6 @@
 package apps.games.serious.preference.GUI
 
+import apps.games.serious.preference.Bet
 import apps.games.serious.preference.Pip
 import apps.games.serious.preference.Suit
 import com.badlogic.gdx.ApplicationAdapter
@@ -9,6 +10,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.ModelBatch
+import entity.User
 
 /**
  * Created by user on 6/30/16.
@@ -48,13 +50,85 @@ class PreferenceGame : Game() {
      * Show bidding overlay after all other actions are complete
      */
     fun showBiddingOverlay(){
-        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayAction(tableScreen.biddingOverlay, true))
+        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayVisibilityAction(tableScreen.biddingOverlay, true))
     }
 
+    /**
+     * Show bidding overlay after all other actions are complete
+     */
     fun hideBiddingOverlay(){
-        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayAction(tableScreen.biddingOverlay, false))
+        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayVisibilityAction(tableScreen.biddingOverlay, false))
     }
 
+    /**
+     * display user bets - mark them on bidding overlay
+     * @param bets -vararg Pair<User, Bet> - pairs
+     * describing User's Bet
+     */
+    fun displayBets(vararg bets: Pair<User, Bet>){
+        for(bet in bets){
+            if(bet.second != Bet.UNKNOWN){
+                tableScreen.biddingOverlay.markBet(bet.second, bet.first)
+            }
+
+        }
+    }
+
+    /**
+     * Mark all bet buttons as enabled
+     */
+    fun enableAllBets(){
+        for(bet in Bet.values()){
+            tableScreen.biddingOverlay.enableBet(bet)
+        }
+    }
+
+    /**
+     * Mark all bet buttons as disabled
+     */
+    fun disableAllBets(){
+        for(bet in Bet.values()){
+            tableScreen.biddingOverlay.disableBet(bet)
+        }
+    }
+
+    /**
+     * Enable bets from given list of bets
+     * @param bets - Bets to enable
+     */
+    fun enableBets(vararg bets: Bet){
+        for(bet in bets){
+            tableScreen.biddingOverlay.enableBet(bet)
+        }
+    }
+
+    /**
+     * Disable bets from given list of bets
+     * @param bets - Bets to disable
+     */
+    fun disableBets(vararg bets: Bet){
+        for(bet in bets){
+            tableScreen.biddingOverlay.disableBet(bet)
+        }
+    }
+
+    /**
+     * Add callback listener for buttons
+     * corresponding to provided bets
+     */
+    fun <R>registerCallback(callBack: (Bet) -> (R), vararg bets: Bet){
+        for(bet in bets){
+            tableScreen.biddingOverlay.addCallback(bet, callBack)
+        }
+    }
+
+    /**
+     * In preference we have 32 card deck.
+     * This function takes card ID (0 -> 32)
+     * or -1 for UNKNOWN card
+     * and translates it into corresponding
+     * renderable object
+     */
     private fun getCardById(cardID: Int): Card{
         val card: Card
         if(cardID == -1){

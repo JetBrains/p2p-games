@@ -27,7 +27,7 @@ class MessageClient(val addr: InetSocketAddress) {
     private val connections: MutableMap<InetSocketAddress, ChannelFuture> = mutableMapOf()
 
     init {
-        val group = NioEventLoopGroup();
+        val group = NioEventLoopGroup()
         bootstrap.group(group).channel(NioSocketChannel::class.java).
                 handler(MessageClientChannelInitializer())
         bootstrap.option(ChannelOption.SO_REUSEADDR, true)

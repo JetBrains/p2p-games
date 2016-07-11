@@ -32,13 +32,17 @@ abstract class Action(var delay: Float){
 
     fun executeWhenComplete(action: Action?){
         if (action != null) {
-            completeDependencies.add(action)
+            synchronized(completeDependencies){
+                completeDependencies.add(action)
+            }
         }
     }
 
     fun executeWhenReady(action: Action?){
         if (action != null) {
-            readyDependencies.add(action)
+            synchronized(readyDependencies){
+                readyDependencies.add(action)
+            }
         }
     }
 
@@ -48,19 +52,22 @@ abstract class Action(var delay: Float){
     }
 
     private fun resolveDependencies(){
-        val completeIterator = completeDependencies.iterator()
-        while(completeIterator.hasNext()){
-            val dependency = completeIterator.next()
-            if(dependency.isComplete()){
-                completeIterator.remove()
+        synchronized(completeDependencies) {
+            val completeIterator = completeDependencies.iterator()
+            while (completeIterator.hasNext()) {
+                val dependency = completeIterator.next()
+                if (dependency.isComplete()) {
+                    completeIterator.remove()
+                }
             }
         }
-
-        val readyIterator = readyDependencies.iterator()
-        while(readyIterator.hasNext()){
-            val dependency = readyIterator.next()
-            if(dependency.readyToExcute() && dependency.delay <= 0){
-                readyIterator.remove()
+        synchronized(readyDependencies) {
+            val readyIterator = readyDependencies.iterator()
+            while (readyIterator.hasNext()) {
+                val dependency = readyIterator.next()
+                if (dependency.readyToExcute() && dependency.delay <= 0) {
+                    readyIterator.remove()
+                }
             }
         }
     }
@@ -77,46 +84,58 @@ class ActionManager {
     internal val pending = mutableListOf<Action>()
 
     fun update(delta: Float) {
-        val pendingIterator = pending.iterator()
-        while(pendingIterator.hasNext()){
-            val action = pendingIterator.next()
-            if(action.readyToExcute()){
-                pendingIterator.remove()
-                actions.add(action)
+        synchronized(actions) {
+            synchronized(pending) {
+                val pendingIterator = pending.listIterator()
+                while (pendingIterator.hasNext()) {
+                    val action = pendingIterator.next()
+                    if (action.readyToExcute()) {
+                        pendingIterator.remove()
+                        actions.add(action)
+                    }
+                }
             }
-        }
-
-        val actionsIterator = actions.iterator()
-        while(actionsIterator.hasNext()){
-            val action = actionsIterator.next()
-            action.update(delta)
-            if(action.isComplete()){
-                actionsIterator.remove()
+            val actionsIterator = actions.listIterator()
+            while (actionsIterator.hasNext()) {
+                val action = actionsIterator.next()
+                action.update(delta)
+                if (action.isComplete()) {
+                    actionsIterator.remove()
+                }
             }
         }
     }
 
     fun add(action: Action){
-        pending.add(action)
+        synchronized(pending){
+            pending.add(action)
+        }
     }
 
     fun addAfterLastReady(action: Action){
         action.executeWhenReady(getLastAction())
-        pending.add(action)
+        synchronized(pending){
+            pending.add(action)
+        }
     }
 
     fun addAfterLastComplete(action: Action){
         action.executeWhenComplete(getLastAction())
-        pending.add(action)
+        synchronized(pending){
+            pending.add(action)
+        }
     }
 
     fun getLastAction(): Action?{
-        if(pending.isNotEmpty()){
-            return pending.last()
+        synchronized(pending){
+            if(pending.isNotEmpty()){
+                return pending.last()
+            }
+            if(actions.isNotEmpty()){
+                return actions.last()
+            }
+            return null
         }
-        if(actions.isNotEmpty()){
-            return actions.last()
-        }
-        return null
+
     }
 }

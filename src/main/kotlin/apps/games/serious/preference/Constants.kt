@@ -6,6 +6,7 @@ package apps.games.serious.preference
 
 
 enum class Bet(var type: String, var value: Int){
+    UNKNOWN("UNKNOWN", -1),
     PASS("PASS", 0),
 
     SIX_OF_SPADES("6 SPADES", 1),
