@@ -29,7 +29,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
 
 
     /**
-     * wait for all users to give game state update
+     * wait for all users to give game state execute
      * or claim end of game
      */
     fun getResponsePack(retries: Int = 10*maxRetires): List<GameMessageProto.GameStateMessage>{

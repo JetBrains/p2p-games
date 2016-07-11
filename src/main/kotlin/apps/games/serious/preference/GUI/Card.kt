@@ -60,6 +60,62 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite){
         transform.trn(position.x, position.y, z)
     }
 
+
+    companion object{
+        //TODO - Maybe cache actions on cards
+        fun animate(card: Card, x: Float, y: Float, z: Float, angle: Float, speed: Float, rotation: Float = 0f, delay: Float = 0.25f): CardAction{
+            val action = CardAction(delay)
+            action.reset(card)
+            action.toPosition.set(x, y, z)
+            action.toAngle = angle
+            action.speed = speed
+            action.toRotation = rotation
+            return action
+        }
+    }
+}
+
+/**
+ * Class represents card translation
+ * Moves cards on table rotating them
+ * around Z axis - toAngle/From angle
+ * around Y axis - around Y axis
+ * (toRatation degrees)
+ */
+class CardAction(delay: Float) : Action(delay) {
+    lateinit var card: Card
+    val fromPosition = Vector3()
+    var fromAngle: Float = 0.toFloat()
+    val toPosition = Vector3()
+    var toAngle: Float = 0.toFloat()
+    var speed: Float = 0.toFloat()
+    var alpha: Float = 0.toFloat()
+    var toRotation: Float = 0.toFloat()
+    var finished: Boolean = false
+
+    fun reset(card: Card) {
+        this.card = card
+        fromPosition.set(card.position)
+        fromAngle = card.angle
+        alpha = 0f
+    }
+
+
+    override fun execute(delta: Float) {
+        alpha += delta * speed
+        if (alpha >= 1f) {
+            alpha = 1f
+            finished = true
+        }
+        card.position.set(fromPosition).lerp(toPosition, alpha)
+        card.angle = fromAngle + alpha * (toAngle - fromAngle)
+        card.rotation = toRotation*alpha
+        card.update()
+    }
+
+    override fun isComplete(): Boolean {
+        return finished
+    }
 }
 
 /**

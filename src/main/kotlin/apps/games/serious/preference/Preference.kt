@@ -212,6 +212,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, gr
             gameGUI.dealCommon(-1)
         }
         gameGUI.tableScreen.hideDeck()
+        gameGUI.showBiddingOverlay()
     }
 
 }

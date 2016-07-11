@@ -39,19 +39,15 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
 
     private var selecting: Card? = null
 
-    //queue of cards to spawn: Card - what to spawn
-    //Vector3 - where
-    val spawnQueue = ConcurrentLinkedDeque<CardTarget>()
-
     val deck = CardDeck(atlas, 2)
     val cards: CardBatch
-    var actions = CardActions()
+    var actionManager = ActionManager()
     val topDeck: Card
     var showDeck = true
-    val hud = BiddingOverlay()
+    val biddingOverlay = BiddingOverlay()
 
     init{
-        hud.create()
+        biddingOverlay.create()
         //Init cards
         val material = Material(
                 TextureAttribute.createDiffuse(atlas.textures.first()),
@@ -80,12 +76,10 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
 
         //Init Camera
         camController.setVelocity(10f)
-        Gdx.input.inputProcessor = InputMultiplexer(this, hud.stage, camController)
+        Gdx.input.inputProcessor = InputMultiplexer(this, biddingOverlay.stage, camController)
 
     }
 
-
-    private var spawnTimer = -1f
 
     /**
      * Render everything. Also in charge of spawning cards on timer
@@ -96,28 +90,14 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         camController.update()
-        if(spawnQueue.isNotEmpty()){
-            if (spawnTimer < 0) {
-                if (Gdx.input.justTouched())
-                    spawnTimer = 1f
-            } else{
-                spawnTimer -= delta
-                if(spawnTimer < 0){
-                    spawnTimer = 0.125f
-                    spawnCard()
-                }
-            }
 
-        }
-
-
-        actions.update(delta)
+        actionManager.update(delta)
 
         game.batch.begin(getCam())
         game.batch.render(cards, environment)
         game.batch.render(table.tableTop, environment)
         game.batch.end()
-        hud.render(getCam())
+        biddingOverlay.render(getCam())
     }
 
     /**
@@ -132,7 +112,11 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         player.hand.size ++
         card.angle = 180f
         cards.add(card)
-        spawnQueue.add(CardTarget(card, handPos, angle))
+
+        Gdx.app.log("Spawn", card.suit.type + " - " + card.pip)
+
+
+        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 0f, 1f, angle))
     }
 
     /**
@@ -156,12 +140,13 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         table.commonHand.size ++
         card.angle = 180f
         cards.add(card)
-        spawnQueue.add(CardTarget(card, handPos, angle))
+        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 0f, 1f, angle))
     }
 
     @Synchronized fun hideDeck(){
         if(showDeck){
-            spawnQueue.add(CardTarget(topDeck, Vector3(topDeck.position).add(0f, 0f, -1f), 0f))
+            val pos = Vector3(topDeck.position).add(0f, 0f, -1f)
+            actionManager.addAfterLastComplete(Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
             showDeck = true
         }
 
@@ -169,7 +154,8 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
 
     @Synchronized fun showDeck(){
         if(!showDeck){
-            spawnQueue.add(CardTarget(topDeck, Vector3(topDeck.position).add(0f, 0f, 1f), 0f))
+            val pos = Vector3(topDeck.position).add(0f, 0f, 1f)
+            actionManager.addAfterLastComplete(Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
             showDeck = false
         }
 
@@ -177,7 +163,7 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
 
 
     override fun resize(width: Int, height: Int) {
-        hud.resize(width, height)
+        biddingOverlay.resize(width, height)
         cam3d.viewportWidth = width.toFloat()
         cam3d.viewportHeight = height.toFloat()
         cam3d.position.set(0f, -12f, 12f) //experimental constants
@@ -186,31 +172,9 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         cam2d.lookAt(0f, 0f, 0f)
         cam2d.viewportWidth = 20f
         cam2d.viewportHeight = 20f
-        cam3d.lookAt(0f, 0f, 0f)
         cam3d.update()
         cam2d.update()
     }
-
-
-    /**
-     * Spawn a card from the deck and give it to player
-     */
-    fun spawnCard() {
-        //sample code
-        val record = spawnQueue.pollFirst()
-        val card = record.card
-        val suit = card.suit
-        val pip = card.pip
-        Gdx.app.log("Spawn", suit.type + " - " + pip)
-
-        //spawn card from deck
-
-        val pos = record.position
-
-        actions.animate(card, pos.x, pos.y, pos.z , 0f, 1f, record.rotation)
-
-    }
-
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         if (selecting != null) {
@@ -231,7 +195,8 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
      */
     private fun setSelected(selecting: Card) {
         val pos = table.getMainPlayer().getCardspace()
-        actions.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f)
+
+        actionManager.addAfterLastComplete(Card.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f))
     }
 
     /**
@@ -304,5 +269,3 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         cards.dispose()
     }
 }
-
-data class CardTarget(val card: Card, val position: Vector3, val rotation: Float)

@@ -25,6 +25,7 @@ class BiddingOverlay {
     lateinit var batch: SpriteBatch
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
     private val buttons = mutableListOf<Button>()
+    var isVisible = false
 
     fun create() {
         batch = SpriteBatch()
@@ -36,7 +37,7 @@ class BiddingOverlay {
         // recommended solely for the convenience of getting a texture, region, etc as a drawable, tinted drawable, etc.
         skin = Skin()
         // Generate a 1x1 white texture and store it in the skin named "white".
-        val pixmap = Pixmap(100, 100, Pixmap.Format.RGBA8888)
+        val pixmap = Pixmap(80, 80, Pixmap.Format.RGBA8888)
         pixmap.setColor(Color.GREEN)
         pixmap.fill()
 
@@ -62,7 +63,7 @@ class BiddingOverlay {
             val button = TextButton(value.type, textButtonStyle)
             button.addListener(ListenerFactory.create(value, {-> buttons.forEach { x -> x.isDisabled = true }}))
             buttons.add(button)
-            table.add(button).pad(15f)
+            table.add(button).pad(10f)
 
             if(value in breaks){
                 table.row()
@@ -74,8 +75,10 @@ class BiddingOverlay {
 
 
     fun render(cam: Camera){
-        stage.camera.projection.set(cam.projection)
-        stage.draw()
+        if(isVisible){
+            stage.camera.projection.set(cam.projection)
+            stage.draw()
+        }
     }
 
     fun resize(width: Int, height: Int) {
@@ -91,5 +94,17 @@ class BiddingOverlay {
                 }
             }
         }
+    }
+}
+
+class BiddingOverlayAction(val overlay: BiddingOverlay, val show: Boolean, delay: Float = 0.10f): Action(delay) {
+    internal var finished = false
+    override fun execute(delta: Float) {
+        overlay.isVisible = show
+        finished = true
+    }
+
+    override fun isComplete(): Boolean {
+        return finished
     }
 }

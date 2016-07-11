@@ -44,6 +44,17 @@ class PreferenceGame : Game() {
         tableScreen.dealCommon(getCardById(cardID))
     }
 
+    /**
+     * Show bidding overlay after all other actions are complete
+     */
+    fun showBiddingOverlay(){
+        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayAction(tableScreen.biddingOverlay, true))
+    }
+
+    fun hideBiddingOverlay(){
+        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayAction(tableScreen.biddingOverlay, false))
+    }
+
     private fun getCardById(cardID: Int): Card{
         val card: Card
         if(cardID == -1){
