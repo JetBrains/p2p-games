@@ -32,12 +32,13 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
      * wait for all users to give game state update
      * or claim end of game
      */
-    fun getResponsePack(retries: Int = maxRetires): List<GameMessageProto.GameStateMessage>{
+    fun getResponsePack(retries: Int = 10*maxRetires): List<GameMessageProto.GameStateMessage>{
         val found: MutableMap<User, GameMessageProto.GameStateMessage> = mutableMapOf()
         val pending: MutableSet<User> = mutableSetOf(*game.group.users.toTypedArray())
         var failures = 0
-        while(pending.isNotEmpty() && failures < retries){
-            val msg = stateMessageQueue.pollFirst(200, TimeUnit.MILLISECONDS)
+        //TODO - Global constants for connection timeouts
+        while(pending.isNotEmpty() && failures < retries/2){
+            val msg = stateMessageQueue.pollFirst(20, TimeUnit.MILLISECONDS)
             if(msg == null){
                 failures ++
                 continue
@@ -75,7 +76,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
             if(pending.isEmpty()){
                 break
             }
-            Thread.sleep(500)
+            Thread.sleep(50)
         }
         timestamp++
         return found.values.toMutableList()

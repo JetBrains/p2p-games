@@ -2,8 +2,11 @@ package apps.games.serious
 
 import apps.chat.Chat
 import apps.games.GameManagerClass
+import apps.games.primitives.Deck
+import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
 import broker.NettyGroupBroker
+import crypto.random.randomPermutuation
 import entity.Group
 import entity.User
 import network.ConnectionManagerClass
@@ -24,7 +27,7 @@ import java.net.InetSocketAddress
  * create lotto game, send it expected messages,
  * until desired condition is met
  */
-val MAX_USERS = 20
+val MAX_USERS = 5
 
 class ShuffleTest{
 
@@ -75,9 +78,32 @@ class ShuffleTest{
     }
 
     /**
-     * ShuffleTest
-     * Create a common random deck, encrypt and
-     * shuffle it between two users
+     * Create a common random deck. Then shuffle
+     * it. For each user generate a random order
+     * of decryption keys. Verify, that deck is
+     * known only after all MAX_USERS keys ar
+     * known
+     */
+    @Test
+    fun ShuffleTest(){
+        val userRandomDeckGames = Array(MAX_USERS, {i -> RandomDeckGame(chats[i], groups[i], "RandomDeckForShuffle", ECParams, gameManager = gameManagers[i])})
+        val futuresDecks = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userRandomDeckGames[i])})
+        val originalDeck = futuresDecks[0].get().clone()
+        val userShuffleDeckGames = Array(MAX_USERS, {i -> DeckShuffleGame(chats[i], groups[i], "DeckShuffle", ECParams, futuresDecks[i].get(), gameManager = gameManagers[i])})
+        val futureShuffledDecks = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userShuffleDeckGames[i])})
+        for(i in 0..MAX_USERS-1){
+            val shuffledDeck = futureShuffledDecks[i].get()
+            for(j in randomPermutuation(MAX_USERS)){
+                assertEquals(0, intersectDeckds(shuffledDeck.deck, originalDeck))
+                shuffledDeck.deck.decryptSeparate(futureShuffledDecks[j].get().keys)
+            }
+            assertEquals(shuffledDeck.deck.size, intersectDeckds(shuffledDeck.deck, originalDeck))
+        }
+    }
+
+    /**
+     * Create a common random deck between Users,
+     * verify that everybody got the same deck
      */
     @Test
     fun RandomDeckTest(){
@@ -86,8 +112,10 @@ class ShuffleTest{
         for(i in 1..MAX_USERS-1){
             assertEquals(futures[0].get(), futures[i].get())
         }
-
     }
 
+    private fun intersectDeckds(deck1: Deck, deck2: Deck): Int{
+        return deck1.cards.intersect(deck2.cards.toList()).size
+    }
 
 }

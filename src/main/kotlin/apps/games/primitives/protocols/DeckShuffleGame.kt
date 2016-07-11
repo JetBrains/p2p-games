@@ -3,6 +3,8 @@ package apps.games.primitives.protocols
 import apps.chat.Chat
 import apps.games.Game
 import apps.games.GameExecutionException
+import apps.games.GameManager
+import apps.games.GameManagerClass
 import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import crypto.random.randomBigInt
@@ -31,7 +33,8 @@ import java.math.BigInteger
  */
 
 
-class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec, val deck: Deck) : Game<EncryptedDeck>(chat, group, gameID) {
+class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec, val deck: Deck, gameManager: GameManagerClass = GameManager) :
+                                                    Game<EncryptedDeck>(chat, group, gameID, gameManager) {
     override val name: String
         get() = "Card Shuffle"
 
