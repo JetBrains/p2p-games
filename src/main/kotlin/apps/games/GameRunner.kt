@@ -6,9 +6,6 @@ import entity.User
 import org.apache.commons.collections4.map.LRUMap
 import proto.GameMessageProto
 import proto.GenericMessageProto
-import proto.QueryProto
-import sun.misc.LRUCache
-import java.util.*
 import java.util.concurrent.BlockingDeque
 import java.util.concurrent.Callable
 import java.util.concurrent.LinkedBlockingDeque
@@ -19,7 +16,7 @@ import java.util.concurrent.TimeUnit
  */
 
 
-class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
+class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
 
     val stateMessageQueue: BlockingDeque<GameMessageProto.GameStateMessage> = LinkedBlockingDeque()
     val endGameMessageQueue: BlockingDeque<GameMessageProto.GameEndMessage> = LinkedBlockingDeque()
@@ -32,48 +29,51 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
      * wait for all users to give game state execute
      * or claim end of game
      */
-    fun getResponsePack(retries: Int = 10*maxRetires): List<GameMessageProto.GameStateMessage>{
+    fun getResponsePack(retries: Int = 10 * maxRetires): List<GameMessageProto.GameStateMessage> {
         val found: MutableMap<User, GameMessageProto.GameStateMessage> = mutableMapOf()
-        val pending: MutableSet<User> = mutableSetOf(*game.group.users.toTypedArray())
+        val pending: MutableSet<User> = mutableSetOf(
+                *game.group.users.toTypedArray())
         var failures = 0
         //TODO - Global constants for connection timeouts
-        while(pending.isNotEmpty() && failures < retries/2){
+        while (pending.isNotEmpty() && failures < retries / 2) {
             val msg = stateMessageQueue.pollFirst(20, TimeUnit.MILLISECONDS)
-            if(msg == null){
-                failures ++
+            if (msg == null) {
+                failures++
                 continue
             }
-            if(msg.timestamp == timestamp){
+            if (msg.timestamp == timestamp) {
                 val user = User(msg.user)
-                if(pending.contains(user)){
+                if (pending.contains(user)) {
                     pending.remove(user)
                 }
                 found.put(user, msg)
-            }else if(msg.timestamp == timestamp + 1){
+            } else if (msg.timestamp == timestamp + 1) {
                 nextStepMessages.add(msg)
-            }else{
+            } else {
                 System.err.println("Warning: message from past received")
             }
         }
-        for(i in 1..maxRetires){
-            for(user in pending.toList()){
-                val genericMessage = game.gameManager.requestUpdate(user, game, timestamp) ?: continue
+        for (i in 1..maxRetires) {
+            for (user in pending.toList()) {
+                val genericMessage = game.gameManager.requestUpdate(user, game,
+                        timestamp) ?: continue
                 val response = genericMessage.responseGroup.responseList[0].gameMessage
-                if(response.hasGameErrorMessage()){
+                if (response.hasGameErrorMessage()) {
                     continue
                 }
                 val msg = response.gameStateMessage
-                if(msg.timestamp == timestamp){
+                if (msg.timestamp == timestamp) {
                     val user2 = User(msg.user)
-                    if(pending.contains(user2)){
+                    if (pending.contains(user2)) {
                         pending.remove(user2)
                     }
                     found.put(user2, msg)
-                }else{
-                    System.err.println("Warning: [${game.chat.me().name}] User ${user.name} is at ${msg.timestamp} while I am at $timestamp")
+                } else {
+                    System.err.println(
+                            "Warning: [${game.chat.me().name}] User ${user.name} is at ${msg.timestamp} while I am at $timestamp")
                 }
             }
-            if(pending.isEmpty()){
+            if (pending.isEmpty()) {
                 break
             }
             Thread.sleep(50)
@@ -85,7 +85,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
     /**
      * broadcast result of game state computation
      */
-    @Synchronized fun sendResponse(response: String, data: List<ByteArray>){
+    @Synchronized fun sendResponse(response: String, data: List<ByteArray>) {
         val msg = GameMessageProto.GameStateMessage
                 .newBuilder()
                 .setGameID(game.gameID)
@@ -103,7 +103,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
                 .setGameMessage(gameMessage)
                 .build()
         messageLog[timestamp] = genericMessage
-        synchronized(game){
+        synchronized(game) {
             game.chat.groupBroker.broadcastAsync(game.group, genericMessage)
         }
 
@@ -112,8 +112,8 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
     /**
      * deligate endGameMessage to game.
      */
-    fun processEndGame(msg: GameMessageProto.GameEndMessage){
-        synchronized(game){
+    fun processEndGame(msg: GameMessageProto.GameEndMessage) {
+        synchronized(game) {
             game.evaluateGameEnd(msg)
         }
         endGameMessageQueue.add(msg)
@@ -124,21 +124,22 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
      */
     override fun call(): T {
         sendResponse(game.getInitialMessage(), game.getData())
-        while(!game.isFinished()){
+        while (!game.isFinished()) {
             val responses: List<GameMessageProto.GameStateMessage>
-                responses = getResponsePack()
-                if(game.isFinished()){
-                    break
-                }
-                if(responses.size + game.stopedPlaying.users.size < game.group.users.size){
-                    val responded = (responses.map { x -> User(x.user) }).toSet()
-                    for(user in game.group.users){
-                        if(!responded.contains(user)){
-                            error("[${game.chat.me().name}] User ${user.name} failed to respond at step $timestamp")
-                        }
+            responses = getResponsePack()
+            if (game.isFinished()) {
+                break
+            }
+            if (responses.size + game.stopedPlaying.users.size < game.group.users.size) {
+                val responded = (responses.map { x -> User(x.user) }).toSet()
+                for (user in game.group.users) {
+                    if (!responded.contains(user)) {
+                        error("[${game.chat.me().name}] User ${user.name} failed to respond at step $timestamp")
                     }
-                    throw GameExecutionException("Failed to receive response from everyone")
                 }
+                throw GameExecutionException(
+                        "Failed to receive response from everyone")
+            }
 
             val computed = game.evaluate(responses)
 
@@ -150,24 +151,26 @@ class GameRunner<T>(val game: Game<T>, val maxRetires:Int = 5): Callable<T>{
             nextStepMessages.clear()
         }
 
-        timestamp ++
+        timestamp++
         messageLog[timestamp] = game.gameManager.sendEndGame(game.gameID,
                 "[${game.chat.username}] finished playing!\nWith final result:\n ${game.getFinalMessage()}",
                 game.getVerifier())
 
         var failures = 0
-        while(game.group != game.stopedPlaying){
+        while (game.group != game.stopedPlaying) {
             val msg = endGameMessageQueue.pollFirst(500, TimeUnit.MILLISECONDS)
             if (msg == null) {
-                failures ++
+                failures++
             }
         }
-        if(game.group != game.stopedPlaying){
-            throw GameExecutionException("Not everyone stopped playing, or end game message lost")
+        if (game.group != game.stopedPlaying) {
+            throw GameExecutionException(
+                    "Not everyone stopped playing, or end game message lost")
         }
         val result = game.getResult()
         game.gameManager.deleteGame(game)
-        game.chat.showMessage(ChatMessage(game.chat, "Game completed: ${game.name}"))
+        game.chat.showMessage(
+                ChatMessage(game.chat, "Game completed: ${game.name}"))
         return result
 
 

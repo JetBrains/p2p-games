@@ -7,9 +7,10 @@ import java.net.InetSocketAddress
  * Created by Mark Geller on 6/20/16.
  */
 
-class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerializable<EntitiesProto.User> {
+class User(val hostAddress: InetSocketAddress, val name: String) : ProtobufSerializable<EntitiesProto.User> {
 
-    constructor(user: EntitiesProto.User) : this(InetSocketAddress(user.hostname, user.port), user.name) {
+    constructor(user: EntitiesProto.User) : this(
+            InetSocketAddress(user.hostname, user.port), user.name) {
     }
 
     override fun getProto(): EntitiesProto.User {
@@ -19,7 +20,7 @@ class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerial
                 .setName(name).build()
     }
 
-    override fun equals(other: Any?): Boolean{
+    override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
@@ -29,7 +30,7 @@ class User(val hostAddress: InetSocketAddress, val name: String): ProtobufSerial
         return true
     }
 
-    override fun hashCode(): Int{
+    override fun hashCode(): Int {
         return hostAddress.hashCode()
     }
 }

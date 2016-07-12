@@ -5,7 +5,7 @@ package apps.games.serious.preference
  */
 
 
-enum class Bet(var type: String, var value: Int){
+enum class Bet(var type: String, var value: Int) {
     UNKNOWN("UNKNOWN", -1),
     PASS("PASS", 0),
 
@@ -45,7 +45,7 @@ enum class Bet(var type: String, var value: Int){
 /**
  * Card Suit representation
  */
-enum class Suit(val type: String, val index: Int){
+enum class Suit(val type: String, val index: Int) {
     UNKNOWN("unknown", -1),
     CLUBS("clubs", 0),
     DIAMONDS("diamonds", 1),
@@ -56,7 +56,7 @@ enum class Suit(val type: String, val index: Int){
 /**
  * Card Pip representation
  */
-enum class Pip(val value: Int){
+enum class Pip(val value: Int) {
     UNKNOWN(-1),
     ACE(1),
     TWO(2),

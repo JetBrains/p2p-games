@@ -1,18 +1,18 @@
 package apps.games.serious.preference.GUI
 
 import apps.games.serious.preference.Bet
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.scenes.scene2d.*
+import com.badlogic.gdx.scenes.scene2d.EventListener
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Button
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import entity.User
 
@@ -63,17 +63,18 @@ class BiddingOverlay {
 
         skin.add("default", textButtonStyle)
 
-        val breaks = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP, Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
+        val breaks = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
+                Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
         val skips = listOf(Bet.UNKNOWN)
-        for(value in Bet.values()){
-            if(value in skips){
+        for (value in Bet.values()) {
+            if (value in skips) {
                 continue
             }
             val button = TextButton(value.type, textButtonStyle)
             buttons[value] = button
             table.add(button).pad(10f)
 
-            if(value in breaks){
+            if (value in breaks) {
                 table.row()
             }
         }
@@ -84,7 +85,7 @@ class BiddingOverlay {
     /**
      * Display that this Bet is claimed by user
      */
-    fun markBet(bet: Bet,vararg users: User){
+    fun markBet(bet: Bet, vararg users: User) {
         val button = buttons[bet] ?: return
         button.isChecked = true
         button.setText(users.map { x -> x.name }.joinToString(" + \n"))
@@ -93,7 +94,7 @@ class BiddingOverlay {
     /**
      * Disable button corresponding to given Bet
      */
-    fun disableBet(bet: Bet){
+    fun disableBet(bet: Bet) {
         val button = buttons[bet] ?: return
         button.isDisabled = true
     }
@@ -102,7 +103,7 @@ class BiddingOverlay {
      * Enable button corresponding to given Bet
      */
 
-    fun enableBet(bet: Bet){
+    fun enableBet(bet: Bet) {
         val button = buttons[bet] ?: return
         button.isDisabled = false
     }
@@ -112,7 +113,7 @@ class BiddingOverlay {
      * and set button text to original value
      */
 
-    fun resetBet(bet: Bet){
+    fun resetBet(bet: Bet) {
         val button = buttons[bet] ?: return
         button.isChecked = false
         button.setText(bet.type)
@@ -122,14 +123,14 @@ class BiddingOverlay {
     /**
      * Add callback Listener for this button
      */
-    fun <R>addCallback(bet: Bet, callback: (Bet) -> (R)){
+    fun <R> addCallback(bet: Bet, callback: (Bet) -> (R)) {
         val button = buttons[bet] ?: return
         button.addListener(ListenerFactory.create(bet, button, callback))
     }
 
 
-    fun render(cam: Camera){
-        if(isVisible){
+    fun render(cam: Camera) {
+        if (isVisible) {
             stage.camera.projection.set(cam.projection)
             stage.draw()
         }
@@ -139,11 +140,13 @@ class BiddingOverlay {
         stage.viewport.update(width, height, true)
     }
 
-    companion object ListenerFactory{
-        fun <R>create(bet: Bet, betButton: Button, callback: (Bet) -> (R)): EventListener{
-            return object: ClickListener(){
+    companion object ListenerFactory {
+        fun <R> create(bet: Bet,
+                betButton: Button,
+                callback: (Bet) -> (R)): EventListener {
+            return object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                    if(!betButton.isDisabled){
+                    if (!betButton.isDisabled) {
                         callback(bet)
                         betButton.isChecked = true
                         betButton.isDisabled = true
@@ -155,7 +158,8 @@ class BiddingOverlay {
     }
 }
 
-class BiddingOverlayVisibilityAction(val overlay: BiddingOverlay, val show: Boolean, delay: Float = 0.10f): Action(delay) {
+class BiddingOverlayVisibilityAction(val overlay: BiddingOverlay, val show: Boolean, delay: Float = 0.10f) : Action(
+        delay) {
     internal var finished = false
     override fun execute(delta: Float) {
         overlay.isVisible = show

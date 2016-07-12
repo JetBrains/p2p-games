@@ -10,8 +10,9 @@ import proto.GenericMessageProto
  * Created by user on 6/20/16.
  */
 class NettyGroupBroker(val connectionManager: ConnectionManagerClass = ConnectionManager) : GroupBroker {
-    override fun broadcastAsync(group: Group, msg: GenericMessageProto.GenericMessage) {
-        synchronized(group.users){
+    override fun broadcastAsync(group: Group,
+            msg: GenericMessageProto.GenericMessage) {
+        synchronized(group.users) {
             for (user in group.users) {
                 sendAsync(user, msg)
             }
@@ -19,7 +20,8 @@ class NettyGroupBroker(val connectionManager: ConnectionManagerClass = Connectio
     }
 
 
-    override fun sendAsync(user: User, msg: GenericMessageProto.GenericMessage) {
+    override fun sendAsync(user: User,
+            msg: GenericMessageProto.GenericMessage) {
         connectionManager.sendAsync(user.hostAddress, msg)
     }
 

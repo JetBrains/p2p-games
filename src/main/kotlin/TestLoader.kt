@@ -10,18 +10,18 @@ import java.net.Socket
  */
 
 
-class Task: Runnable{
+class Task : Runnable {
     override fun run() {
         BasicConfigurator.configure();
         val host: String
-        if(DEBUG){
+        if (DEBUG) {
             host = "127.0.0.1"
-        }else{
-            try{
+        } else {
+            try {
                 val s = Socket("google.com", 80)
                 host = s.localAddress.hostAddress
                 s.close();
-            }catch(ignored: Exception){
+            } catch(ignored: Exception) {
                 host = InetAddress.getLocalHost().hostAddress
             }
         }
@@ -36,18 +36,18 @@ class Task: Runnable{
     }
 }
 
-class Task2: Runnable{
+class Task2 : Runnable {
     override fun run() {
         BasicConfigurator.configure()
         val host: String
-        if(DEBUG){
+        if (DEBUG) {
             host = "127.0.0.1"
-        }else{
-            try{
+        } else {
+            try {
                 val s = Socket("google.com", 80)
                 host = s.localAddress.hostAddress
                 s.close();
-            }catch(ignored: Exception){
+            } catch(ignored: Exception) {
                 host = InetAddress.getLocalHost().hostAddress
             }
         }

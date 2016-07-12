@@ -1,15 +1,12 @@
 package apps.games.serious.lotto
 
 import apps.games.GameInputException
-import org.apache.commons.codec.digest.DigestUtils
-import crypto.random.randomInt
-import crypto.random.randomString
 
 /**
  * Created by user on 6/27/16.
  */
 
-class Ticket(val ticketSize: Int){
+class Ticket(val ticketSize: Int) {
     /**
      * List of ticket values
      */
@@ -20,7 +17,7 @@ class Ticket(val ticketSize: Int){
      * GUI if ticket contains give number
      * @param n - number to search
      */
-    fun contains(n: Int): Boolean{
+    fun contains(n: Int): Boolean {
         return numbers.contains(n)
     }
 
@@ -29,9 +26,9 @@ class Ticket(val ticketSize: Int){
      * store it as marked
      * @param n - number to mark
      */
-    fun mark(n: Int): Boolean{
+    fun mark(n: Int): Boolean {
         val res = contains(n)
-        if(res){
+        if (res) {
             marked.add(n)
         }
         return res
@@ -41,11 +38,11 @@ class Ticket(val ticketSize: Int){
      * check, whether game condition
      * is satisfied
      */
-    fun win(): Boolean{
+    fun win(): Boolean {
         return marked == numbers
     }
 
-    fun getSHA256(): String{
+    fun getSHA256(): String {
         return org.apache.commons.codec.digest.DigestUtils.sha256Hex(toString())
     }
 
@@ -56,15 +53,16 @@ class Ticket(val ticketSize: Int){
     /**
      * Factory for creating tickets
      */
-    companion object Factory{
+    companion object Factory {
         /**
          * create crypto.random ticket
          * @param ticketSize - size of ticket
          * @param maxValue - Maximum value of number in ticket
          */
-        fun randomTicket(ticketSize: Int, maxValue: Int): apps.games.serious.lotto.Ticket {
+        fun randomTicket(ticketSize: Int,
+                maxValue: Int): apps.games.serious.lotto.Ticket {
             val res = apps.games.serious.lotto.Ticket(ticketSize)
-            while(res.numbers.size < ticketSize){
+            while (res.numbers.size < ticketSize) {
                 res.numbers.add(crypto.random.randomInt(maxValue))
             }
             return res
@@ -78,16 +76,20 @@ class Ticket(val ticketSize: Int){
          * @throws GameInputException - if provided list values
          * is inconsistent with other restrictions
          */
-        fun buildTicket(ticketSize: Int, maxValue: Int, values: List<Int>): apps.games.serious.lotto.Ticket {
+        fun buildTicket(ticketSize: Int,
+                maxValue: Int,
+                values: List<Int>): apps.games.serious.lotto.Ticket {
             val res = apps.games.serious.lotto.Ticket(ticketSize)
-            for(value in values){
-                if(value > maxValue){
-                    throw apps.games.GameInputException("Malformed game user input. Out of bound value found")
+            for (value in values) {
+                if (value > maxValue) {
+                    throw apps.games.GameInputException(
+                            "Malformed game user input. Out of bound value found")
                 }
                 res.numbers.add(value)
             }
-            if(res.numbers.size != ticketSize){
-                throw apps.games.GameInputException("Malformed game user input. Ticked length doesn't correspond to game rules")
+            if (res.numbers.size != ticketSize) {
+                throw apps.games.GameInputException(
+                        "Malformed game user input. Ticked length doesn't correspond to game rules")
             }
             return res
         }
@@ -100,12 +102,16 @@ class Ticket(val ticketSize: Int){
          * @throws GameInputException - if provided list values
          * is inconsistent with other restrictions
          */
-        fun from(ticketSize: Int, maxValue: Int, s: String): apps.games.serious.lotto.Ticket {
-            if(!(apps.games.serious.lotto.Ticket.Factory.getValidator(ticketSize, maxValue))(s)){
+        fun from(ticketSize: Int,
+                maxValue: Int,
+                s: String): apps.games.serious.lotto.Ticket {
+            if (!(apps.games.serious.lotto.Ticket.Factory.getValidator(
+                    ticketSize, maxValue))(s)) {
                 throw GameInputException("String $s is not a valid ticket")
             }
             val split: List<String> = s.split(" ")
-            return buildTicket(ticketSize, maxValue, split.map { x -> x.toInt() })
+            return buildTicket(ticketSize, maxValue,
+                    split.map { x -> x.toInt() })
         }
 
         /**
@@ -115,21 +121,22 @@ class Ticket(val ticketSize: Int){
          * @param maxValue - Maximum value of number in ticket
          * @return (String)->(Boolean) - validator function
          */
-        fun getValidator(ticketSize: Int, maxValue: Int): (String) -> (Boolean){
-            fun checker(s: String): Boolean{
+        fun getValidator(ticketSize: Int,
+                maxValue: Int): (String) -> (Boolean) {
+            fun checker(s: String): Boolean {
                 val split: List<String> = s.split(" ")
-                if(split.size != ticketSize){
+                if (split.size != ticketSize) {
                     return false
                 }
                 val was = mutableListOf<Int>()
-                for(part in split){
-                    try{
+                for (part in split) {
+                    try {
                         val x = part.toInt()
-                        if(was.contains(x) || x > maxValue){
+                        if (was.contains(x) || x > maxValue) {
                             return false
                         }
                         was.add(x)
-                    }catch(e: NumberFormatException){
+                    } catch(e: NumberFormatException) {
                         return false
                     }
                 }

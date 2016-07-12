@@ -1,11 +1,9 @@
 package apps.chat
 
-import apps.chat.GUI.ChatGUI
 import apps.chat.GUI.ChatManagerGUI
 import apps.games.GameManager
 import entity.ChatMessage
 import entity.User
-import main
 import network.ConnectionManager
 import network.Service
 import network.dispatching.Dispatcher
@@ -27,10 +25,12 @@ object ChatManager {
     val chats = mutableSetOf<Chat>()
     internal val mainGUI = ChatManagerGUI()
     fun start() {
-        ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.QUERY,
+        ConnectionManager.addService(
+                GenericMessageProto.GenericMessage.Type.QUERY,
                 ChatQueryService(this))
 
-        ConnectionManager.addService(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
+        ConnectionManager.addService(
+                GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE,
                 ChatService(this))
 
 
@@ -51,7 +51,8 @@ object ChatManager {
     fun receiveMessage(msg: ChatMessageProto.ChatMessage) {
         val chat = getOrCreateChat(msg.chatId)
         chat.showMessage(ChatMessage(msg))
-        chat.addMember(User(InetSocketAddress(msg.user.hostname, msg.user.port), msg.user.name))
+        chat.addMember(User(InetSocketAddress(msg.user.hostname, msg.user.port),
+                msg.user.name))
     }
 
     /**
@@ -65,7 +66,7 @@ object ChatManager {
         return chat
     }
 
-    @Synchronized fun getChatOrNull(chatId: Int): Chat?{
+    @Synchronized fun getChatOrNull(chatId: Int): Chat? {
         return chats.find { x -> x.chatId == chatId }
     }
 
@@ -78,7 +79,7 @@ object ChatManager {
         if (chat == null) {
             chat = createChat(chatId)
         }
-        if(chat.chatGUI.isClosed){
+        if (chat.chatGUI.isClosed) {
             chat.chatGUI.reopen()
         }
         return chat
@@ -89,18 +90,23 @@ object ChatManager {
      * members for known host)
      * create it if need.
      */
-    @Synchronized fun joinChat(chatId: Int, memberAddr: InetSocketAddress, username: String): Chat {
+    @Synchronized fun joinChat(chatId: Int,
+            memberAddr: InetSocketAddress,
+            username: String): Chat {
         //TODO - query factory
         val query = GenericMessageProto.GenericMessage.newBuilder()
                 .setType(GenericMessageProto.GenericMessage.Type.QUERY)
                 .setQuery(QueryProto.Query.newBuilder()
                         .setType(QueryProto.Query.Type.CHAT_MEMBER_QUERY)
-                        .setChatMemberQuery(QueryProto.ChatMemberQuery.newBuilder().setChatID(chatId).build())).build()
+                        .setChatMemberQuery(
+                                QueryProto.ChatMemberQuery.newBuilder().setChatID(
+                                        chatId).build())).build()
         val request = ConnectionManager.request(memberAddr, query)
         val chat = getOrCreateChat(chatId)
         chat.register(username)
         for (user in request.responseGroup.responseList[0].group.usersList) {
-            chat.addMember(User(InetSocketAddress(user.hostname, user.port), user.name))
+            chat.addMember(User(InetSocketAddress(user.hostname, user.port),
+                    user.name))
         }
         chat.sendMessage("${chat.username} joined chat #${chat.chatId}!")
         return chat
@@ -109,7 +115,7 @@ object ChatManager {
     /**
      * shutdown all connections
      */
-    @Synchronized fun close(){
+    @Synchronized fun close() {
         ConnectionManager.close()
         GameManager.close()
     }
@@ -149,7 +155,8 @@ class ChatQueryService(private val manager: ChatManager) : Service<QueryProto.Qu
 
 
     override fun getDispatcher(): Dispatcher<QueryProto.Query> {
-        val queryDispatcher = EnumDispatcher(QueryProto.Query.getDefaultInstance())
+        val queryDispatcher = EnumDispatcher(
+                QueryProto.Query.getDefaultInstance())
         val func = { x: QueryProto.ChatMemberQuery -> queryChatMembers(x) }
         queryDispatcher.register(QueryProto.Query.Type.CHAT_MEMBER_QUERY, func)
         return queryDispatcher

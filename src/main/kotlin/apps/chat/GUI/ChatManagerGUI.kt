@@ -1,5 +1,6 @@
 package apps.chat.GUI
 
+import Settings
 import apps.chat.ChatManager
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
@@ -29,7 +30,8 @@ class ChatManagerGUI() {
         enterFrame = JFrame(appName)
         usernameChooser = JTextField(Settings.defaultUsername, 20)
         //hostAddressChooser = JTextField("${Settings.hostAddress.hostName}:${Settings.hostAddress.port}", 20)
-        hostAddressChooser = JTextField("${Settings.hostAddress.hostName}:1232", 20)
+        hostAddressChooser = JTextField("${Settings.hostAddress.hostName}:1232",
+                20)
         chatIDChooser = JFormattedTextField(NumberFormat.getNumberInstance())
         chatIDChooser.text = "666"
         chatIDChooser.columns = 4
@@ -87,7 +89,7 @@ class ChatManagerGUI() {
         enterFrame.setSize(600, 400)
         enterFrame.isVisible = true
         enterFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
-        enterFrame.addWindowListener(object: WindowAdapter() {
+        enterFrame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent?) {
                 close()
             }
@@ -97,19 +99,19 @@ class ChatManagerGUI() {
 
     internal inner class enterServerButtonListener : ActionListener {
         override fun actionPerformed(event: ActionEvent) {
-            if(usernameChooser.text.isEmpty()){
+            if (usernameChooser.text.isEmpty()) {
                 return
             }
-            try{
+            try {
                 val uri = URI("my://" + hostAddressChooser.text)
-                if(uri.port == -1){
+                if (uri.port == -1) {
                     return
                 }
                 val hostAddr = InetSocketAddress(uri.host, uri.port)
                 chatIDChooser.commitEdit()
                 val chatId = (chatIDChooser.value as Number).toInt()
                 ChatManager.joinChat(chatId, hostAddr, usernameChooser.text)
-            } catch(ignored: URISyntaxException){
+            } catch(ignored: URISyntaxException) {
                 System.err.println("Malformed host address")
             }
 
@@ -117,7 +119,7 @@ class ChatManagerGUI() {
 
     }
 
-    internal fun close(){
+    internal fun close() {
         ChatManager.close()
     }
 }

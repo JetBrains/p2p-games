@@ -56,10 +56,14 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
 
         //TODO - custom exceptions
         enumType = sample.descriptorForType.findEnumTypeByName("Type") ?:
-                throw InvalidArgumentException(Array(1, { x: Int -> "Provided type has no Type Enum subclass" }))
+                throw InvalidArgumentException(Array(1,
+                        { x: Int -> "Provided type has no Type Enum subclass" }))
 
-        enumClass = sample.javaClass.declaredClasses.firstOrNull { x -> x.isEnum && x.simpleName.equals("Type") } ?:
-                throw InvalidArgumentException(Array(1, { x: Int -> "Provided type has no Type Enum subclass" }))
+        enumClass = sample.javaClass.declaredClasses.firstOrNull { x ->
+            x.isEnum && x.simpleName.equals("Type")
+        } ?:
+                throw InvalidArgumentException(Array(1,
+                        { x: Int -> "Provided type has no Type Enum subclass" }))
 
         enumFieldDescriptor = sample.descriptorForType.findFieldByName("type")
 
@@ -78,9 +82,11 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
      * @param listener - actor, that takes place, when event x
      * occured.
      */
-    fun <E : Enum<E>, T : GeneratedMessage> register(x: E, listener: Dispatcher<T>) {
+    fun <E : Enum<E>, T : GeneratedMessage> register(x: E,
+            listener: Dispatcher<T>) {
         if (!enumClass.isInstance(x)) {
-            throw InvalidArgumentException(Array(1, { x: Int -> "type of provided event doesn't correspond to this Dispatcher handle type" }))
+            throw InvalidArgumentException(Array(1,
+                    { x: Int -> "type of provided event doesn't correspond to this Dispatcher handle type" }))
         }
         listeners[enumType.findValueByName(x.name)]!!.add(listener)
     }
@@ -91,7 +97,8 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
      * @param listener - actor, that takes place, when event x
      * occured.
      */
-    fun <E : Enum<E>, T : GeneratedMessage> register(x: E, listener: (T) -> (GenericMessageProto.GenericMessage?)) {
+    fun <E : Enum<E>, T : GeneratedMessage> register(x: E,
+            listener: (T) -> (GenericMessageProto.GenericMessage?)) {
         register(x, SimpleDispatcher(listener))
     }
 
@@ -103,16 +110,19 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
         val type = message.getField(enumFieldDescriptor)
         // By convention typenumber + 1 = field number
         val fieldNumber = (type as Descriptors.EnumValueDescriptor).number + 1
-        val nesterMessage = message.getField(message.descriptorForType.findFieldByNumber(fieldNumber))
+        val nesterMessage = message.getField(
+                message.descriptorForType.findFieldByNumber(fieldNumber))
         var responseGroupBuilder: GenericMessageProto.ResponseGroup.Builder? = null
-        for (listener in getHandlers(type, (nesterMessage as GeneratedMessage).javaClass)) {
+        for (listener in getHandlers(type,
+                (nesterMessage as GeneratedMessage).javaClass)) {
             val res = listener.dispatch(nesterMessage)
             if (res != null) {
                 if (responseGroupBuilder == null) {
                     responseGroupBuilder = GenericMessageProto.ResponseGroup.newBuilder()
                 }
                 if (res.type == GenericMessageProto.GenericMessage.Type.RESPONSE_GROUP) {
-                    responseGroupBuilder!!.addAllResponse(res.responseGroup.responseList)
+                    responseGroupBuilder!!.addAllResponse(
+                            res.responseGroup.responseList)
                 } else {
                     responseGroupBuilder!!.addResponse(res)
                 }
@@ -121,7 +131,8 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
         }
         if (responseGroupBuilder != null) {
             return GenericMessageProto.GenericMessage.newBuilder()
-                    .setType(GenericMessageProto.GenericMessage.Type.RESPONSE_GROUP)
+                    .setType(
+                            GenericMessageProto.GenericMessage.Type.RESPONSE_GROUP)
                     .setResponseGroup(responseGroupBuilder)
                     .build()
         }
@@ -130,7 +141,8 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
 
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T : GeneratedMessage> getHandlers(eventType: Descriptors.EnumValueDescriptor, eventValueType: Class<T>)
+    private fun <T : GeneratedMessage> getHandlers(eventType: Descriptors.EnumValueDescriptor,
+            eventValueType: Class<T>)
             : List<Dispatcher<T>> {
         val list = listeners[eventType]
         return list as List<Dispatcher<T>>

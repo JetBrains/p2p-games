@@ -3,12 +3,10 @@ package apps.games.serious.preference.GUI
 import apps.games.serious.preference.Bet
 import apps.games.serious.preference.Pip
 import apps.games.serious.preference.Suit
-import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import entity.User
 
@@ -33,7 +31,7 @@ class PreferenceGame : Game() {
      * Give a player with specified ID
      * a card from a 32 card deck
      */
-    fun dealPlayer(player: Int, cardID: Int){
+    fun dealPlayer(player: Int, cardID: Int) {
         tableScreen.dealPlayer(player, getCardById(cardID))
     }
 
@@ -42,22 +40,26 @@ class PreferenceGame : Game() {
      * TALON in Prefenernce or cards
      * in Texas Holdem Poker
      */
-    fun dealCommon(cardID: Int){
+    fun dealCommon(cardID: Int) {
         tableScreen.dealCommon(getCardById(cardID))
     }
 
     /**
      * Show bidding overlay after all other actions are complete
      */
-    fun showBiddingOverlay(){
-        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayVisibilityAction(tableScreen.biddingOverlay, true))
+    fun showBiddingOverlay() {
+        tableScreen.actionManager.addAfterLastComplete(
+                BiddingOverlayVisibilityAction(tableScreen.biddingOverlay,
+                        true))
     }
 
     /**
      * Show bidding overlay after all other actions are complete
      */
-    fun hideBiddingOverlay(){
-        tableScreen.actionManager.addAfterLastComplete(BiddingOverlayVisibilityAction(tableScreen.biddingOverlay, false))
+    fun hideBiddingOverlay() {
+        tableScreen.actionManager.addAfterLastComplete(
+                BiddingOverlayVisibilityAction(tableScreen.biddingOverlay,
+                        false))
     }
 
     /**
@@ -65,24 +67,25 @@ class PreferenceGame : Game() {
      * @param bets -vararg Pair<User, Bet> - pairs
      * describing User's Bet
      */
-    fun markBets(vararg bets: Pair<User, Bet>){
+    fun markBets(vararg bets: Pair<User, Bet>) {
         val betMap = mutableMapOf<Bet, MutableSet<User>>()
-        for(bet in bets){
+        for (bet in bets) {
             if (betMap[bet.second] == null) {
                 betMap[bet.second] = mutableSetOf()
             }
             betMap[bet.second]?.add(bet.first)
         }
-        for(bet in betMap.keys){
-            tableScreen.biddingOverlay.markBet(bet, *(betMap[bet]!!.toTypedArray()))
+        for (bet in betMap.keys) {
+            tableScreen.biddingOverlay.markBet(bet,
+                    *(betMap[bet]!!.toTypedArray()))
         }
     }
 
     /**
      * Mark all bet buttons as enabled
      */
-    fun resetAllBets(){
-        for(bet in Bet.values()){
+    fun resetAllBets() {
+        for (bet in Bet.values()) {
             tableScreen.biddingOverlay.resetBet(bet)
         }
     }
@@ -90,8 +93,8 @@ class PreferenceGame : Game() {
     /**
      * Mark all bet buttons as disabled
      */
-    fun disableAllBets(){
-        for(bet in Bet.values()){
+    fun disableAllBets() {
+        for (bet in Bet.values()) {
             tableScreen.biddingOverlay.disableBet(bet)
         }
     }
@@ -100,8 +103,8 @@ class PreferenceGame : Game() {
      * Reset bets from given list of bets
      * @param bets - Bets to enable
      */
-    fun resetBets(vararg bets: Bet){
-        for(bet in bets){
+    fun resetBets(vararg bets: Bet) {
+        for (bet in bets) {
             tableScreen.biddingOverlay.resetBet(bet)
         }
     }
@@ -110,20 +113,19 @@ class PreferenceGame : Game() {
      * Enable bets from given list of bets
      * @param bets - Bets to enable
      */
-    fun enableBets(vararg bets: Bet){
-        for(bet in bets){
+    fun enableBets(vararg bets: Bet) {
+        for (bet in bets) {
             tableScreen.biddingOverlay.enableBet(bet)
         }
     }
-
 
 
     /**
      * Disable bets from given list of bets
      * @param bets - Bets to disable
      */
-    fun disableBets(vararg bets: Bet){
-        for(bet in bets){
+    fun disableBets(vararg bets: Bet) {
+        for (bet in bets) {
             tableScreen.biddingOverlay.disableBet(bet)
         }
     }
@@ -132,8 +134,8 @@ class PreferenceGame : Game() {
      * Add callback listener for buttons
      * corresponding to provided bets
      */
-    fun <R>registerCallback(callBack: (Bet) -> (R), vararg bets: Bet){
-        for(bet in bets){
+    fun <R> registerCallback(callBack: (Bet) -> (R), vararg bets: Bet) {
+        for (bet in bets) {
             tableScreen.biddingOverlay.addCallback(bet, callBack)
         }
     }
@@ -141,8 +143,8 @@ class PreferenceGame : Game() {
     /**
      * Display hint for current step
      */
-    fun showHint(hint: String){
-        synchronized(tableScreen.hint){
+    fun showHint(hint: String) {
+        synchronized(tableScreen.hint) {
             tableScreen.hint = hint
         }
     }
@@ -150,7 +152,7 @@ class PreferenceGame : Game() {
     /**
      * Reveal talon card
      */
-    fun revealTalonCard(cardID: Int){
+    fun revealTalonCard(cardID: Int) {
         tableScreen.revealCommonCard(getCardById(cardID))
     }
 
@@ -161,19 +163,20 @@ class PreferenceGame : Game() {
      * and translates it into corresponding
      * renderable object
      */
-    private fun getCardById(cardID: Int): Card{
+    private fun getCardById(cardID: Int): Card {
         val card: Card
-        if(cardID == -1){
+        if (cardID == -1) {
             card = tableScreen.deck.getCard(Suit.UNKNOWN, Pip.UNKNOWN)
-        }else{
+        } else {
             val suitId = cardID / 8
             var pipId: Int = (cardID % 8)
-            if(Pip.TWO.index <= pipId){
+            if (Pip.TWO.index <= pipId) {
                 pipId += 5
             }
             println(pipId)
-            card = tableScreen.deck.getCard(Suit.values().first { x -> x.index == suitId },
-                    Pip.values().first{x -> x.index == pipId})
+            card = tableScreen.deck.getCard(
+                    Suit.values().first { x -> x.index == suitId },
+                    Pip.values().first { x -> x.index == pipId })
         }
         return card
     }

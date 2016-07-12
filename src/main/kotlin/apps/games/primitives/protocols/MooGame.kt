@@ -12,7 +12,8 @@ import proto.GameMessageProto
  * Simple game:
  * Say moo, succeed
  */
-class MooGame(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, group, gameID) {
+class MooGame(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
+        group, gameID) {
     override fun getResult() {
         return Unit
     }
@@ -26,10 +27,11 @@ class MooGame(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat, group
     }
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        for(msg in responses){
-            chat.showMessage(ChatMessage(chat.chatId, User(msg.user), "Game value: ${msg.value}"))
+        for (msg in responses) {
+            chat.showMessage(ChatMessage(chat.chatId, User(msg.user),
+                    "Game value: ${msg.value}"))
         }
-        finished ++
+        finished++
         return "MOO"
     }
 }

@@ -34,11 +34,11 @@ import java.math.BigInteger
 
 
 class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec, val deck: Deck, gameManager: GameManagerClass = GameManager) :
-                                                    Game<EncryptedDeck>(chat, group, gameID, gameManager) {
+        Game<EncryptedDeck>(chat, group, gameID, gameManager) {
     override val name: String
         get() = "Card Shuffle"
 
-    private enum class State{
+    private enum class State {
 
         INIT,
         SHUFFLE,
@@ -46,6 +46,7 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
         VALIDATE,
         END
     }
+
     private var state: State = State.INIT
     private var step: Int = -1
     //to sorted array to preserve order
@@ -56,7 +57,8 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
     //key for the first iteration
     private val shuffleKey: BigInteger = randomBigInt(ECParams.n)
     //keys for second iteration
-    private val lockKeys: List<BigInteger> = listOf(*Array(deck.size, { i -> randomBigInt(ECParams.n)}))
+    private val lockKeys: List<BigInteger> = listOf(
+            *Array(deck.size, { i -> randomBigInt(ECParams.n) }))
 
     override fun isFinished(): Boolean {
         return state == State.END
@@ -67,65 +69,70 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
     }
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        when(state){
+        when (state) {
             State.INIT -> {
-                val hashes = responses.distinctBy {x -> x.value}
-                if(hashes.size != 1){
+                val hashes = responses.distinctBy { x -> x.value }
+                if (hashes.size != 1) {
                     throw GameExecutionException("Someone has different deck")
                 }
                 state = State.SHUFFLE
                 return ""
             }
             State.SHUFFLE -> {
-                for(msg in responses){
-                    if(players.indexOf(User(msg.user)) == step){
-                        if(msg.dataCount != deck.size){
-                            throw GameExecutionException("Someone failed to provide their deck")
+                for (msg in responses) {
+                    if (players.indexOf(User(msg.user)) == step) {
+                        if (msg.dataCount != deck.size) {
+                            throw GameExecutionException(
+                                    "Someone failed to provide their deck")
                         }
-                        for(i in 0..deck.size-1){
-                            deck.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                        for (i in 0..deck.size - 1) {
+                            deck.cards[i] = ECParams.curve.decodePoint(
+                                    msg.dataList[i].toByteArray())
                         }
                     }
                 }
-                step ++
-                if(step == id){
+                step++
+                if (step == id) {
                     deck.shuffle()
                     deck.encrypt(shuffleKey)
                 }
-                if(step > N){
+                if (step > N) {
                     step = -1
                     state = State.LOCK
                 }
             }
             State.LOCK -> {
-                for(msg in responses){
-                    if(players.indexOf(User(msg.user)) == step){
-                        if(msg.dataCount != deck.size){
-                            throw GameExecutionException("Someone failed to provide their deck")
+                for (msg in responses) {
+                    if (players.indexOf(User(msg.user)) == step) {
+                        if (msg.dataCount != deck.size) {
+                            throw GameExecutionException(
+                                    "Someone failed to provide their deck")
                         }
-                        for(i in 0..deck.size-1){
-                            deck.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                        for (i in 0..deck.size - 1) {
+                            deck.cards[i] = ECParams.curve.decodePoint(
+                                    msg.dataList[i].toByteArray())
                         }
                     }
                 }
-                step ++
-                if(step == id){
+                step++
+                if (step == id) {
                     deck.decrypt(shuffleKey)
                     deck.enctyptSeparate(lockKeys)
                 }
-                if(step > N){
+                if (step > N) {
                     state = State.VALIDATE
                     return deck.hashCode().toString()
                 }
             }
             State.VALIDATE -> {
                 val hashes = responses.map { x -> x.value }
-                if(hashes.distinct().size != 1){
+                if (hashes.distinct().size != 1) {
                     throw GameExecutionException("Someone has a different deck")
                 }
                 state = State.END
             }
-            State.END -> {}
+            State.END -> {
+            }
         }
         return ""
     }
@@ -134,9 +141,10 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
      * return a list of encrypted cards if needed
      */
     override fun getData(): List<ByteArray> {
-        if(step == id){
-            return listOf(*deck.cards.map { x -> x.getEncoded(false) }.toTypedArray())
-        }else{
+        if (step == id) {
+            return listOf(
+                    *deck.cards.map { x -> x.getEncoded(false) }.toTypedArray())
+        } else {
             return listOf()
         }
     }

@@ -6,22 +6,14 @@ import apps.games.GameExecutionException
 import apps.games.GameManager
 import apps.games.GameManagerClass
 import apps.games.primitives.Deck
-import apps.games.serious.lotto.Lotto
-import com.sun.xml.internal.fastinfoset.util.StringArray
-import crypto.random.randomECPoint
-import crypto.random.randomString
 import entity.ChatMessage
 import entity.Group
-import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.jce.spec.ECParameterSpec
-import org.bouncycastle.math.ec.ECCurve
 import org.bouncycastle.math.ec.ECPoint
-import org.mockito.internal.matchers.Null
 import proto.GameMessageProto
 import java.math.BigInteger
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.Future
 
 /**
  * Created by user on 7/5/16.
@@ -42,11 +34,12 @@ import java.util.concurrent.Future
 
 
 class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec,
-                     val deckSize: Int = 52, gameManager: GameManagerClass = GameManager) : Game<Deck>(chat, group, gameID, gameManager = gameManager){
+        val deckSize: Int = 52, gameManager: GameManagerClass = GameManager) : Game<Deck>(
+        chat, group, gameID, gameManager = gameManager) {
     override val name: String
         get() = "Random Deck Generator"
 
-    private enum class State{
+    private enum class State {
         INIT,
         VALIDATE,
         END
@@ -61,12 +54,14 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
     private val deck = Deck(ECParams, deckSize)
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        when(state){
+        when (state) {
             State.INIT -> {
                 var set: Int = 0
-                while(set < deckSize) {
+                while (set < deckSize) {
                     val multiplier: BigInteger
-                    val rngFuture = runSubGame(RandomNumberGame(chat, group.clone(), subGameID(), BigInteger.ONE, ECParams.n, gameManager))
+                    val rngFuture = runSubGame(
+                            RandomNumberGame(chat, group.clone(), subGameID(),
+                                    BigInteger.ONE, ECParams.n, gameManager))
 
                     try {
                         multiplier = rngFuture.get()
@@ -74,9 +69,11 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
                         state = State.END
                         return ""
                     } catch(e: ExecutionException) {
-                        chat.showMessage(ChatMessage(chat, e.message ?: "Something went wrong"))
+                        chat.showMessage(ChatMessage(chat,
+                                e.message ?: "Something went wrong"))
                         e.printStackTrace()
-                        throw GameExecutionException("[${chat.me().name}] Subgame failed")
+                        throw GameExecutionException(
+                                "[${chat.me().name}] Subgame failed")
                     }
                     val point: ECPoint = ECParams.g.multiply(multiplier)
                     if (!deck.contains(point)) {
@@ -90,12 +87,13 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
             }
             State.VALIDATE -> {
                 val hashes = responses.map { x -> x.value }
-                if(hashes.distinct().size != 1){
+                if (hashes.distinct().size != 1) {
                     throw GameExecutionException("Someone has a different deck")
                 }
                 state = State.END
             }
-            State.END -> { }
+            State.END -> {
+            }
         }
         return ""
     }

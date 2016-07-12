@@ -1,6 +1,5 @@
 package apps.games.primitives
 
-import crypto.random.randomPermutuation
 import crypto.random.shuffleArray
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.math.ec.ECPoint
@@ -12,15 +11,15 @@ import java.util.*
  */
 
 
-class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
-    val cards = Array<ECPoint>(size, { i -> ECParams.g})
+class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
+    val cards = Array<ECPoint>(size, { i -> ECParams.g })
 
     /**
      * check if this deck contains specified
      * card
      * @param card - card to find
      */
-    fun contains(card: ECPoint): Boolean{
+    fun contains(card: ECPoint): Boolean {
         return cards.contains(card)
     }
 
@@ -28,7 +27,7 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * Shuffle this deck with
      * random permutuation
      */
-    fun shuffle(){
+    fun shuffle() {
         shuffleArray(cards)
     }
 
@@ -36,8 +35,8 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * Encrypt all cards with specified key
      * @param key
      */
-    fun encrypt(key: BigInteger){
-        for(i in 0..size-1){
+    fun encrypt(key: BigInteger) {
+        for (i in 0..size - 1) {
             cards[i] = cards[i].multiply(key)
         }
     }
@@ -46,9 +45,9 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * Decrypt all cards assuming they were
      * encrypted with given key
      */
-    fun decrypt(key: BigInteger){
+    fun decrypt(key: BigInteger) {
         val inv = key.modInverse(ECParams.n)
-        for(i in 0..size-1){
+        for (i in 0..size - 1) {
             cards[i] = cards[i].multiply(inv)
         }
     }
@@ -60,11 +59,12 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * @param keys - Collection of keys
      * to encrypt cards
      */
-    fun enctyptSeparate(keys: Collection<BigInteger>){
-        if(keys.size < size){
-            throw IndexOutOfBoundsException("Insufficient number of keys provided")
+    fun enctyptSeparate(keys: Collection<BigInteger>) {
+        if (keys.size < size) {
+            throw IndexOutOfBoundsException(
+                    "Insufficient number of keys provided")
         }
-        for(i in 0..size-1){
+        for (i in 0..size - 1) {
             cards[i] = cards[i].multiply(keys.elementAt(i))
         }
     }
@@ -75,12 +75,14 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * @param keys - Collection of keys
      * to decrypt cards
      */
-    fun decryptSeparate(keys: Collection<BigInteger>){
-        if(keys.size < size){
-            throw IndexOutOfBoundsException("Insufficient number of keys provided")
+    fun decryptSeparate(keys: Collection<BigInteger>) {
+        if (keys.size < size) {
+            throw IndexOutOfBoundsException(
+                    "Insufficient number of keys provided")
         }
-        for(i in 0..size-1){
-            cards[i] = cards[i].multiply(keys.elementAt(i).modInverse(ECParams.n))
+        for (i in 0..size - 1) {
+            cards[i] = cards[i].multiply(
+                    keys.elementAt(i).modInverse(ECParams.n))
         }
     }
 
@@ -89,7 +91,7 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * @param n - id of card to decrypt
      * @param key - encryption key
      */
-    fun encryptCardWithKey(n: Int, key: BigInteger){
+    fun encryptCardWithKey(n: Int, key: BigInteger) {
         cards[n] = cards[n].multiply(key)
     }
 
@@ -98,11 +100,11 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
      * @param n - id of card to decrypt
      * @param key - decryption key
      */
-    fun decryptCardWithKey(n: Int, key: BigInteger){
+    fun decryptCardWithKey(n: Int, key: BigInteger) {
         cards[n] = cards[n].multiply(key.modInverse(ECParams.n))
     }
 
-    override fun equals(other: Any?): Boolean{
+    override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
@@ -113,17 +115,17 @@ class Deck(val ECParams: ECParameterSpec,val size: Int = 52): Cloneable{
         return true
     }
 
-    override fun hashCode(): Int{
+    override fun hashCode(): Int {
         return Arrays.hashCode(cards)
     }
 
-    override fun toString(): String{
+    override fun toString(): String {
         return "Deck(cards=${Arrays.toString(cards)})"
     }
 
     override public fun clone(): Deck {
         val res = Deck(ECParams, size)
-        for(i in 0..size-1){
+        for (i in 0..size - 1) {
             res.cards[i] = cards[i]
         }
         return res

@@ -1,6 +1,5 @@
 import apps.chat.ChatManager
 import apps.games.GameManager
-import network.ConnectionManager
 import org.apache.log4j.BasicConfigurator
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -14,14 +13,14 @@ import java.net.Socket
 fun main(args: Array<String>) {
     BasicConfigurator.configure();
     val host: String
-    if(DEBUG){
+    if (DEBUG) {
         host = "127.0.0.1"
-    }else{
-        try{
+    } else {
+        try {
             val s = Socket("google.com", 80);
             host = s.localAddress.hostAddress;
             s.close();
-        }catch(ignored: Exception){
+        } catch(ignored: Exception) {
             host = InetAddress.getLocalHost().hostAddress
         }
     }

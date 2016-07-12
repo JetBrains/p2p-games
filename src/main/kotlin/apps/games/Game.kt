@@ -1,7 +1,6 @@
 package apps.games
 
 import apps.chat.Chat
-import apps.games.primitives.protocols.RandomNumberGame
 import entity.ChatMessage
 import entity.Group
 import entity.User
@@ -15,7 +14,7 @@ import java.util.concurrent.Future
  */
 
 abstract class Game<out T>(internal val chat: Chat, internal val group: Group, val gameID: String,
-                           var gameManager: GameManagerClass = GameManager){
+        var gameManager: GameManagerClass = GameManager) {
     private var subGameCounter: Int = 0
     private var nestedGames: MutableList<GameResult<*>> = mutableListOf()
     val stopedPlaying = Group()
@@ -23,7 +22,7 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      * Evaluate next game state based on responses from everyone
      * @param responses - results of previous state of all players
      */
-    abstract fun evaluate(responses: List<GameMessageProto.GameStateMessage>) : String
+    abstract fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String
 
     /**
      * We need to know, when to stop
@@ -33,8 +32,8 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
     abstract val name: String
 
 
-    fun evaluateGameEnd(msg: GameMessageProto.GameEndMessage){
-        synchronized(stopedPlaying){
+    fun evaluateGameEnd(msg: GameMessageProto.GameEndMessage) {
+        synchronized(stopedPlaying) {
             stopedPlaying.users.add(User(msg.user))
         }
         verifyGameEnd(msg)
@@ -46,23 +45,24 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      *
      * this method is called after `evaluateGameEnd`
      */
-    open fun verifyGameEnd(msg: GameMessageProto.GameEndMessage){
-        if(msg.reason.isNotBlank()){
-            chat.showMessage(ChatMessage(chat.chatId, User(msg.user), msg.reason))
+    open fun verifyGameEnd(msg: GameMessageProto.GameEndMessage) {
+        if (msg.reason.isNotBlank()) {
+            chat.showMessage(
+                    ChatMessage(chat.chatId, User(msg.user), msg.reason))
         }
     }
 
     /**
      * Message to send other players after the game has ended
      */
-    open fun getFinalMessage(): String{
+    open fun getFinalMessage(): String {
         return "GGWP"
     }
 
     /**
      * Verifier for game end results(if needed)
      */
-    open fun getVerifier(): String?{
+    open fun getVerifier(): String? {
         return null
     }
 
@@ -77,7 +77,7 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      * players. Most typically -  simple
      * handshake
      */
-    open fun getInitialMessage(): String{
+    open fun getInitialMessage(): String {
         return "GL HF"
     }
 
@@ -86,8 +86,8 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      * game can have more then one
      * direct subgame
      */
-    fun subGameID(): String{
-        subGameCounter ++
+    fun subGameID(): String {
+        subGameCounter++
         return gameID + subGameCounter.toInt()
     }
 
@@ -98,7 +98,7 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
     fun <S> runSubGame(game: Game<S>): Future<S> {
         val result: Future<S>
         result = gameManager.initSubGame(game)
-        synchronized(nestedGames){
+        synchronized(nestedGames) {
             nestedGames.add(GameResult(game, result))
         }
 
@@ -111,9 +111,9 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
     /**
      * cancel all running subgames
      */
-    @Synchronized fun cancelSubgames(){
-        for(gameResult in nestedGames){
-            if(!gameResult.game.isFinished() && !gameResult.result.isDone){
+    @Synchronized fun cancelSubgames() {
+        for (gameResult in nestedGames) {
+            if (!gameResult.game.isFinished() && !gameResult.result.isDone) {
                 gameResult.game.cancelSubgames()
                 gameManager.deleteGame(gameResult.game)
                 gameResult.result.cancel(true)
@@ -127,11 +127,11 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      * binary data. Then they need to override
      * this function
      */
-    open fun getData(): List<ByteArray>{
+    open fun getData(): List<ByteArray> {
         return listOf()
     }
 
-    override fun equals(other: Any?): Boolean{
+    override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
@@ -142,7 +142,7 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
         return true
     }
 
-    override fun hashCode(): Int{
+    override fun hashCode(): Int {
         return gameID.hashCode()
     }
 }
@@ -150,4 +150,4 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
 /**
  * class for representation of game results(e.g. for nested games)
  */
-class GameResult<T>(val game: Game<T>, val result: Future<T>){}
+class GameResult<T>(val game: Game<T>, val result: Future<T>) {}

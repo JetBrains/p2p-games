@@ -1,10 +1,5 @@
 package apps.games.serious.preference.GUI
 
-import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.utils.Pool
-import com.badlogic.gdx.utils.Array
-import sun.misc.ExtensionDependency
-
 /**
  * Created by user on 7/1/16.
  */
@@ -12,15 +7,15 @@ import sun.misc.ExtensionDependency
 /**
  * Interface for representation of all actions happening on the bord
  */
-abstract class Action(var delay: Float){
+abstract class Action(var delay: Float) {
     private val completeDependencies = mutableListOf<Action>()
     private val readyDependencies = mutableListOf<Action>()
 
-    fun update(delta: Float){
-        if(delay > 0){
+    fun update(delta: Float) {
+        if (delay > 0) {
             delay -= delta
         }
-        if(delay <= 0){
+        if (delay <= 0) {
             delay = 0f
             execute(delta)
         }
@@ -30,28 +25,28 @@ abstract class Action(var delay: Float){
 
     abstract fun isComplete(): Boolean
 
-    fun executeWhenComplete(action: Action?){
+    fun executeWhenComplete(action: Action?) {
         if (action != null) {
-            synchronized(completeDependencies){
+            synchronized(completeDependencies) {
                 completeDependencies.add(action)
             }
         }
     }
 
-    fun executeWhenReady(action: Action?){
+    fun executeWhenReady(action: Action?) {
         if (action != null) {
-            synchronized(readyDependencies){
+            synchronized(readyDependencies) {
                 readyDependencies.add(action)
             }
         }
     }
 
-    fun readyToExcute(): Boolean{
+    fun readyToExcute(): Boolean {
         resolveDependencies()
         return completeDependencies.isEmpty() && readyDependencies.isEmpty()
     }
 
-    private fun resolveDependencies(){
+    private fun resolveDependencies() {
         synchronized(completeDependencies) {
             val completeIterator = completeDependencies.iterator()
             while (completeIterator.hasNext()) {
@@ -75,7 +70,8 @@ abstract class Action(var delay: Float){
 }
 
 
-class DelayedAction<out R>(delay: Float, val action: () -> (R)) : Action(delay){
+class DelayedAction<out R>(delay: Float, val action: () -> (R)) : Action(
+        delay) {
     private var finished: Boolean = false
     override fun execute(delta: Float) {
         finished = true
@@ -118,32 +114,32 @@ class ActionManager {
         }
     }
 
-    fun add(action: Action){
-        synchronized(pending){
+    fun add(action: Action) {
+        synchronized(pending) {
             pending.add(action)
         }
     }
 
-    fun addAfterLastReady(action: Action){
+    fun addAfterLastReady(action: Action) {
         action.executeWhenReady(getLastAction())
-        synchronized(pending){
+        synchronized(pending) {
             pending.add(action)
         }
     }
 
-    fun addAfterLastComplete(action: Action){
+    fun addAfterLastComplete(action: Action) {
         action.executeWhenComplete(getLastAction())
-        synchronized(pending){
+        synchronized(pending) {
             pending.add(action)
         }
     }
 
-    fun getLastAction(): Action?{
-        synchronized(pending){
-            if(pending.isNotEmpty()){
+    fun getLastAction(): Action? {
+        synchronized(pending) {
+            if (pending.isNotEmpty()) {
                 return pending.last()
             }
-            if(actions.isNotEmpty()){
+            if (actions.isNotEmpty()) {
                 return actions.last()
             }
             return null

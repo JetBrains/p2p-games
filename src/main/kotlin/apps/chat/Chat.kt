@@ -1,15 +1,12 @@
 package apps.chat
 
+import Settings
 import apps.chat.GUI.ChatGUI
 import broker.NettyGroupBroker
 import entity.ChatMessage
 import entity.Group
 import entity.User
-import network.ConnectionManager
-import proto.ChatMessageProto
-import proto.EntitiesProto
 import proto.GenericMessageProto
-import java.net.InetSocketAddress
 import javax.swing.UIManager
 
 /**
@@ -30,10 +27,10 @@ open class Chat(val chatId: Int) : Runnable {
      * we pass nullable parameter for mocking purposes
      */
     open fun showMessage(msg: ChatMessage?) {
-        if(msg == null){
+        if (msg == null) {
             return
         }
-        if(msg.chatId == chatId){
+        if (msg.chatId == chatId) {
             chatGUI.displayMessage(msg.user.name, msg.message)
         }
     }
@@ -41,8 +38,8 @@ open class Chat(val chatId: Int) : Runnable {
     /**
      * register new chat member
      */
-    fun addMember(user: User){
-        if(!finatilzed){
+    fun addMember(user: User) {
+        if (!finatilzed) {
             group.users.add(user)
         }
     }
@@ -59,7 +56,8 @@ open class Chat(val chatId: Int) : Runnable {
 
         val msg = GenericMessageProto.GenericMessage.newBuilder()
                 .setChatMessage(chatMessage.getProto())
-                .setType(GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE).build()
+                .setType(
+                        GenericMessageProto.GenericMessage.Type.CHAT_MESSAGE).build()
         groupBroker.broadcastAsync(group, msg)
     }
 
@@ -69,13 +67,14 @@ open class Chat(val chatId: Int) : Runnable {
     fun register(username: String) {
         this.username = username
         group.users.add(me())
-        chatGUI.refreshTitle("$username[${Settings.hostAddress.toString()}]GUI #$chatId")
+        chatGUI.refreshTitle(
+                "$username[${Settings.hostAddress.toString()}]GUI #$chatId")
     }
 
     /**
      * get user for self
      */
-    open fun me(): User{
+    open fun me(): User {
         return User(Settings.hostAddress, username)
     }
 
@@ -92,12 +91,14 @@ open class Chat(val chatId: Int) : Runnable {
     /**
      * get Input from
      */
-    open fun getUserInput(description: String, condition: ((String) -> (Boolean))? = {x: String -> true}): String{
-        if(condition == null){
-            throw UnsupportedOperationException("Invalid null condition provided")
+    open fun getUserInput(description: String,
+            condition: ((String) -> (Boolean))? = { x: String -> true }): String {
+        if (condition == null) {
+            throw UnsupportedOperationException(
+                    "Invalid null condition provided")
         }
         var res = chatGUI.getUserInput(description)
-        while(!condition(res)){
+        while (!condition(res)) {
             res = chatGUI.getUserInput(description)
         }
         return res
@@ -119,7 +120,7 @@ open class Chat(val chatId: Int) : Runnable {
     }
 
     //TODO - close connectons of this chat
-    fun close(){
+    fun close() {
         println("GUI closing")
     }
 }

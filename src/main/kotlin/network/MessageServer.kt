@@ -9,7 +9,6 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
-import io.netty.util.ReferenceCountUtil
 import network.dispatching.Dispatcher
 import proto.GameMessageProto
 import proto.GenericMessageProto
@@ -47,9 +46,10 @@ class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<Gene
  */
 class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>() {
     var response: GenericMessageProto.GenericMessage? = null
-    override fun channelRead0(ctx: ChannelHandlerContext?, msg: GenericMessageProto.GenericMessage?) {
+    override fun channelRead0(ctx: ChannelHandlerContext?,
+            msg: GenericMessageProto.GenericMessage?) {
         if (msg != null) {
-            if(msg.hasGameMessage() && msg.gameMessage.type == GameMessageProto.GameMessage.Type.GAME_END_MESSAGE){
+            if (msg.hasGameMessage() && msg.gameMessage.type == GameMessageProto.GameMessage.Type.GAME_END_MESSAGE) {
                 println("Recieved End Game Message")
             }
             response = dispatcher.dispatch(msg)
@@ -79,7 +79,8 @@ class MessageServerChannelInitializer(val dispatcher: Dispatcher<GenericMessageP
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
         pipeline.addLast(ProtobufVarint32FrameDecoder())
-        pipeline.addLast(ProtobufDecoder(GenericMessageProto.GenericMessage.getDefaultInstance()))
+        pipeline.addLast(ProtobufDecoder(
+                GenericMessageProto.GenericMessage.getDefaultInstance()))
         pipeline.addLast(ProtobufVarint32LengthFieldPrepender())
         pipeline.addLast(ProtobufEncoder())
         pipeline.addLast(MessageServerHandler(dispatcher))

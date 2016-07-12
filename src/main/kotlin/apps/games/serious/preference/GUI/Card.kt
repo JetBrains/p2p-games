@@ -14,28 +14,35 @@ import com.badlogic.gdx.math.Vector3
  */
 
 
-
 /**
  * We need this to get meshes of cards
  */
 private fun convert(front: FloatArray, back: FloatArray): FloatArray {
-    return floatArrayOf(back[Batch.X2], back[Batch.Y2], 0f, 0f, 0f, 1f, back[Batch.U2], back[Batch.V2],
-            back[Batch.X1], back[Batch.Y1], 0f, 0f, 0f, 1f, back[Batch.U1], back[Batch.V1],
-            back[Batch.X4], back[Batch.Y4], 0f, 0f, 0f, 1f, back[Batch.U4], back[Batch.V4],
-            back[Batch.X3], back[Batch.Y3], 0f, 0f, 0f, 1f, back[Batch.U3], back[Batch.V3],
-            front[Batch.X1], front[Batch.Y1], 0f, 0f, 0f, -1f, front[Batch.U1], front[Batch.V1],
-            front[Batch.X2], front[Batch.Y2], 0f, 0f, 0f, -1f, front[Batch.U2], front[Batch.V2],
-            front[Batch.X3], front[Batch.Y3], 0f, 0f, 0f, -1f, front[Batch.U3], front[Batch.V3],
-            front[Batch.X4], front[Batch.Y4], 0f, 0f, 0f, -1f, front[Batch.U4], front[Batch.V4])
+    return floatArrayOf(back[Batch.X2], back[Batch.Y2], 0f, 0f, 0f, 1f,
+            back[Batch.U2], back[Batch.V2],
+            back[Batch.X1], back[Batch.Y1], 0f, 0f, 0f, 1f, back[Batch.U1],
+            back[Batch.V1],
+            back[Batch.X4], back[Batch.Y4], 0f, 0f, 0f, 1f, back[Batch.U4],
+            back[Batch.V4],
+            back[Batch.X3], back[Batch.Y3], 0f, 0f, 0f, 1f, back[Batch.U3],
+            back[Batch.V3],
+            front[Batch.X1], front[Batch.Y1], 0f, 0f, 0f, -1f, front[Batch.U1],
+            front[Batch.V1],
+            front[Batch.X2], front[Batch.Y2], 0f, 0f, 0f, -1f, front[Batch.U2],
+            front[Batch.V2],
+            front[Batch.X3], front[Batch.Y3], 0f, 0f, 0f, -1f, front[Batch.U3],
+            front[Batch.V3],
+            front[Batch.X4], front[Batch.Y4], 0f, 0f, 0f, -1f, front[Batch.U4],
+            front[Batch.V4])
 }
 
 /**
  * Card GUI representation
  */
-class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite){
+class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
     val CARD_WIDTH = 1f
     val CARD_HEIGHT = CARD_WIDTH * 277f / 200f
-    val radius = CARD_WIDTH/2f
+    val radius = CARD_WIDTH / 2f
     val verticies: FloatArray
     val indices: ShortArray = shortArrayOf(0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7)
     val transform = Matrix4()
@@ -54,7 +61,7 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite){
         verticies = convert(front.vertices, back.vertices)
     }
 
-    fun update(){
+    fun update() {
         val z = position.z + 0.5f * Math.abs(MathUtils.sinDeg(angle))
         transform.setToRotation(Vector3.Y, angle)
         transform.rotate(Vector3.Z, rotation)
@@ -62,9 +69,16 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite){
     }
 
 
-    companion object{
+    companion object {
         //TODO - Maybe cache actions on cards
-        fun animate(card: Card, x: Float, y: Float, z: Float, angle: Float, speed: Float, rotation: Float = 0f, delay: Float = 0.1f): CardAction{
+        fun animate(card: Card,
+                x: Float,
+                y: Float,
+                z: Float,
+                angle: Float,
+                speed: Float,
+                rotation: Float = 0f,
+                delay: Float = 0.1f): CardAction {
             val action = CardAction(delay)
             action.reset(card)
             action.toPosition.set(x, y, z)
@@ -110,7 +124,7 @@ class CardAction(delay: Float) : Action(delay) {
         }
         card.position.set(fromPosition).lerp(toPosition, alpha)
         card.angle = fromAngle + alpha * (toAngle - fromAngle)
-        card.rotation = toRotation*alpha
+        card.rotation = toRotation * alpha
         card.update()
     }
 
@@ -123,17 +137,19 @@ class CardAction(delay: Float) : Action(delay) {
  * Holds all cards in deck. Doesn't load
  * cards twice(except UNKNOWN cards)
  */
-class CardDeck(val atlas: TextureAtlas,val backIndex: Int) {
-    val cards: Array<Array<Card>> = Array(Suit.values().size, { i -> arrayOf<Card>()})
+class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
+    val cards: Array<Array<Card>> = Array(Suit.values().size,
+            { i -> arrayOf<Card>() })
     val back = atlas.createSprite("back", backIndex)
+
     init {
         for (suit in Suit.values()) {
-            if(suit == Suit.UNKNOWN){
+            if (suit == Suit.UNKNOWN) {
                 continue
             }
             val cardList = mutableListOf<Card>()
             for (pip in Pip.values()) {
-                if(pip == Pip.UNKNOWN){
+                if (pip == Pip.UNKNOWN) {
                     continue
                 }
                 val front = atlas.createSprite(suit.type, pip.value)
@@ -144,8 +160,9 @@ class CardDeck(val atlas: TextureAtlas,val backIndex: Int) {
     }
 
     fun getCard(suit: Suit, pip: Pip): Card {
-        if(suit == Suit.UNKNOWN || pip == Pip.UNKNOWN){
-            return Card(Suit.UNKNOWN, Pip.UNKNOWN, back, atlas.createSprite("back", (backIndex + 1) % 4))
+        if (suit == Suit.UNKNOWN || pip == Pip.UNKNOWN) {
+            return Card(Suit.UNKNOWN, Pip.UNKNOWN, back,
+                    atlas.createSprite("back", (backIndex + 1) % 4))
         }
         cards[suit.index][pip.index].isRevealed = true
         return cards[suit.index][pip.index]

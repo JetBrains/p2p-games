@@ -2,7 +2,6 @@ package network
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
-import io.netty.channel.group.DefaultChannelGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
@@ -10,13 +9,9 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
-import io.netty.util.concurrent.Future
-import io.netty.util.concurrent.FutureListener
-import proto.GameMessageProto
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 
 /**
  * Created by Mark Geller on 6/21/16.
@@ -42,9 +37,10 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param host - Server to receive message
      * @param msg - Protobuff message
      */
-    fun sendAsync(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage) {
+    fun sendAsync(host: InetSocketAddress,
+            msg: GenericMessageProto.GenericMessage) {
         var f = connections[host]
-        if(f == null || !f.channel().isOpen){
+        if (f == null || !f.channel().isOpen) {
             f = bootstrap.connect(host, addr).await().sync() ?: return
             connections[host] = f
         }
@@ -57,13 +53,16 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param host - Server to receive message
      * @param msg - Protobuff message
      */
-    fun request(host: InetSocketAddress, msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
+    fun request(host: InetSocketAddress,
+            msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
         var f = connections[host]
-        if(f == null || !f.channel().isOpen){
-            f = bootstrap.connect(host, addr).await().sync() ?: throw Exception("Something went wrong")
+        if (f == null || !f.channel().isOpen) {
+            f = bootstrap.connect(host, addr).await().sync() ?: throw Exception(
+                    "Something went wrong")
             connections[host] = f
         }
-        val handler = f.channel().pipeline().get(MessageClientHandler::class.java)
+        val handler = f.channel().pipeline().get(
+                MessageClientHandler::class.java)
         val response: GenericMessageProto.GenericMessage = handler.request(msg)
         return response
     }
@@ -73,7 +72,7 @@ class MessageClient(val addr: InetSocketAddress) {
      */
     fun close() {
         bootstrap.group().shutdownGracefully()
-        for(channelFuture in connections.values){
+        for (channelFuture in connections.values) {
             channelFuture.channel().close().sync()
         }
     }
@@ -83,7 +82,8 @@ class MessageClient(val addr: InetSocketAddress) {
 /**
  * Client response handler (process message from server)
  */
-class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>(false) {
+class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>(
+        false) {
     internal val responses = LinkedBlockingQueue<GenericMessageProto.GenericMessage>()
     @Volatile internal var channel: Channel? = null
 
@@ -102,7 +102,7 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
         if (interrupted) {
             Thread.currentThread().interrupt()
         }
-        return response?: GenericMessageProto.GenericMessage.getDefaultInstance()
+        return response ?: GenericMessageProto.GenericMessage.getDefaultInstance()
     }
 
     override fun channelRegistered(ctx: ChannelHandlerContext?) {
@@ -110,7 +110,8 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
         //super.channelRegistered(ctx)
     }
 
-    override fun channelRead0(ctx: ChannelHandlerContext?, msg: GenericMessageProto.GenericMessage?) {
+    override fun channelRead0(ctx: ChannelHandlerContext?,
+            msg: GenericMessageProto.GenericMessage?) {
         if (msg != null) {
             responses.add(msg)
         }
@@ -126,11 +127,12 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
 /**
  * Pipeline for protobuf network serialization/deserialization
  */
-class MessageClientChannelInitializer : ChannelInitializer<SocketChannel> () {
+class MessageClientChannelInitializer : ChannelInitializer<SocketChannel>() {
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
         pipeline.addLast(ProtobufVarint32FrameDecoder())
-        pipeline.addLast(ProtobufDecoder(GenericMessageProto.GenericMessage.getDefaultInstance()))
+        pipeline.addLast(ProtobufDecoder(
+                GenericMessageProto.GenericMessage.getDefaultInstance()))
         pipeline.addLast(ProtobufVarint32LengthFieldPrepender())
         pipeline.addLast(ProtobufEncoder())
         pipeline.addLast(MessageClientHandler())

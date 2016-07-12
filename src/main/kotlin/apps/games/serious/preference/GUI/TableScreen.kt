@@ -5,29 +5,25 @@ import apps.games.serious.preference.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.graphics.g3d.*
+import com.badlogic.gdx.graphics.g3d.Environment
+import com.badlogic.gdx.graphics.g3d.Material
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
-import com.badlogic.gdx.graphics.g3d.loader.ObjLoader
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector3
-import java.util.concurrent.BlockingDeque
-import java.util.concurrent.ConcurrentLinkedDeque
 
 /**
  * Created by user on 7/1/16.
  */
 
 
-class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
+class TableScreen(val game: PreferenceGame) : InputAdapter(), Screen {
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
 
     private val cam3d = PerspectiveCamera()
@@ -52,7 +48,8 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     var hint: String = ""
 
     private val DEAL_SPEED = 1f
-    init{
+
+    init {
         spriteBatch = SpriteBatch()
         font = BitmapFont()
         font.color = Color.RED
@@ -80,13 +77,17 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         cards.add(topDeck)
 
         //Init Envirenment
-        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
-        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -.4f, -.4f, -.4f))
+        environment.set(
+                ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f,
+                        1f))
+        environment.add(
+                DirectionalLight().set(0.8f, 0.8f, 0.8f, -.4f, -.4f, -.4f))
 
 
         //Init Camera
         camController.setVelocity(10f)
-        Gdx.input.inputProcessor = InputMultiplexer(this, biddingOverlay.stage, camController)
+        Gdx.input.inputProcessor = InputMultiplexer(this, biddingOverlay.stage,
+                camController)
 
     }
 
@@ -119,7 +120,7 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
      * @param player - receives the card
      * @param card - card to give
      */
-    @Synchronized fun dealPlayer(player: Player, card: Card){
+    @Synchronized fun dealPlayer(player: Player, card: Card) {
         card.position.set(table.deckPosition)
         val handPos = player.hand.nextCardPosition()
         val angle = player.getAngle()
@@ -130,7 +131,9 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         Gdx.app.log("Spawn", card.suit.type + " - " + card.pip)
 
 
-        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 0f, DEAL_SPEED, angle))
+        actionManager.addAfterLastReady(
+                Card.animate(card, handPos.x, handPos.y, handPos.z, 0f,
+                        DEAL_SPEED, angle))
     }
 
     /**
@@ -138,7 +141,7 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
      * @param player - id of the player that receives the card
      * @param card - card to give
      */
-    @Synchronized fun dealPlayer(player: Int, card: Card){
+    @Synchronized fun dealPlayer(player: Int, card: Card) {
         dealPlayer(table.players[player], card)
     }
 
@@ -147,14 +150,16 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
      * Deal a card common to all players(e.g.
      * TALON in Preference, or cards in texas holdem poker)
      */
-    @Synchronized fun dealCommon(card: Card){
+    @Synchronized fun dealCommon(card: Card) {
         card.position.set(table.deckPosition)
         val handPos = table.commonHand.nextCardPosition()
         val angle = table.getMainPlayer().getAngle()
         table.commonHand.cards.add(card)
         card.angle = 180f
         cards.add(card)
-        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 180f, DEAL_SPEED, angle))
+        actionManager.addAfterLastReady(
+                Card.animate(card, handPos.x, handPos.y, handPos.z, 180f,
+                        DEAL_SPEED, angle))
     }
 
     //TODO - mark cards dealt to self as revealed\
@@ -162,13 +167,14 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     /**
      * Reveal card in common hand
      */
-    @Synchronized fun revealCommonCard(card: Card){
+    @Synchronized fun revealCommonCard(card: Card) {
         val revealCallback = {
             val oldCard = table.commonHand.replaceUnknownCard(card)
-            if(oldCard != null){
+            if (oldCard != null) {
                 //TODO - flawless transition
                 card.angle = 180f
-                val action = Card.animate(card, card.position.x, card.position.y, card.position.z, card.angle + 180f, 1f)
+                val action = Card.animate(card, card.position.x,
+                        card.position.y, card.position.z, card.angle + 180f, 1f)
                 actionManager.addAfterLastReady(action)
                 cards.remove(oldCard)
                 //spawn card facing table
@@ -178,19 +184,21 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
     }
 
-    @Synchronized fun hideDeck(){
-        if(showDeck){
+    @Synchronized fun hideDeck() {
+        if (showDeck) {
             val pos = Vector3(topDeck.position).add(0f, 0f, -1f)
-            actionManager.addAfterLastComplete(Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
+            actionManager.addAfterLastComplete(
+                    Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
             showDeck = true
         }
 
     }
 
-    @Synchronized fun showDeck(){
-        if(!showDeck){
+    @Synchronized fun showDeck() {
+        if (!showDeck) {
             val pos = Vector3(topDeck.position).add(0f, 0f, 1f)
-            actionManager.addAfterLastComplete(Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
+            actionManager.addAfterLastComplete(
+                    Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
             showDeck = false
         }
 
@@ -211,15 +219,18 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         cam2d.update()
     }
 
-    override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+    override fun touchUp(screenX: Int,
+            screenY: Int,
+            pointer: Int,
+            button: Int): Boolean {
         if (selecting != null) {
-            if(selecting == getObject(screenX, screenY)){
+            if (selecting == getObject(screenX, screenY)) {
                 setSelected(selecting!!)
-            }else{
+            } else {
                 setSelecting(getObject(screenX, screenY))
             }
             return true
-        }else{
+        } else {
             setSelecting(getObject(screenX, screenY))
             return selecting != null
         }
@@ -231,18 +242,19 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     private fun setSelected(selecting: Card) {
         val pos = table.getMainPlayer().getCardspace()
 
-        actionManager.addAfterLastComplete(Card.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f))
+        actionManager.addAfterLastComplete(
+                Card.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f))
     }
 
     /**
      * First click on card
      */
-    private fun setSelecting(newSelecting: Card?){
-        if(newSelecting == null){
+    private fun setSelecting(newSelecting: Card?) {
+        if (newSelecting == null) {
             return
         }
 
-        if(selecting != null){
+        if (selecting != null) {
             (selecting as Card).isSelected = false
         }
         newSelecting.isSelected = true
@@ -252,10 +264,10 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     /**
      * Get current camera - 2d or 3d view
      */
-    private fun getCam(): Camera{
-        if(is2dMode){
+    private fun getCam(): Camera {
+        if (is2dMode) {
             return cam2d
-        }else{
+        } else {
             return cam3d
         }
     }
@@ -270,11 +282,12 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         var distance = -1f
 
         for (instance in cards) {
-             val dist2 = ray.origin.dst2(instance.position)
+            val dist2 = ray.origin.dst2(instance.position)
             if (distance >= 0f && dist2 > distance)
                 continue
 
-            if (Intersector.intersectRaySphere(ray, instance.position, instance.radius, null)) {
+            if (Intersector.intersectRaySphere(ray, instance.position,
+                    instance.radius, null)) {
                 result = instance
                 distance = dist2
             }
@@ -284,20 +297,24 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     }
 
     override fun keyUp(keycode: Int): Boolean {
-        if(keycode == Input.Keys.C){
+        if (keycode == Input.Keys.C) {
             is2dMode = !is2dMode
             return true
         }
         return false
     }
 
-    override fun show() { }
+    override fun show() {
+    }
 
-    override fun pause() { }
+    override fun pause() {
+    }
 
-    override fun hide() { }
+    override fun hide() {
+    }
 
-    override fun resume() { }
+    override fun resume() {
+    }
 
     override fun dispose() {
         atlas.dispose()

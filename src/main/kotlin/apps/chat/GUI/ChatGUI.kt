@@ -7,7 +7,10 @@ package apps.chat.GUI
 import apps.chat.Chat
 import apps.games.GameManager
 import java.awt.*
-import java.awt.event.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.*
 
 /**
@@ -80,22 +83,23 @@ class ChatGUI(internal var chat: Chat) {
         chatFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
         chatFrame.setSize(470, 300)
         chatFrame.isVisible = true
-        chatFrame.addWindowListener(object: WindowAdapter() {
+        chatFrame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent?) {
                 isClosed = true
             }
         })
     }
 
-    fun reopen(){
+    fun reopen() {
         isClosed = false
         chatFrame.isVisible = true
     }
 
-    fun refreshTitle(title: String){
+    fun refreshTitle(title: String) {
         appName = title
         chatFrame.title = title
     }
+
     fun displayMessage(user: String, msg: String) {
         chatBox.append("<$user>:  $msg\n")
     }
@@ -123,7 +127,8 @@ class ChatGUI(internal var chat: Chat) {
     }
 
     fun getUserInput(description: String): String {
-        return JOptionPane.showInputDialog(chatFrame, description, "User input request", JOptionPane.QUESTION_MESSAGE)
+        return JOptionPane.showInputDialog(chatFrame, description,
+                "User input request", JOptionPane.QUESTION_MESSAGE)
     }
 
 

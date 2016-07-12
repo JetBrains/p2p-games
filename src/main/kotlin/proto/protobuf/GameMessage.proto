@@ -4,7 +4,7 @@ option java_outer_classname = "GameMessageProto";
 import "Entities.proto";
 
 message GameMessage {
-    enum Type{
+    enum Type {
         GAME_INIT_MESSAGE = 1;
         GAME_STATE_MESSAGE = 2;
         GAME_END_MESSAGE = 3;

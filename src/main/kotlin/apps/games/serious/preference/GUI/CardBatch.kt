@@ -20,38 +20,43 @@ import com.badlogic.gdx.utils.Pool
 /**
  * Class for rendering cards
  */
-class CardBatch(mainMaterial: Material,selectionMaterial: Material): ObjectSet<Card>(), RenderableProvider, Disposable{
+class CardBatch(mainMaterial: Material, selectionMaterial: Material) : ObjectSet<Card>(), RenderableProvider, Disposable {
     val renderable = Renderable()
     val normalMesh: Mesh
     val selectedMesh: Mesh
     val meshBuilder = MeshBuilder()
     val selectedRenderable = Renderable()
 
-    init{
+    init {
         val maxNumberOfCards = 52
         val maxNumberOfVertices = maxNumberOfCards * 8
         val maxNumberOfIndices = maxNumberOfCards * 12
         normalMesh = Mesh(false, maxNumberOfVertices, maxNumberOfIndices,
-                VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0))
+                VertexAttribute.Position(), VertexAttribute.Normal(),
+                VertexAttribute.TexCoords(0))
         selectedMesh = Mesh(false, maxNumberOfVertices, maxNumberOfIndices,
-                VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0))
+                VertexAttribute.Position(), VertexAttribute.Normal(),
+                VertexAttribute.TexCoords(0))
 
         renderable.material = mainMaterial
         selectedRenderable.material = selectionMaterial
     }
-    override fun getRenderables(renderables: Array<Renderable>, pool: Pool<Renderable>?) {
+
+    override fun getRenderables(renderables: Array<Renderable>,
+            pool: Pool<Renderable>?) {
         meshBuilder.begin(normalMesh.vertexAttributes)
         meshBuilder.part("cards", GL20.GL_TRIANGLES, renderable.meshPart)
-        for(card in this){
+        for (card in this) {
             meshBuilder.setVertexTransform(card.transform)
             meshBuilder.addMesh(card.verticies, card.indices)
         }
         meshBuilder.end(normalMesh)
         renderables.add(renderable)
-        if(this.any{x -> x.isSelected}){
+        if (this.any { x -> x.isSelected }) {
             meshBuilder.begin(selectedMesh.vertexAttributes)
-            meshBuilder.part("selected", GL20.GL_TRIANGLES, selectedRenderable.meshPart)
-            for(selected in this.filter { x -> x.isSelected }){
+            meshBuilder.part("selected", GL20.GL_TRIANGLES,
+                    selectedRenderable.meshPart)
+            for (selected in this.filter { x -> x.isSelected }) {
                 meshBuilder.setVertexTransform(selected.transform)
                 meshBuilder.addMesh(selected.verticies, selected.indices)
             }

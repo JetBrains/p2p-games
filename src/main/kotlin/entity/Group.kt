@@ -7,14 +7,14 @@ import proto.EntitiesProto
  * * Open - for mockito testing purposes
  */
 
-open class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>, Cloneable{
+open class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.Group>, Cloneable {
     open val users: MutableSet<User> = users
 
     constructor() : this(mutableSetOf()) {
     }
 
-    constructor(group: EntitiesProto.Group): this(mutableSetOf()){
-        for(user in group.usersList){
+    constructor(group: EntitiesProto.Group) : this(mutableSetOf()) {
+        for (user in group.usersList) {
             users.add(User(user))
         }
     }
@@ -27,7 +27,7 @@ open class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.G
         return builder.build()
     }
 
-    override fun equals(other: Any?): Boolean{
+    override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
@@ -38,7 +38,7 @@ open class Group(users: MutableSet<User>) : ProtobufSerializable<EntitiesProto.G
         return true
     }
 
-    override fun hashCode(): Int{
+    override fun hashCode(): Int {
         return users.hashCode()
     }
 

@@ -19,7 +19,7 @@ message ChatMemberQuery {
     required int32 chatID = 1;
 }
 
-message GameStatusQuery{
+message GameStatusQuery {
     required string gameID = 1;
     required User user = 2;
     required int32 timestamp = 3;
