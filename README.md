@@ -1,5 +1,5 @@
 # p2p-games
 
-This project is a platform of several simple-but-popular tabletop games, such as:
+This project is a platform of several simple-but-popular tabletop games.
 
-1. Lotto
+For further information please check our [wiki](https://github.com/JetBrains/p2p-games/wiki)
