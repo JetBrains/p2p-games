@@ -93,15 +93,46 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int,  val 
 }
 
 class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6,val direction: Vector3, val MAX_HAND_WIDTH: Float = 3f){
-    var size: Int = 0
+    val cards = mutableListOf<Card>()
+    val size: Int
+        get() = cards.size
 
+    /**
+     * find first not revealed card and return an action
+     * revealing it
+     *
+     * @param newCard - new card to be shown in place of revealed
+     * @return UNKNOWN card that now need's to be removed from table
+     */
+    @Synchronized fun replaceUnknownCard(newCard: Card): Card?{
+        for(i in 0..size-1){
+            if(!cards[i].isRevealed){
+                val res = cards[i]
+                cards[i] = newCard
+                newCard.position.set(res.position)
+                return res
+            }
+        }
+        return null
+    }
+
+    /**
+     * position for next card to put into this hand
+     */
     fun nextCardPosition(): Vector3{
+        return getCardPositionById(size)
+    }
+
+    /**
+     * get position of n-th card in hand
+     */
+    fun getCardPositionById(n: Int): Vector3{
         val result = Vector3(position)
         //get perpendicular vector in Z=0 plane
         val normal = Vector3(direction).crs(0f, 0f, 1f).nor()
         val step = MAX_HAND_WIDTH / MAX_HAND_SIZE
-        result.add(normal.scl(step*size - 1.4f))
-        result.z += (size + 1)*0.01f
+        result.add(normal.scl(step*n - 1.4f))
+        result.z += (cards.size + 1)*0.01f
         return result
     }
 }

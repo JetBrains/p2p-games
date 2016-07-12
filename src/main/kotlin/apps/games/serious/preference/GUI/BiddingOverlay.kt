@@ -84,13 +84,10 @@ class BiddingOverlay {
     /**
      * Display that this Bet is claimed by user
      */
-    fun markBet(bet: Bet, user: User){
+    fun markBet(bet: Bet,vararg users: User){
         val button = buttons[bet] ?: return
         button.isChecked = true
-        button.setText(user.name)
-        if(bet != Bet.PASS){
-            button.isDisabled = true
-        }
+        button.setText(users.map { x -> x.name }.joinToString(" + \n"))
     }
 
     /**
@@ -104,7 +101,18 @@ class BiddingOverlay {
     /**
      * Enable button corresponding to given Bet
      */
+
     fun enableBet(bet: Bet){
+        val button = buttons[bet] ?: return
+        button.isDisabled = false
+    }
+
+    /**
+     * Enable button corresponding to given Bet
+     * and set button text to original value
+     */
+
+    fun resetBet(bet: Bet){
         val button = buttons[bet] ?: return
         button.isChecked = false
         button.setText(bet.type)
@@ -134,8 +142,8 @@ class BiddingOverlay {
     companion object ListenerFactory{
         fun <R>create(bet: Bet, betButton: Button, callback: (Bet) -> (R)): EventListener{
             return object: ClickListener(){
-                override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                    if(betButton.isDisabled == false){
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    if(!betButton.isDisabled){
                         callback(bet)
                         betButton.isChecked = true
                         betButton.isDisabled = true

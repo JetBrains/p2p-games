@@ -65,21 +65,25 @@ class PreferenceGame : Game() {
      * @param bets -vararg Pair<User, Bet> - pairs
      * describing User's Bet
      */
-    fun displayBets(vararg bets: Pair<User, Bet>){
+    fun markBets(vararg bets: Pair<User, Bet>){
+        val betMap = mutableMapOf<Bet, MutableSet<User>>()
         for(bet in bets){
-            if(bet.second != Bet.UNKNOWN){
-                tableScreen.biddingOverlay.markBet(bet.second, bet.first)
+            if (betMap[bet.second] == null) {
+                betMap[bet.second] = mutableSetOf()
             }
-
+            betMap[bet.second]?.add(bet.first)
+        }
+        for(bet in betMap.keys){
+            tableScreen.biddingOverlay.markBet(bet, *(betMap[bet]!!.toTypedArray()))
         }
     }
 
     /**
      * Mark all bet buttons as enabled
      */
-    fun enableAllBets(){
+    fun resetAllBets(){
         for(bet in Bet.values()){
-            tableScreen.biddingOverlay.enableBet(bet)
+            tableScreen.biddingOverlay.resetBet(bet)
         }
     }
 
@@ -93,6 +97,16 @@ class PreferenceGame : Game() {
     }
 
     /**
+     * Reset bets from given list of bets
+     * @param bets - Bets to enable
+     */
+    fun resetBets(vararg bets: Bet){
+        for(bet in bets){
+            tableScreen.biddingOverlay.resetBet(bet)
+        }
+    }
+
+    /**
      * Enable bets from given list of bets
      * @param bets - Bets to enable
      */
@@ -101,6 +115,8 @@ class PreferenceGame : Game() {
             tableScreen.biddingOverlay.enableBet(bet)
         }
     }
+
+
 
     /**
      * Disable bets from given list of bets
@@ -120,6 +136,22 @@ class PreferenceGame : Game() {
         for(bet in bets){
             tableScreen.biddingOverlay.addCallback(bet, callBack)
         }
+    }
+
+    /**
+     * Display hint for current step
+     */
+    fun showHint(hint: String){
+        synchronized(tableScreen.hint){
+            tableScreen.hint = hint
+        }
+    }
+
+    /**
+     * Reveal talon card
+     */
+    fun revealTalonCard(cardID: Int){
+        tableScreen.revealCommonCard(getCardById(cardID))
     }
 
     /**

@@ -43,6 +43,7 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite){
     var angle: Float = 0f
     var rotation: Float = 0f
     var isSelected: Boolean = false
+    var isRevealed: Boolean = false
 
     init {
         front.setSize(CARD_WIDTH, CARD_HEIGHT)
@@ -63,7 +64,7 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite){
 
     companion object{
         //TODO - Maybe cache actions on cards
-        fun animate(card: Card, x: Float, y: Float, z: Float, angle: Float, speed: Float, rotation: Float = 0f, delay: Float = 0.25f): CardAction{
+        fun animate(card: Card, x: Float, y: Float, z: Float, angle: Float, speed: Float, rotation: Float = 0f, delay: Float = 0.1f): CardAction{
             val action = CardAction(delay)
             action.reset(card)
             action.toPosition.set(x, y, z)
@@ -146,6 +147,7 @@ class CardDeck(val atlas: TextureAtlas,val backIndex: Int) {
         if(suit == Suit.UNKNOWN || pip == Pip.UNKNOWN){
             return Card(Suit.UNKNOWN, Pip.UNKNOWN, back, atlas.createSprite("back", (backIndex + 1) % 4))
         }
+        cards[suit.index][pip.index].isRevealed = true
         return cards[suit.index][pip.index]
     }
 }

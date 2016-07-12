@@ -4,7 +4,9 @@ import apps.games.serious.preference.Pip
 import apps.games.serious.preference.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.Sprite
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
@@ -45,8 +47,16 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
     val topDeck: Card
     var showDeck = true
     val biddingOverlay = BiddingOverlay()
+    lateinit var spriteBatch: SpriteBatch
+    lateinit var font: BitmapFont
+    var hint: String = ""
 
+    private val DEAL_SPEED = 1f
     init{
+        spriteBatch = SpriteBatch()
+        font = BitmapFont()
+        font.color = Color.RED
+
         biddingOverlay.create()
         //Init cards
         val material = Material(
@@ -97,6 +107,10 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         game.batch.render(cards, environment)
         game.batch.render(table.tableTop, environment)
         game.batch.end()
+
+        spriteBatch.begin()
+        font.draw(spriteBatch, hint, 100f, 100f)
+        spriteBatch.end()
         biddingOverlay.render(getCam())
     }
 
@@ -109,14 +123,14 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         card.position.set(table.deckPosition)
         val handPos = player.hand.nextCardPosition()
         val angle = player.getAngle()
-        player.hand.size ++
+        player.hand.cards.add(card)
         card.angle = 180f
         cards.add(card)
 
         Gdx.app.log("Spawn", card.suit.type + " - " + card.pip)
 
 
-        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 0f, 1f, angle))
+        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 0f, DEAL_SPEED, angle))
     }
 
     /**
@@ -137,10 +151,31 @@ class TableScreen(val game: PreferenceGame): InputAdapter(), Screen {
         card.position.set(table.deckPosition)
         val handPos = table.commonHand.nextCardPosition()
         val angle = table.getMainPlayer().getAngle()
-        table.commonHand.size ++
+        table.commonHand.cards.add(card)
         card.angle = 180f
         cards.add(card)
-        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 0f, 1f, angle))
+        actionManager.addAfterLastReady(Card.animate(card, handPos.x, handPos.y, handPos.z , 180f, DEAL_SPEED, angle))
+    }
+
+    //TODO - mark cards dealt to self as revealed\
+
+    /**
+     * Reveal card in common hand
+     */
+    @Synchronized fun revealCommonCard(card: Card){
+        val revealCallback = {
+            val oldCard = table.commonHand.replaceUnknownCard(card)
+            if(oldCard != null){
+                //TODO - flawless transition
+                card.angle = 180f
+                val action = Card.animate(card, card.position.x, card.position.y, card.position.z, card.angle + 180f, 1f)
+                actionManager.addAfterLastReady(action)
+                cards.remove(oldCard)
+                //spawn card facing table
+                cards.add(card)
+            }
+        }
+        actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
     }
 
     @Synchronized fun hideDeck(){

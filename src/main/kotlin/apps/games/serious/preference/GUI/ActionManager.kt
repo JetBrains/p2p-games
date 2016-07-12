@@ -75,6 +75,18 @@ abstract class Action(var delay: Float){
 }
 
 
+class DelayedAction<out R>(delay: Float, val action: () -> (R)) : Action(delay){
+    private var finished: Boolean = false
+    override fun execute(delta: Float) {
+        finished = true
+        action()
+    }
+
+    override fun isComplete(): Boolean {
+        return finished
+    }
+}
+
 /***
  * Card action manager. Keeps all
  * cards movements
