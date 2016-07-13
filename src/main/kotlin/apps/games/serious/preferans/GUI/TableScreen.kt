@@ -175,7 +175,7 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
                 card.angle = 180f
                 val action = Card.animate(card, card.position.x,
                         card.position.y, card.position.z, card.angle + 180f, 1f)
-                actionManager.addAfterLastReady(action)
+                actionManager.add(action)
                 cards.remove(oldCard)
                 //spawn card facing table
                 cards.add(card)
@@ -184,6 +184,39 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
         actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
     }
 
+
+    /**
+     * Return hand with given ID.
+     * @param handID - id of hand to find
+     * handID = -1 - means common hand
+     */
+    fun getHandById(handID: Int): Hand?{
+        if(handID == -1){
+            return table.commonHand
+        }
+        if(handID >= 0 && handID < table.playersCount){
+            return table.players[handID].hand
+        }
+        return null
+    }
+
+    /**
+     * Move card from one hand to another
+     */
+    @Synchronized fun moveCard(card: Card, from: Hand, to: Hand, flip:
+                               Boolean = false){
+        from.removeCard(card)
+        val pos = to.nextCardPosition()
+        val toAngle: Float = card.angle + (if (flip) 180f else 0f)
+        val action = Card.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
+                to.getAngle() - from.getAngle())
+        actionManager.addAfterLastComplete(action)
+        to.cards.add(card)
+    }
+
+    /**
+     * Hide deck from the table
+     */
     @Synchronized fun hideDeck() {
         if (showDeck) {
             val pos = Vector3(topDeck.position).add(0f, 0f, -1f)

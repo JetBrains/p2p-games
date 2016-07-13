@@ -103,6 +103,13 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
         get() = cards.size
 
     /**
+     * @see Player#getAngle()
+     */
+    fun getAngle(): Float {
+        return MathUtils.radDeg * MathUtils.atan2(-direction.x, direction.y)
+    }
+
+    /**
      * find first not revealed card and return an action
      * revealing it
      *
@@ -139,5 +146,20 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
         result.add(normal.scl(step * n - 1.4f))
         result.z += (cards.size + 1) * 0.01f
         return result
+    }
+
+    /**
+     * remove card from hand.
+     * TODO - animation instead of just setting positions
+     */
+    @Synchronized fun removeCard(card: Card){
+        val index = cards.indexOf(card)
+        if(index == -1){
+            return
+        }
+        for(i in index+1..size-1){
+            cards[i].position.set(cards[i-1].position)
+        }
+        cards.removeAt(index)
     }
 }

@@ -36,6 +36,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         BIDDING,
         VERIFY_BET,
         REVEAL_TALON,
+        REBID,
         END
     }
 
@@ -60,8 +61,10 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
 
     //player whose turn is right now
-    private var currentPlayer: Int = 0
+    private var currentPlayerID: Int = 0
     private val bets = Array(N, { i -> Bet.UNKNOWN })
+    //Player who has highest contract
+    private var mainPlayerID: Int = -1
 
     //Bet, that will be played this round
     private var gameBet: Bet = Bet.UNKNOWN
@@ -99,13 +102,14 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 for (msg in responses) {
                     // TODO - digital signatures on player or encrypt channel
                     val userID = getUserID(User(msg.user))
-                    if (userID == currentPlayer) {
+                    if (userID == currentPlayerID) {
                         bets[userID] = Bet.values().first { x -> x.value == msg.value.toInt() }
                     }
                 }
-                currentPlayer = (currentPlayer + 1) % N
+                currentPlayerID = (currentPlayerID + 1) % N
                 if (currentBet() != Bet.UNKNOWN) {
                     gameBet = currentBet()
+                    mainPlayerID = bets.indexOf(gameBet)
                     state = State.VERIFY_BET
                     return gameBet.type
                 }
@@ -127,8 +131,29 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 return keys.joinToString(" ")
             }
             State.REVEAL_TALON -> {
+                if(gameBet != Bet.PASS){
+                    state = State.REBID
+                }else{
+                    //TODO - распасы
+                    state = State.END
+                }
+
+                decryptTalon(responses)
+                revealTalon()
+                return ""
+            }
+            State.REBID -> {
                 state = State.END
-                return decryptTalon(responses)
+                dealTalon()
+                if (playerID != mainPlayerID){
+                    gameGUI.showHint("Waiting for " +
+                                             "[${playerOrder[mainPlayerID].name}]" +
+                                             "to update his bid according to " +
+                                             "Talon")
+                    return ""
+                }
+                // If we are main player:
+
             }
             State.END -> {
             }
@@ -196,7 +221,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         gameGUI.showBiddingOverlay()
         gameGUI.disableAllBets()
         registerCallbacks()
-        currentPlayer = -1
+        currentPlayerID = -1
         return ""
     }
 
@@ -208,7 +233,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private fun getBid(): String {
         val toDisplay = Array(N, { i -> Pair(playerOrder[i], bets[i]) })
         //display bets of players, also disables them
-        if (playerID == currentPlayer && bets[playerID] != Bet.PASS) {
+        if (playerID == currentPlayerID && bets[playerID] != Bet.PASS) {
             gameGUI.resetAllBets()
             gameGUI.markBets(*toDisplay)
             //you can choose what chose last time
@@ -232,6 +257,9 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 gameGUI.showHint(
                         "Your turn! You can bid [${maxBet.type}] or higher or PASS")
             }
+            if(bets[playerID] != Bet.UNKNOWN){
+                gameGUI.disableBets(Bet.MIZER)
+            }
             val bet = betQueue.take()
             gameGUI.disableAllBets()
             return bet.value.toString()
@@ -240,7 +268,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             gameGUI.disableAllBets()
             gameGUI.markBets(*toDisplay)
             gameGUI.showHint(
-                    "Waiting for [${playerOrder[currentPlayer].name}] to make his move")
+                    "Waiting for [${playerOrder[currentPlayerID].name}] to make his move")
             if (bets[playerID] == Bet.PASS) {
                 return Bet.PASS.value.toString()
             }
@@ -251,7 +279,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     /**
      * Receive keys of talon, decrypt it, show to everyone
      */
-    fun decryptTalon(responses: List<GameMessageProto.GameStateMessage>): String {
+    fun decryptTalon(responses: List<GameMessageProto.GameStateMessage>){
         gameGUI.showHint("Revealing talon")
         for (msg in responses) {
             if (User(msg.user) == chat.me()) {
@@ -267,6 +295,12 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         keys[i])
             }
         }
+    }
+
+    /**
+     * Reveal Talon.
+     */
+    fun revealTalon(){
         for (i in 0..TALON - 1) {
             val index = deck.originalDeck.cards.indexOf(
                     deck.encrypted.deck.cards[DECK_SIZE - TALON + i])
@@ -277,9 +311,19 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             //reveal Common
             gameGUI.revealTalonCard(index)
         }
-        return ""
     }
 
+    /**
+     * Give talon to main player
+     */
+    fun dealTalon(){
+        for(i in 0..TALON-1){
+            val cardId = deck.originalDeck.cards.indexOf(deck.encrypted
+                                                                 .deck.cards[DECK_SIZE - TALON + i])
+            gameGUI.giveCard(cardId, -1, getTablePlayerId(mainPlayerID),
+                             flip = (playerID != mainPlayerID))
+        }
+    }
 
     /**
      * Create a new deck and shuffle it.
@@ -367,13 +411,11 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             } else {
                 cardID = -1
             }
-            var currentPlayerId: Int = cardHolders[i] ?: throw GameExecutionException(
+            val currentPlayerId: Int = cardHolders[i] ?: throw
+            GameExecutionException(
                     "Invalid card distribution")
-            currentPlayerId -= playerID
-            if (currentPlayerId < 0) {
-                currentPlayerId += N
-            }
-            gameGUI.dealPlayer(currentPlayerId, cardID)
+            val guiID = getTablePlayerId(currentPlayerId)
+            gameGUI.dealPlayer(guiID, cardID)
         }
         //Deal unknown Talon cards
         for (i in 1..TALON) {
@@ -390,7 +432,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * Otherwise - return Bet that is played
      */
     private fun currentBet(): Bet {
-        if (currentPlayer != 0 || bets.contains(Bet.UNKNOWN)) {
+        if (currentPlayerID != 0 || bets.contains(Bet.UNKNOWN)) {
             return Bet.UNKNOWN
         }
         when (bets.count { x -> x == Bet.PASS }) {
@@ -409,6 +451,18 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     fun getUserID(user: User): Int {
         return playerOrder.indexOf(user)
+    }
+
+    /**
+     * During the game in GUI - ew are always player 0,
+     * meanwhile in game we are not
+     */
+    fun getTablePlayerId(id: Int): Int{
+        var res: Int = id - playerID
+        if(res < 0){
+            res += N
+        }
+        return res
     }
 
     override fun getResult() {

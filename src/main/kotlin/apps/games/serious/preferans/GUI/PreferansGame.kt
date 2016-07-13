@@ -157,6 +157,21 @@ class preferansGame : Game() {
     }
 
     /**
+     * Move card from hand of one player to the hand of another
+     * @param cardID - card to move(any unknown card is picked, if cardID = -1)
+     * @param from - id of player, to take card from
+     * from = -1 - means common hand is used
+     * @param to - id of player, to give card to
+     * to = -1 - means common hand is used
+     */
+    fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true){
+        val card = getCardById(cardID)
+        val fromHand = tableScreen.getHandById(from) ?: return
+        val toHand = tableScreen.getHandById(to) ?: return
+        tableScreen.moveCard(card, fromHand, toHand, flip)
+    }
+
+    /**
      * In preferans we have 32 card deck.
      * This function takes card ID (0 -> 32)
      * or -1 for UNKNOWN card
