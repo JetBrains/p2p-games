@@ -59,6 +59,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     private val N = 3
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
+    private val originalCardHolders: MutableMap<Int, Int> = mutableMapOf()
 
     //player whose turn is right now
     private var currentPlayerID: Int = 0
@@ -152,16 +153,18 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                                              "Talon")
                     return ""
                 }else{
+                    currentPlayerID = playerID
                     gameGUI.showBiddingOverlay()
                     val res = getBid()
                     gameGUI.hideBiddingOverlay()
-
+                    //TODO - log turn for later validation
+                    playCard(playerID)
+                    playCard(playerID)
                     return res
                 }
-
-
             }
             State.END -> {
+                println("WOLOLOLOLOOLOO")
             }
         }
         return ""
@@ -444,6 +447,24 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             N - 1 -> return bets.first { x -> x != Bet.PASS }
             else -> return Bet.UNKNOWN
         }
+    }
+
+    /**
+     * play any known card that is possesed by
+     * player with given id
+     * @param playerID - player whose card will be played
+     */
+    fun playCard(vararg playerIDs: Int): Int{
+        val allowed = mutableListOf<Int>()
+        for(key in cardHolders.keys){
+            if(playerIDs.contains(cardHolders[key]!!)){
+                val card = deck.encrypted.deck.cards[key]
+                allowed.add(deck.originalDeck.cards.indexOf(card))
+            }
+        }
+        val res = gameGUI.pickCard(*allowed.toIntArray())
+                ?: throw GameExecutionException("Can not pick UNKNOWN card")
+        return res
     }
 
     fun registerCallbacks() {

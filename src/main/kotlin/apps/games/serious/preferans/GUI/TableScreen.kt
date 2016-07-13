@@ -1,6 +1,7 @@
 package apps.games.serious.preferans.GUI
 
 import apps.games.serious.preferans.Pip
+
 import apps.games.serious.preferans.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
@@ -17,18 +18,19 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector3
-
 /**
  * Created by user on 7/1/16.
  */
 
 
 class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
-    private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
+    companion object DefaultSelector: CardSelector
 
+    private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
     private val cam3d = PerspectiveCamera()
     private val camController = FirstPersonCameraController(cam3d)
     private val cam2d = OrthographicCamera()
+
     private var is2dMode: Boolean = true
 
     private val table: Table = Table(3, 10)
@@ -36,7 +38,6 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
     private val environment = Environment()
 
     private var selecting: Card? = null
-
     val deck = CardDeck(atlas, 2)
     val cards: CardBatch
     var actionManager = ActionManager()
@@ -45,6 +46,9 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
     val biddingOverlay = BiddingOverlay()
     lateinit var spriteBatch: SpriteBatch
     lateinit var font: BitmapFont
+
+    private var selector: CardSelector = DefaultSelector
+
     var hint: String = ""
 
     private val DEAL_SPEED = 1f
@@ -205,7 +209,7 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
      */
     @Synchronized fun moveCard(card: Card, from: Hand, to: Hand, flip:
                                Boolean = false){
-        from.removeCard(card)
+        from.removeCard(card, actionManager)
         val pos = to.nextCardPosition()
         val toAngle: Float = card.angle + (if (flip) 180f else 0f)
         val action = Card.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
@@ -273,13 +277,28 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
     }
 
     /**
+     * Get current camera - 2d or 3d view
+     */
+    private fun getCam(): Camera {
+        if (is2dMode) {
+            return cam2d
+        } else {
+            return cam3d
+        }
+    }
+
+    /**
      * Second click on card
      */
     private fun setSelected(selecting: Card) {
-        val pos = table.getMainPlayer().getCardspace()
-
-        actionManager.addAfterLastComplete(
-                Card.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f))
+        if(!selector.canSelect(selecting)){
+            return
+        }
+        selector.select(selecting)
+        val player = table.getPlayerWithCard(selecting) ?: return
+        player.hand.removeCard(selecting, actionManager)
+        val pos = player.getCardspace()
+        actionManager.add(Card.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f))
     }
 
     /**
@@ -295,17 +314,6 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
         }
         newSelecting.isSelected = true
         selecting = newSelecting
-    }
-
-    /**
-     * Get current camera - 2d or 3d view
-     */
-    private fun getCam(): Camera {
-        if (is2dMode) {
-            return cam2d
-        } else {
-            return cam3d
-        }
     }
 
     /**
@@ -330,6 +338,14 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
         }
 
         return result
+    }
+
+    @Synchronized fun setSelector(cardSelector: CardSelector){
+        selector = cardSelector
+    }
+
+    @Synchronized fun resetSelector(){
+        selector = DefaultSelector
     }
 
     override fun keyUp(keycode: Int): Boolean {

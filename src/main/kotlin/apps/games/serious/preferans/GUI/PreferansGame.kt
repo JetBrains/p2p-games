@@ -9,6 +9,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import entity.User
+import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * Created by user on 6/30/16.
@@ -157,6 +158,32 @@ class preferansGame : Game() {
     }
 
     /**
+     * Get one of specified cards.
+     * NB: Thhis method wont work for selection
+     * of UNKNOWN card.
+     */
+    fun pickCard(vararg allowedCardIds: Int): Int?{
+        if(allowedCardIds.contains(-1)){
+            return null
+        }
+        val queue = LinkedBlockingQueue<Card>(1)
+        val allowedCards = allowedCardIds.map { x -> getCardById(x) }
+        tableScreen.setSelector(object : CardSelector{
+            override fun select(card: Card){
+                queue.add(card)
+            }
+
+            override fun canSelect(card: Card): Boolean {
+                return allowedCards.contains(card)
+            }
+        })
+
+        val card = queue.take()
+        tableScreen.resetSelector()
+        return getIdByCard(card)
+    }
+
+    /**
      * Move card from hand of one player to the hand of another
      * @param cardID - card to move(any unknown card is picked, if cardID = -1)
      * @param from - id of player, to take card from
@@ -195,6 +222,26 @@ class preferansGame : Game() {
         }
         return card
     }
+
+    /**
+     * In preferans we have 32 card deck.
+     * This function takes card
+     * and translates it into corresponding
+     * Card Id (-1 -> 32). -1 - for UNKNOWN
+     */
+    private fun getIdByCard(card: Card): Int {
+        if(card.suit == Suit.UNKNOWN){
+            return -1
+        }
+        val suitID: Int = card.suit.index
+        var pipID: Int = card.pip.index
+        if(pipID >= 7){
+            pipID -= 6
+        }
+        return 8*suitID + pipID
+    }
+
+
 
     override fun render() {
         super.render()

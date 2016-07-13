@@ -52,6 +52,15 @@ class Table(val playersCount: Int, val handSize: Int) : Disposable {
         tableTop.transform.translate(0f, -1.5f, 0f)
     }
 
+    fun getPlayerWithCard(card: Card): Player?{
+        for(player in players){
+            if(player.hand.cards.contains(card)){
+                return player
+            }
+        }
+        return null
+    }
+
     fun getMainPlayer(): Player {
         return players[0]
     }
@@ -150,15 +159,16 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
 
     /**
      * remove card from hand.
-     * TODO - animation instead of just setting positions
      */
-    @Synchronized fun removeCard(card: Card){
+    @Synchronized fun removeCard(card: Card, actionManager: ActionManager){
         val index = cards.indexOf(card)
         if(index == -1){
             return
         }
         for(i in index+1..size-1){
-            cards[i].position.set(cards[i-1].position)
+            val pos = cards[i-1].position
+            actionManager.add(Card.animate(cards[i],pos.x, pos.y, pos.z, cards[i]
+                    .angle, 2f))
         }
         cards.removeAt(index)
     }
