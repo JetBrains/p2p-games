@@ -1,8 +1,8 @@
-package apps.games.serious.preference.GUI
+package apps.games.serious.preferans.GUI
 
-import apps.games.serious.preference.Bet
-import apps.games.serious.preference.Pip
-import apps.games.serious.preference.Suit
+import apps.games.serious.preferans.Bet
+import apps.games.serious.preferans.Pip
+import apps.games.serious.preferans.Suit
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
@@ -13,7 +13,7 @@ import entity.User
 /**
  * Created by user on 6/30/16.
  */
-class PreferenceGame : Game() {
+class preferansGame : Game() {
     lateinit var batch: ModelBatch
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
@@ -157,7 +157,7 @@ class PreferenceGame : Game() {
     }
 
     /**
-     * In preference we have 32 card deck.
+     * In preferans we have 32 card deck.
      * This function takes card ID (0 -> 32)
      * or -1 for UNKNOWN card
      * and translates it into corresponding
@@ -197,7 +197,7 @@ fun main(args: Array<String>) {
     config.width = 1024
     config.height = 1024
     config.forceExit = false
-    val gameGUI = PreferenceGame()
+    val gameGUI = preferansGame()
     LwjglApplication(gameGUI, config)
     println("6 \u2660")
 }

@@ -1,4 +1,4 @@
-package apps.games.serious.preference
+package apps.games.serious.preferans
 
 /**
  * Created by user on 7/7/16.

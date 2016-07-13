@@ -1,7 +1,7 @@
-package apps.games.serious.preference.GUI
+package apps.games.serious.preferans.GUI
 
-import apps.games.serious.preference.Pip
-import apps.games.serious.preference.Suit
+import apps.games.serious.preferans.Pip
+import apps.games.serious.preferans.Suit
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureAtlas

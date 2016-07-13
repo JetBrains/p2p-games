@@ -3,7 +3,7 @@ package apps.games
 import Settings
 import apps.chat.Chat
 import apps.chat.ChatManager
-import apps.games.serious.preference.Preference
+import apps.games.serious.preferans.preferans
 import crypto.random.randomString
 import entity.Group
 import entity.User
@@ -88,7 +88,7 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
             //TODO - respond to someone
             return null
         }
-        val game = Preference(chat, group, msg.gameID)
+        val game = preferans(chat, group, msg.gameID)
         games[msg.gameID] = game
         if (group != chat.group) {
             sendEndGame(msg.gameID,

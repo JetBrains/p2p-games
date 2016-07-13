@@ -1,7 +1,7 @@
-package apps.games.serious.preference.GUI
+package apps.games.serious.preferans.GUI
 
-import apps.games.serious.preference.Pip
-import apps.games.serious.preference.Suit
+import apps.games.serious.preferans.Pip
+import apps.games.serious.preferans.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -23,7 +23,7 @@ import com.badlogic.gdx.math.Vector3
  */
 
 
-class TableScreen(val game: PreferenceGame) : InputAdapter(), Screen {
+class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
 
     private val cam3d = PerspectiveCamera()
@@ -148,7 +148,7 @@ class TableScreen(val game: PreferenceGame) : InputAdapter(), Screen {
 
     /**
      * Deal a card common to all players(e.g.
-     * TALON in Preference, or cards in texas holdem poker)
+     * TALON in preferans, or cards in texas holdem poker)
      */
     @Synchronized fun dealCommon(card: Card) {
         card.position.set(table.deckPosition)

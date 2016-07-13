@@ -1,6 +1,6 @@
-package apps.games.serious.preference.GUI
+package apps.games.serious.preferans.GUI
 
-import apps.games.serious.preference.Bet
+import apps.games.serious.preferans.Bet
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap

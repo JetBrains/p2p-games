@@ -1,4 +1,4 @@
-package apps.games.serious.preference.GUI
+package apps.games.serious.preferans.GUI
 
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Mesh

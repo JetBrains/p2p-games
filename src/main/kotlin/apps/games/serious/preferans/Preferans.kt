@@ -1,4 +1,4 @@
-package apps.games.serious.preference
+package apps.games.serious.preferans
 
 import apps.chat.Chat
 import apps.games.Game
@@ -7,7 +7,7 @@ import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
-import apps.games.serious.preference.GUI.PreferenceGame
+import apps.games.serious.preferans.GUI.preferansGame
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import entity.ChatMessage
@@ -24,10 +24,10 @@ import java.util.concurrent.LinkedBlockingQueue
  * Created by user on 7/6/16.
  */
 
-class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
+class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         group, gameID) {
     override val name: String
-        get() = "Preference Card Game"
+        get() = "preferans Card Game"
 
     private enum class State {
         INIT,
@@ -42,7 +42,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
     private var state: State = State.INIT
 
-    private lateinit var gameGUI: PreferenceGame
+    private lateinit var gameGUI: preferansGame
     private lateinit var application: LwjglApplication
 
     private val DECK_SIZE = 32
@@ -137,7 +137,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     }
 
     /**
-     * Start GUI for the preference game
+     * Start GUI for the preferans game
      */
     private fun initGame(responses: List<GameMessageProto.GameStateMessage>): String {
         //validate player order
@@ -150,8 +150,8 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         config.width = 1024
         config.height = 1024
         config.forceExit = false
-        config.title = "Preference Game[${chat.username}]"
-        gameGUI = PreferenceGame()
+        config.title = "preferans Game[${chat.username}]"
+        gameGUI = preferansGame()
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
@@ -283,7 +283,7 @@ class Preference(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     /**
      * Create a new deck and shuffle it.
-     * In preference this is executed before
+     * In preferans this is executed before
      * each round
      * @return Pair of original Deck and
      * shuffle result - EncryptedDeck
