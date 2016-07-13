@@ -10,6 +10,7 @@ import apps.games.primitives.EncryptedDeck
 import crypto.random.randomBigInt
 import entity.Group
 import entity.User
+import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.jce.spec.ECParameterSpec
 import proto.GameMessageProto
 import java.math.BigInteger
@@ -41,6 +42,7 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
     private enum class State {
 
         INIT,
+        VALIDATE_KEYS,
         SHUFFLE,
         LOCK,
         VALIDATE,
@@ -60,6 +62,9 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
     private val lockKeys: List<BigInteger> = listOf(
             *Array(deck.size, { i -> randomBigInt(ECParams.n) }))
 
+    //Store hashes of user's sets of keys
+    private val keyHashes: MutableMap<User, String> = mutableMapOf()
+
     override fun isFinished(): Boolean {
         return state == State.END
     }
@@ -76,6 +81,12 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
                     throw GameExecutionException("Someone has different deck")
                 }
                 state = State.SHUFFLE
+                return DigestUtils.sha256Hex(lockKeys.joinToString(" "))
+            }
+            State.VALIDATE_KEYS -> {
+                for (msg in responses){
+                    keyHashes[User(msg.user)] = msg.value
+                }
                 return ""
             }
             State.SHUFFLE -> {
@@ -153,7 +164,7 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
      * our shuffled and encrypted deck is our result
      */
     override fun getResult(): EncryptedDeck {
-        return EncryptedDeck(deck, lockKeys)
+        return EncryptedDeck(deck, lockKeys, keyHashes)
     }
 
     override fun getFinalMessage(): String {

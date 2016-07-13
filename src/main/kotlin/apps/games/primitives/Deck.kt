@@ -1,6 +1,7 @@
 package apps.games.primitives
 
 import crypto.random.shuffleArray
+import entity.User
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.math.ec.ECPoint
 import java.math.BigInteger
@@ -132,4 +133,5 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
     }
 }
 
-data class EncryptedDeck(val deck: Deck, val keys: List<BigInteger>)
+data class EncryptedDeck(val deck: Deck, val keys: List<BigInteger>,
+                         val hashes: Map<User, String>)
