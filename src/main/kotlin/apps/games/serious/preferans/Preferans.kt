@@ -151,8 +151,14 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                                              "to update his bid according to " +
                                              "Talon")
                     return ""
+                }else{
+                    gameGUI.showBiddingOverlay()
+                    val res = getBid()
+                    gameGUI.hideBiddingOverlay()
+
+                    return res
                 }
-                // If we are main player:
+
 
             }
             State.END -> {
@@ -236,9 +242,6 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         if (playerID == currentPlayerID && bets[playerID] != Bet.PASS) {
             gameGUI.resetAllBets()
             gameGUI.markBets(*toDisplay)
-            //you can choose what chose last time
-            gameGUI.disableBets(
-                    *(bets.filter { x -> x != Bet.PASS && x != bets[playerID] }.toTypedArray()))
             val maxBet = bets.maxBy { x -> x.value } ?: throw GameExecutionException(
                     "Womething went wront in betting")
             gameGUI.disableAllBets()
@@ -260,6 +263,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             if(bets[playerID] != Bet.UNKNOWN){
                 gameGUI.disableBets(Bet.MIZER)
             }
+            betQueue.clear()
             val bet = betQueue.take()
             gameGUI.disableAllBets()
             return bet.value.toString()

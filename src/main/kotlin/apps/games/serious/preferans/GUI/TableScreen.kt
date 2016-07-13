@@ -227,6 +227,9 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
 
     }
 
+    /**
+     * Show deck on the table
+     */
     @Synchronized fun showDeck() {
         if (!showDeck) {
             val pos = Vector3(topDeck.position).add(0f, 0f, 1f)
