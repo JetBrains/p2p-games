@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.scenes.scene2d.EventListener
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -17,23 +16,18 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import entity.User
 
 /**
- * Created by user on 7/7/16.
+ * Created by user on 7/14/16.
  */
 
-
-class BiddingOverlay {
+abstract class Overlay<T: Enum<T>>{
     lateinit var skin: Skin
     lateinit var stage: Stage
-    lateinit var batch: SpriteBatch
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
-    private val buttons = mutableMapOf<Bet, TextButton>()
+    val buttons = mutableMapOf<T, TextButton>()
+    val textButtonStyle: TextButton.TextButtonStyle
     var isVisible = false
 
-    /**
-     * Create layout for bidding overlay
-     */
-    fun create() {
-        batch = SpriteBatch()
+    init {
         stage = Stage()
         table = com.badlogic.gdx.scenes.scene2d.ui.Table()
 
@@ -53,7 +47,7 @@ class BiddingOverlay {
         skin.add("default", bfont)
 
         // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.
-        val textButtonStyle = TextButton.TextButtonStyle()
+        textButtonStyle = TextButton.TextButtonStyle()
         textButtonStyle.up = skin.newDrawable("white", Color.DARK_GRAY)
         textButtonStyle.down = skin.newDrawable("white", Color.DARK_GRAY)
         textButtonStyle.checked = skin.newDrawable("white", Color.BLUE)
@@ -62,70 +56,59 @@ class BiddingOverlay {
         textButtonStyle.font = skin.getFont("default")
 
         skin.add("default", textButtonStyle)
-
-        val breaks = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
-                Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
-        val skips = listOf(Bet.UNKNOWN)
-        for (value in Bet.values()) {
-            if (value in skips) {
-                continue
-            }
-            val button = TextButton(value.type, textButtonStyle)
-            buttons[value] = button
-            table.add(button).pad(10f)
-
-            if (value in breaks) {
-                table.row()
-            }
-        }
-
         stage.addActor(table)
     }
+    /**
+     * Create layout for bidding overlay
+     */
+    abstract fun create()
+
 
     /**
-     * Display that this Bet is claimed by user
+     * Display that this Option is already chosen, and add text to it
      */
-    fun markBet(bet: Bet, vararg users: User) {
-        val button = buttons[bet] ?: return
+    fun markOption(option: T, message: String) {
+        val button = buttons[option] ?: return
         button.isChecked = true
-        button.setText(users.map { x -> x.name }.joinToString(" + \n"))
+        button.setText(message)
     }
 
     /**
-     * Disable button corresponding to given Bet
+     * Disable button corresponding to given option
      */
-    fun disableBet(bet: Bet) {
-        val button = buttons[bet] ?: return
+    fun disableOption(option: T) {
+        val button = buttons[option] ?: return
         button.isDisabled = true
     }
 
     /**
-     * Enable button corresponding to given Bet
+     * Enable button corresponding to given Option
      */
 
-    fun enableBet(bet: Bet) {
-        val button = buttons[bet] ?: return
+    fun enableOption(option: T) {
+        val button = buttons[option] ?: return
         button.isDisabled = false
     }
 
+    //TODO - override in biddingOverlay, to show bet type
     /**
-     * Enable button corresponding to given Bet
+     * Enable button corresponding to given Option
      * and set button text to original value
      */
-
-    fun resetBet(bet: Bet) {
-        val button = buttons[bet] ?: return
+    open fun resetOption(option: T) {
+        val button = buttons[option] ?: return
         button.isChecked = false
-        button.setText(bet.type)
+        button.setText(option.name)
         button.isDisabled = false
     }
 
     /**
      * Add callback Listener for this button
      */
-    fun <R> addCallback(bet: Bet, callback: (Bet) -> (R)) {
-        val button = buttons[bet] ?: return
-        button.addListener(ListenerFactory.create(bet, button, callback))
+    fun <R> addCallback(option: T, callback: (T) -> (R)) {
+        val button = buttons[option] ?: return
+        button.clearListeners()
+        button.addListener(ListenerFactory.create(option, button, callback))
     }
 
 
@@ -141,16 +124,15 @@ class BiddingOverlay {
     }
 
     companion object ListenerFactory {
-        fun <R> create(bet: Bet,
-                betButton: Button,
-                callback: (Bet) -> (R)): EventListener {
+        fun <R, T: Enum<T>> create(option: T,
+                       betButton: Button,
+                       callback: (T) -> (R)): EventListener {
             return object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
                     if (!betButton.isDisabled) {
-                        callback(bet)
+                        callback(option)
                         betButton.isChecked = true
                         betButton.isDisabled = true
-                        println(bet.type)
                     }
                 }
             }
@@ -158,8 +140,42 @@ class BiddingOverlay {
     }
 }
 
-class BiddingOverlayVisibilityAction(val overlay: BiddingOverlay, val show: Boolean, delay: Float = 0.10f) : Action(
-        delay) {
+class OverlayFactory{
+    companion object{
+        fun <T: Enum<T>>create(clazz: Class<T>, breaks: List<T> = listOf(),
+         skips: List<T> = listOf(), names: Map<T, String> = mapOf()): Overlay<T>{
+            return object : Overlay<T>(){
+                override fun create() {
+                    for (value in clazz.enumConstants) {
+                        if (value in skips) {
+                            continue
+                        }
+                        val name = names[value] ?: value.name
+                        val button = TextButton(name, textButtonStyle)
+                        buttons[value] = button
+                        table.add(button).pad(10f)
+
+                        if (value in breaks) {
+                            table.row()
+                        }
+                    }
+                }
+
+                override fun resetOption(option: T) {
+                    val button = buttons[option] ?: return
+                    button.isChecked = false
+                    val name = names[option] ?: option.name
+                    button.setText(name)
+                    button.isDisabled = false
+
+                }
+            }
+        }
+    }
+}
+
+class OverlayVisibilityAction(val overlay: Overlay<*>, val show: Boolean,
+                              delay: Float = 0.10f) : Action(delay) {
     internal var finished = false
     override fun execute(delta: Float) {
         overlay.isVisible = show
@@ -170,5 +186,3 @@ class BiddingOverlayVisibilityAction(val overlay: BiddingOverlay, val show: Bool
         return finished
     }
 }
-
-

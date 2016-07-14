@@ -29,7 +29,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
      * wait for all users to give game state execute
      * or claim end of game
      */
-    fun getResponsePack(retries: Int = 10 * maxRetires): List<GameMessageProto.GameStateMessage> {
+    fun getResponsePack(retries: Int = maxRetires): List<GameMessageProto.GameStateMessage> {
         val found: MutableMap<User, GameMessageProto.GameStateMessage> = mutableMapOf()
         val pending: MutableSet<User> = mutableSetOf(
                 *game.group.users.toTypedArray())
@@ -171,6 +171,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
         game.gameManager.deleteGame(game)
         game.chat.showMessage(
                 ChatMessage(game.chat, "Game completed: ${game.name}"))
+        game.close()
         return result
 
 

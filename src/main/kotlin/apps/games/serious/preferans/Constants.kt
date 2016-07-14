@@ -74,3 +74,15 @@ enum class Pip(val value: Int) {
 
     val index = value - 1
 }
+
+/**
+ * Different outcomes of whisting in preferance
+ */
+enum class Whists(val value: Int, val type: String){
+    UNKNOWN(0, "UNKNOWN"),
+    PASS(1, "PASS"),
+    WHIST_HALF(2, "HALF\nWHIST"),
+    WHIST_BLIND(3, "WHIST\nBLIND"),
+    WHIST_OPEN(4, "WHIST\nOPEN"),
+
+}

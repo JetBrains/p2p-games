@@ -23,7 +23,7 @@ import com.badlogic.gdx.math.Vector3
  */
 
 
-class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
+class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     companion object DefaultSelector: CardSelector
 
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
@@ -43,7 +43,7 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
     var actionManager = ActionManager()
     val topDeck: Card
     var showDeck = true
-    val biddingOverlay = BiddingOverlay()
+    val overlays = mutableSetOf<Overlay<*>>()
     lateinit var spriteBatch: SpriteBatch
     lateinit var font: BitmapFont
 
@@ -58,7 +58,6 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
         font = BitmapFont()
         font.color = Color.RED
 
-        biddingOverlay.create()
         //Init cards
         val material = Material(
                 TextureAttribute.createDiffuse(atlas.textures.first()),
@@ -90,8 +89,7 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
 
         //Init Camera
         camController.setVelocity(10f)
-        Gdx.input.inputProcessor = InputMultiplexer(this, biddingOverlay.stage,
-                camController)
+        updateInputProcessor()
 
     }
 
@@ -116,7 +114,9 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
         spriteBatch.begin()
         font.draw(spriteBatch, hint, 100f, 100f)
         spriteBatch.end()
-        biddingOverlay.render(getCam())
+        for(overlay in overlays){
+            overlay.render(getCam())
+        }
     }
 
     /**
@@ -152,7 +152,7 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
 
     /**
      * Deal a card common to all players(e.g.
-     * TALON in preferans, or cards in texas holdem poker)
+     * TALON in Preferans, or cards in texas holdem poker)
      */
     @Synchronized fun dealCommon(card: Card) {
         card.position.set(table.deckPosition)
@@ -244,9 +244,26 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
 
     }
 
+    /**
+     * Add overlay
+     */
+    @Synchronized fun addOverlay(overlay: Overlay<*>){
+        overlays.add(overlay)
+        updateInputProcessor()
+    }
+
+    /**
+     * Remove overlay
+     */
+    @Synchronized fun removeOverlay(overlay: Overlay<*>){
+        overlays.remove(overlay)
+        updateInputProcessor()
+    }
 
     override fun resize(width: Int, height: Int) {
-        biddingOverlay.resize(width, height)
+        for(overlay in overlays){
+            overlay.resize(width, height)
+        }
         cam3d.viewportWidth = width.toFloat()
         cam3d.viewportHeight = height.toFloat()
         cam3d.position.set(0f, -12f, 12f) //experimental constants
@@ -338,6 +355,13 @@ class TableScreen(val game: preferansGame) : InputAdapter(), Screen {
         }
 
         return result
+    }
+
+    fun updateInputProcessor(){
+        val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }
+                .toTypedArray())
+        Gdx.input.inputProcessor = InputMultiplexer(this, overlayProcessor,
+                                                    camController)
     }
 
     @Synchronized fun setSelector(cardSelector: CardSelector){

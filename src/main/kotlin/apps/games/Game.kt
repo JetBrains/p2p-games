@@ -95,9 +95,9 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      * Init subgame.
      * @param game - game to start
      */
-    fun <S> runSubGame(game: Game<S>): Future<S> {
+    fun <S> runSubGame(game: Game<S>, maxRetries: Int = 5): Future<S> {
         val result: Future<S>
-        result = gameManager.initSubGame(game)
+        result = gameManager.initSubGame(game, maxRetries)
         synchronized(nestedGames) {
             nestedGames.add(GameResult(game, result))
         }
@@ -130,6 +130,12 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
     open fun getData(): List<ByteArray> {
         return listOf()
     }
+
+    /**
+     * some games might want to free resources
+     * or something
+     */
+    open fun close(){ }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

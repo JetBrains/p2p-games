@@ -3,6 +3,7 @@ package apps.games.serious.preferans.GUI
 import apps.games.serious.preferans.Bet
 import apps.games.serious.preferans.Pip
 import apps.games.serious.preferans.Suit
+import apps.games.serious.preferans.Whists
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
@@ -14,16 +15,20 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class preferansGame : Game() {
+class PreferansGame : Game() {
     lateinit var batch: ModelBatch
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
+    lateinit var biddingOverlay: Overlay<Bet>
+    lateinit var whistingOverlay: Overlay<Whists>
+
     var loaded = false
     override fun create() {
         batch = ModelBatch()
         font = BitmapFont()
         font.data.scale(2f)
         tableScreen = TableScreen(this)
+        initOverlays()
         setScreen(tableScreen)
         loaded = true
     }
@@ -49,18 +54,36 @@ class preferansGame : Game() {
      * Show bidding overlay after all other actions are complete
      */
     fun showBiddingOverlay() {
+        tableScreen.addOverlay(biddingOverlay)
         tableScreen.actionManager.addAfterLastComplete(
-                BiddingOverlayVisibilityAction(tableScreen.biddingOverlay,
-                        true))
+                OverlayVisibilityAction(biddingOverlay, true))
     }
 
     /**
-     * Show bidding overlay after all other actions are complete
+     * Hide bidding overlay after all other actions are complete
      */
     fun hideBiddingOverlay() {
+        tableScreen.removeOverlay(biddingOverlay)
         tableScreen.actionManager.addAfterLastComplete(
-                BiddingOverlayVisibilityAction(tableScreen.biddingOverlay,
-                        false))
+                OverlayVisibilityAction(biddingOverlay, false))
+    }
+
+    /**
+     * Show whisting overlay after all other actions are complete
+     */
+    fun showWhistingOverlay() {
+        tableScreen.addOverlay(whistingOverlay)
+        tableScreen.actionManager.addAfterLastComplete(
+                OverlayVisibilityAction(whistingOverlay, true))
+    }
+
+    /**
+     * Hide whisting overlay after all other actions are complete
+     */
+    fun hideWhistingOverlay() {
+        tableScreen.removeOverlay(whistingOverlay)
+        tableScreen.actionManager.addAfterLastComplete(
+                OverlayVisibilityAction(whistingOverlay, false))
     }
 
     /**
@@ -77,17 +100,38 @@ class preferansGame : Game() {
             betMap[bet.second]?.add(bet.first)
         }
         for (bet in betMap.keys) {
-            tableScreen.biddingOverlay.markBet(bet,
-                    *(betMap[bet]!!.toTypedArray()))
+            val s = betMap[bet]!!.map { x -> x.name}.joinToString(" + \n")
+            biddingOverlay.markOption(bet, s)
         }
     }
+
+    /**
+     * display user whists - mark them on bidding overlay
+     * @param whists -vararg Pair<User, Whist> - pairs
+     * describing User's whists
+     */
+    fun markWhists(vararg whists: Pair<User, Whists>) {
+        val whistMap = mutableMapOf<Whists, MutableSet<User>>()
+        for (whist in whists) {
+            if (whistMap[whist.second] == null) {
+                whistMap[whist.second] = mutableSetOf()
+            }
+            whistMap[whist.second]?.add(whist.first)
+        }
+        for (whist in whistMap.keys) {
+            val s = whistMap[whist]!!.map { x -> x.name}.joinToString(" + \n")
+            whistingOverlay.markOption(whist, s)
+        }
+    }
+
+
 
     /**
      * Mark all bet buttons as enabled
      */
     fun resetAllBets() {
         for (bet in Bet.values()) {
-            tableScreen.biddingOverlay.resetBet(bet)
+            biddingOverlay.resetOption(bet)
         }
     }
 
@@ -96,7 +140,25 @@ class preferansGame : Game() {
      */
     fun disableAllBets() {
         for (bet in Bet.values()) {
-            tableScreen.biddingOverlay.disableBet(bet)
+            biddingOverlay.disableOption(bet)
+        }
+    }
+
+    /**
+     * Mark all whist buttons as enabled
+     */
+    fun resetAllWhists() {
+        for (whist in Whists.values()) {
+            whistingOverlay.resetOption(whist)
+        }
+    }
+
+    /**
+     * Mark all whist buttons as disabled
+     */
+    fun disableAllWhists() {
+        for (whist in Whists.values()) {
+            whistingOverlay.disableOption(whist)
         }
     }
 
@@ -106,7 +168,7 @@ class preferansGame : Game() {
      */
     fun resetBets(vararg bets: Bet) {
         for (bet in bets) {
-            tableScreen.biddingOverlay.resetBet(bet)
+            biddingOverlay.resetOption(bet)
         }
     }
 
@@ -116,7 +178,7 @@ class preferansGame : Game() {
      */
     fun enableBets(vararg bets: Bet) {
         for (bet in bets) {
-            tableScreen.biddingOverlay.enableBet(bet)
+            biddingOverlay.enableOption(bet)
         }
     }
 
@@ -127,7 +189,28 @@ class preferansGame : Game() {
      */
     fun disableBets(vararg bets: Bet) {
         for (bet in bets) {
-            tableScreen.biddingOverlay.disableBet(bet)
+            biddingOverlay.disableOption(bet)
+        }
+    }
+
+    /**
+     * Enable whists from given list of whists
+     * @param whists - Whists to enable
+     */
+    fun enableWhists(vararg whists: Whists) {
+        for (whist in whists) {
+            whistingOverlay.enableOption(whist)
+        }
+    }
+
+
+    /**
+     * Disable whists from given list of whists
+     * @param whists - Whists to disable
+     */
+    fun disableWhists(vararg whists: Whists) {
+        for (whist in whists) {
+            whistingOverlay.disableOption(whist)
         }
     }
 
@@ -135,9 +218,19 @@ class preferansGame : Game() {
      * Add callback listener for buttons
      * corresponding to provided bets
      */
-    fun <R> registerCallback(callBack: (Bet) -> (R), vararg bets: Bet) {
+    fun <R> registerBiddingCallback(callBack: (Bet) -> (R), vararg bets: Bet) {
         for (bet in bets) {
-            tableScreen.biddingOverlay.addCallback(bet, callBack)
+            biddingOverlay.addCallback(bet, callBack)
+        }
+    }
+
+    /**
+     * Add callback listener for buttons
+     * corresponding to whisting
+     */
+    fun <R> registerWhistingCallback(callBack: (Whists) -> (R), vararg whists: Whists) {
+        for (whist in whists) {
+            whistingOverlay.addCallback(whist, callBack)
         }
     }
 
@@ -199,7 +292,7 @@ class preferansGame : Game() {
     }
 
     /**
-     * In preferans we have 32 card deck.
+     * In Preferans we have 32 card deck.
      * This function takes card ID (0 -> 32)
      * or -1 for UNKNOWN card
      * and translates it into corresponding
@@ -224,7 +317,7 @@ class preferansGame : Game() {
     }
 
     /**
-     * In preferans we have 32 card deck.
+     * In Preferans we have 32 card deck.
      * This function takes card
      * and translates it into corresponding
      * Card Id (-1 -> 32). -1 - for UNKNOWN
@@ -239,6 +332,24 @@ class preferansGame : Game() {
             pipID -= 6
         }
         return 8*suitID + pipID
+    }
+
+    private fun initOverlays(){
+        val betBreaks  = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
+                                Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
+        val betSkips = listOf(Bet.UNKNOWN)
+        val betNames = Bet.values().associate { x -> Pair(x, x.type) }
+        biddingOverlay = OverlayFactory.create(Bet::class.java, betBreaks,
+                                               betSkips, betNames)
+        biddingOverlay.create()
+
+        val whistBreaks = listOf(Whists.WHIST_HALF)
+        val whistIgnore = listOf(Whists.UNKNOWN)
+        val whistNames = Whists.values().associate { x -> Pair(x, x.type) }
+        whistingOverlay = OverlayFactory.create(Whists::class.java,
+                                                whistBreaks, whistIgnore, whistNames)
+        whistingOverlay.create()
+
     }
 
 
@@ -259,7 +370,7 @@ fun main(args: Array<String>) {
     config.width = 1024
     config.height = 1024
     config.forceExit = false
-    val gameGUI = preferansGame()
+    val gameGUI = PreferansGame()
     LwjglApplication(gameGUI, config)
     println("6 \u2660")
 }

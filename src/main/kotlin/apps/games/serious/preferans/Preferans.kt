@@ -7,7 +7,8 @@ import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
-import apps.games.serious.preferans.GUI.preferansGame
+import apps.games.serious.WhistingGame
+import apps.games.serious.preferans.GUI.PreferansGame
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import entity.ChatMessage
@@ -24,26 +25,31 @@ import java.util.concurrent.LinkedBlockingQueue
  * Created by user on 7/6/16.
  */
 
-class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
-        group, gameID) {
+class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
+                                                                       group, gameID) {
     override val name: String
-        get() = "preferans Card Game"
+        get() = "Preferans Card Game"
 
     private enum class State {
-        INIT,
-        ROUND_INIT,
-        DECRYPT_HAND,
-        BIDDING,
-        VERIFY_BET,
-        REVEAL_TALON,
-        REBID,
+        INIT, //start game
+        ROUND_INIT, //generate deck
+        DECRYPT_HAND, //decrypt hands
+        BIDDING, //decide on game contract
+        VERIFY_BET, // veryfy, that everyone agrees on bet
+        REVEAL_TALON, // open talon
+        REBID, //if contract is not PASS - give talon to contract holder
+        WHISTING, //if contract os not PASS - dicide on whisting
+        WHISTING_RESULT, //exchage results of whisting
+        OPEN_HAND_KEY_EXHANGE, //if after whisting game whisted only ny one
+        OPEN_HAND_DECRYPT, // player and he dycided top open hands - exchange keys
+        PLAY, //play cards =)
         END
     }
 
     private val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
     private var state: State = State.INIT
 
-    private lateinit var gameGUI: preferansGame
+    private lateinit var gameGUI: PreferansGame
     private lateinit var application: LwjglApplication
 
     private val DECK_SIZE = 32
@@ -87,6 +93,10 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         when (state) {
             State.INIT -> {
+                if(group.users.size != N){
+                    throw GameExecutionException("Only 3 player Preferans is " +
+                                                         "supported")
+                }
                 state = State.ROUND_INIT
                 return initGame(responses)
             }
@@ -95,8 +105,19 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 return initRound(responses)
             }
             State.DECRYPT_HAND -> {
+                //DEBUG Speedup
+                mainPlayerID = 0
+                state = State.WHISTING
+                return ""
+
+                //end of debug speedup
                 state = State.BIDDING
-                return decryptHand(responses)
+                decryptHand(responses)
+                dealHands()
+                gameGUI.showBiddingOverlay()
+                gameGUI.disableAllBets()
+                registerCallbacks()
+                currentPlayerID = -1
             }
             State.BIDDING -> {
                 betQueue.clear()
@@ -144,8 +165,10 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 return ""
             }
             State.REBID -> {
-                state = State.END
+                state = State.WHISTING
                 dealTalon()
+                currentPlayerID = mainPlayerID
+
                 if (playerID != mainPlayerID){
                     gameGUI.showHint("Waiting for " +
                                              "[${playerOrder[mainPlayerID].name}]" +
@@ -153,7 +176,6 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                                              "Talon")
                     return ""
                 }else{
-                    currentPlayerID = playerID
                     gameGUI.showBiddingOverlay()
                     val res = getBid()
                     gameGUI.hideBiddingOverlay()
@@ -163,6 +185,37 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     return res
                 }
             }
+            State.WHISTING -> {
+
+                if (playerID == mainPlayerID){
+                    gameGUI.showHint("Waiting for other players to decide on " +
+                                             "whisting")
+                    return  ""
+                }else{
+                    val whistingGroup = group.clone()
+                    whistingGroup.users.remove(playerOrder[mainPlayerID])
+                    val whistFuture = runSubGame(WhistingGame(chat,
+                                                             whistingGroup,
+                                                             subGameID(),
+                                                             gameManager,
+                                                             gameGUI),
+                                                 Int.MAX_VALUE)
+                    // TODO - validate whisting results
+                    val res = whistFuture.get().name
+                    println(res)
+                    return res
+                }
+
+            }
+            State.WHISTING_RESULT -> {
+                for(msg in responses){
+                    println("${msg.user.name} is playing ${msg.value}")
+                }
+                state = State.END
+            }
+            State.OPEN_HAND_KEY_EXHANGE -> TODO()
+            State.OPEN_HAND_DECRYPT -> TODO()
+            State.PLAY -> TODO()
             State.END -> {
                 println("WOLOLOLOLOOLOO")
             }
@@ -171,7 +224,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     }
 
     /**
-     * Start GUI for the preferans game
+     * Start GUI for the Preferans game
      */
     private fun initGame(responses: List<GameMessageProto.GameStateMessage>): String {
         //validate player order
@@ -184,8 +237,8 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         config.width = 1024
         config.height = 1024
         config.forceExit = false
-        config.title = "preferans Game[${chat.username}]"
-        gameGUI = preferansGame()
+        config.title = "Preferans Game[${chat.username}]"
+        gameGUI = PreferansGame()
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
@@ -226,11 +279,6 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             val keys = msg.value.split(" ").map { x -> BigInteger(x) }
             decryptWithUserKeys(User(msg.user), keys)
         }
-        dealHands()
-        gameGUI.showBiddingOverlay()
-        gameGUI.disableAllBets()
-        registerCallbacks()
-        currentPlayerID = -1
         return ""
     }
 
@@ -334,7 +382,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     /**
      * Create a new deck and shuffle it.
-     * In preferans this is executed before
+     * In Preferans this is executed before
      * each round
      * @return Pair of original Deck and
      * shuffle result - EncryptedDeck
@@ -471,7 +519,7 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         val callback = { x: Bet ->
             betQueue.offer(x)
         }
-        gameGUI.registerCallback(callback, *Bet.values())
+        gameGUI.registerBiddingCallback(callback, *Bet.values())
     }
 
     fun getUserID(user: User): Int {
@@ -492,6 +540,10 @@ class preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     override fun getResult() {
         return Unit
+    }
+
+    override fun close() {
+        application.stop()
     }
 }
 
