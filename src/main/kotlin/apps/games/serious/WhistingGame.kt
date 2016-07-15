@@ -19,8 +19,8 @@ import java.util.concurrent.LinkedBlockingQueue
 private val realWhists = listOf(Whists.WHIST_BLIND, Whists.WHIST_OPEN)
 
 class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
-                   GameManagerClass, val gameGUI: PreferansGame)
-                        : Game<Whists>(chat, group, gameID, gameManager) {
+                   GameManagerClass, val gameGUI: PreferansGame,
+                   val maxBet: Bet) : Game<Whists>(chat, group, gameID, gameManager) {
     override val name: String
         get() = "Whisting game"
 
@@ -113,7 +113,10 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
                     return whist.name
 
                 }else{
-                    gameGUI.showHint("Waiting for other player to decide on " +
+                    gameGUI.showHint("[${maxBet.type}] Waiting for other player to" +
+                                             " " +
+                                             "decide " +
+                                             "on " +
                                              "whisting")
                 }
             }
@@ -177,13 +180,13 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
     fun showBidRoundWhists(){
 
         //Everyone can pass or whist in first round
-        gameGUI.showHint("You can PASS or WHIST(Both " +
+        gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST(Both " +
                                  "whist are equal)")
         gameGUI.enableWhists(Whists.PASS, Whists.WHIST_BLIND,
                              Whists.WHIST_OPEN, Whists.WHIST_HALF)
         //if first player passed - second can go half whist
         if(playerID == 1 && whists[0] == Whists.PASS){
-            gameGUI.showHint("You can PASS or WHIST or " +
+            gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST or " +
                                      "HALF WHIST(Both " +
                                      "whist are equal)")
             gameGUI.enableWhists(Whists.WHIST_HALF)
@@ -197,7 +200,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
     fun showRebidRoundWhists(){
         //first player can pass or whist
         if(playerID == 0){
-            gameGUI.showHint("You can PASS or WHIST(Both " +
+            gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST(Both " +
                                      "whist are equal)")
             gameGUI.enableWhists(Whists.PASS,
                                  Whists.WHIST_OPEN,
@@ -212,7 +215,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
      */
     fun showOpenCardRoundWhists(){
         if(whists[playerID] in realWhists){
-            gameGUI.showHint("You can choose what WHIST " +
+            gameGUI.showHint("[${maxBet.type}] You can choose what WHIST " +
                                      "to play")
             gameGUI.enableWhists(*realWhists.toTypedArray())
         }

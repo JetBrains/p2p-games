@@ -131,6 +131,8 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
                 val res = cards[i]
                 cards[i] = newCard
                 newCard.position.set(res.position)
+                newCard.rotation = res.rotation
+
                 return res
             }
         }

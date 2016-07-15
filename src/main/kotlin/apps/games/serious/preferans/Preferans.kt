@@ -90,6 +90,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     //Receive bets
     private val betQueue = LinkedBlockingQueue<Bet>(1)
 
+    //Log everything
+    private val logger = GameLogger(N, DECK_SIZE, TALON)
+
     //Salt and hash talon for later verification
     val SALT_LENGTH = 256
     private var salt: String = ""
@@ -203,6 +206,13 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             }
             State.WHISTING -> {
                 state = State.WHISTING_RESULT
+                for(msg in responses){
+                    val userID = getUserID(User(msg.user))
+                    if(userID == mainPlayerID){
+                        bets[userID] = Bet.values().first { x -> x.value == msg.value.toInt() }
+                        gameBet = bets[mainPlayerID]
+                    }
+                }
                 if (playerID == mainPlayerID){
                     gameGUI.showHint("Waiting for other players to decide on " +
                                              "whisting")
@@ -210,13 +220,20 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     // you will not play them later
                     return talonHash
                 }else{
+                    //remove talon cards
+                    for(i in DECK_SIZE - TALON..DECK_SIZE-1){
+                        val index = deck.originalDeck.cards.indexOf(
+                                deck.encrypted.deck.cards[i])
+                        gameGUI.playCard(index)
+                    }
                     val whistingGroup = group.clone()
                     whistingGroup.users.remove(playerOrder[mainPlayerID])
                     val whistFuture = runSubGame(WhistingGame(chat,
                                                              whistingGroup,
                                                              subGameID(),
                                                              gameManager,
-                                                             gameGUI),
+                                                             gameGUI,
+                                                             bets[mainPlayerID]),
                                                  Int.MAX_VALUE)
                     // TODO - validate whisting results
                     val res = whistFuture.get().name
@@ -281,7 +298,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 }
                 state = State.PLAY
             }
-            State.PLAY -> {}
+            State.PLAY -> {
+
+            }
             State.END -> {
                 println("WOLOLOLOLOOLOO")
             }
@@ -344,6 +363,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * decrypt cards in my hand
      */
     private fun decryptHand(responses: List<GameMessageProto.GameStateMessage>): String {
+        for(i in 0..DECK_SIZE-1){
+            logger.log.registerCardKey(playerID, i, deck.encrypted.keys[i])
+        }
         deck.encrypted.deck.decryptSeparate(deck.encrypted.keys)
         for (msg in responses) {
             if(getUserID(User(msg.user)) == playerID){
@@ -419,6 +441,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         "Someone sent incorrect number of talon keys")
             }
             for (i in 0..TALON - 1) {
+                logger.log.registerCardKey(getUserID(User(msg.user)),
+                                           DECK_SIZE - TALON + i, keys[i])
+
                 deck.encrypted.deck.decryptCardWithKey(DECK_SIZE - TALON + i,
                         keys[i])
             }
@@ -517,6 +542,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         }
         for (i in 0..positions.size - 1) {
             val position = positions[i]
+            logger.log.registerCardKey(getUserID(user), position, keys[i])
             deck.encrypted.deck.decryptCardWithKey(position, keys[i])
         }
     }
@@ -533,16 +559,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             }
         }
         if (positions.size != keys.size) {
-            println("Size not met ${positions.size}, ${keys.size}")
             throw GameExecutionException(
                     "Someone failed to provide correct keys for encrypted cards")
         }
-        if(playerID == mainPlayerID){
-            println("WOLOLOLOLOLO")
-        }
-
 
         for (i in 0..positions.size - 1) {
+            logger.log.registerCardKey(getUserID(user), positions[i], keys[i])
             deck.encrypted.deck.decryptCardWithKey(positions[i], keys[i])
             val cardID = deck.originalDeck.cards.indexOf( deck.encrypted.deck
                                                                   .cards[positions[i]])

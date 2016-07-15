@@ -291,6 +291,14 @@ class PreferansGame : Game() {
         tableScreen.moveCard(card, fromHand, toHand, flip)
     }
 
+    /**
+     * animate card played by user
+     */
+    fun playCard(cardID: Int){
+        val card = getCardById(cardID)
+        tableScreen.animateCardPlay(card)
+    }
+
     fun revealPlayerCard(player: Int, cardID: Int){
         val card = getCardById(cardID)
         tableScreen.revealPlayerCard(player, card)

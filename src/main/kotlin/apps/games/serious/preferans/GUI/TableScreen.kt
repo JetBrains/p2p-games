@@ -196,7 +196,8 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
                 //TODO - flawless transition
                 card.angle = 180f
                 val action = Card.animate(card, card.position.x,
-                                          card.position.y, card.position.z, card.angle + 180f, 1f)
+                                          card.position.y, card.position.z,
+                                          card.angle + 180f, 1f, card.rotation)
                 actionManager.add(action)
                 cards.remove(oldCard)
                 //spawn card facing table
@@ -225,7 +226,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      */
     @Synchronized fun moveCard(card: Card, from: Hand, to: Hand, flip:
                                Boolean = false){
-        from.removeCard(card, actionManager)
+        from.cards.remove(card)
         val pos = to.nextCardPosition()
         val toAngle: Float = card.angle + (if (flip) 180f else 0f)
         val action = Card.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
@@ -292,6 +293,18 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         cam2d.update()
     }
 
+    /**
+     * animate card played for holders hand
+     * @param User - holder of ther card
+     */
+    fun animateCardPlay(card: Card){
+        val player = table.getPlayerWithCard(card) ?: return
+        player.hand.cards.remove(card)
+        val pos = player.getCardspace()
+        actionManager.add(Card.animate(card, pos.x, pos.y, 0.01f, card.angle, 1f,
+                                       card.rotation))
+    }
+
     override fun touchUp(screenX: Int,
             screenY: Int,
             pointer: Int,
@@ -331,7 +344,8 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         val player = table.getPlayerWithCard(selecting) ?: return
         player.hand.removeCard(selecting, actionManager)
         val pos = player.getCardspace()
-        actionManager.add(Card.animate(selecting, pos.x, pos.y, 0.01f, 0f, 1f, 0f))
+        actionManager.add(Card.animate(selecting, pos.x, pos.y, 0.01f, 0f,
+                                       1f, selecting.rotation))
     }
 
     /**
