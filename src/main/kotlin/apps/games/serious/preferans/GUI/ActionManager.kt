@@ -135,14 +135,16 @@ class ActionManager {
     }
 
     fun getLastAction(): Action? {
-        synchronized(pending) {
-            if (pending.isNotEmpty()) {
-                return pending.last()
+        synchronized(actions) {
+            synchronized(pending){
+                if (pending.isNotEmpty()) {
+                    return pending.last()
+                }
+                if (actions.isNotEmpty()) {
+                    return actions.last()
+                }
+                return null
             }
-            if (actions.isNotEmpty()) {
-                return actions.last()
-            }
-            return null
         }
 
     }

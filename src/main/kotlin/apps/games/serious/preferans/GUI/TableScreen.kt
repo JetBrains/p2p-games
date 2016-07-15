@@ -188,7 +188,23 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
     }
 
-
+    @Synchronized fun revealPlayerCard(playerID: Int, card: Card){
+        val hand = table.players[playerID].hand
+        val revealCallback = {
+            val oldCard = hand.replaceUnknownCard(card)
+            if (oldCard != null) {
+                //TODO - flawless transition
+                card.angle = 180f
+                val action = Card.animate(card, card.position.x,
+                                          card.position.y, card.position.z, card.angle + 180f, 1f)
+                actionManager.add(action)
+                cards.remove(oldCard)
+                //spawn card facing table
+                cards.add(card)
+            }
+        }
+        actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
+    }
     /**
      * Return hand with given ID.
      * @param handID - id of hand to find
@@ -286,11 +302,11 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
             } else {
                 setSelecting(getObject(screenX, screenY))
             }
-            return true
+
         } else {
             setSelecting(getObject(screenX, screenY))
-            return selecting != null
         }
+        return selecting != null
     }
 
     /**
@@ -322,15 +338,16 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      * First click on card
      */
     private fun setSelecting(newSelecting: Card?) {
-        if (newSelecting == null) {
-            return
-        }
-
         if (selecting != null) {
             (selecting as Card).isSelected = false
         }
-        newSelecting.isSelected = true
+
         selecting = newSelecting
+        if (newSelecting != null) {
+            newSelecting.isSelected = true
+        }
+
+
     }
 
     /**

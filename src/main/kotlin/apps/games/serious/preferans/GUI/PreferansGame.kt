@@ -291,6 +291,11 @@ class PreferansGame : Game() {
         tableScreen.moveCard(card, fromHand, toHand, flip)
     }
 
+    fun revealPlayerCard(player: Int, cardID: Int){
+        val card = getCardById(cardID)
+        tableScreen.revealPlayerCard(player, card)
+    }
+
     /**
      * In Preferans we have 32 card deck.
      * This function takes card ID (0 -> 32)
@@ -329,7 +334,7 @@ class PreferansGame : Game() {
         val suitID: Int = card.suit.index
         var pipID: Int = card.pip.index
         if(pipID >= 7){
-            pipID -= 6
+            pipID -= 5
         }
         return 8*suitID + pipID
     }

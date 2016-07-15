@@ -16,6 +16,8 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 7/13/16.
  */
+private val realWhists = listOf(Whists.WHIST_BLIND, Whists.WHIST_OPEN)
+
 class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
                    GameManagerClass, val gameGUI: PreferansGame)
                         : Game<Whists>(chat, group, gameID, gameManager) {
@@ -46,7 +48,6 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
     private var round: Round = Round.BID
     // union of Blind Whist and Normal Whist
     //TODO - show only one button instead of two
-    val realWhists = listOf(Whists.WHIST_BLIND, Whists.WHIST_OPEN)
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         when(state){
@@ -234,5 +235,31 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
 
     fun getUserID(user: User): Int {
         return playerOrder.indexOf(user)
+    }
+
+    companion object{
+        /**
+         * check if given array of whists coulb be aquired from this game
+         * @param whists - array of whisting outcomes in the same order as
+         * whisted
+         * @return highest whist - unknown if something is wrong
+         */
+        fun verifyWhists(whists: Array<Whists>): Whists{
+            var possible: Boolean = true
+            if(whists.size != 2){
+                possible = false
+            }
+            possible = possible &&
+                    ((whists[0] == Whists.PASS && whists[1] in realWhists) ||
+                     (whists[0] == Whists.PASS && whists[1] == Whists.PASS) ||
+                     (whists[0] == Whists.PASS && whists[1] == Whists
+                             .WHIST_HALF)) ||
+                    (whists[0] in realWhists && whists[1] == Whists.PASS) ||
+                    (whists[0] == Whists.WHIST_BLIND && whists[1] == Whists.WHIST_BLIND)
+            if(!possible){
+                return Whists.UNKNOWN
+            }
+            return whists.maxBy { x -> x.value }?: return Whists.UNKNOWN
+        }
     }
 }
