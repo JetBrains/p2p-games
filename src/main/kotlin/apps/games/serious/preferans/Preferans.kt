@@ -7,9 +7,8 @@ import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
-import apps.games.serious.WhistingGame
+import apps.games.serious.preferans.GUI.Player
 import apps.games.serious.preferans.GUI.PreferansGame
-import apps.games.serious.preferans.GUI.main
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import crypto.random.randomString
@@ -29,9 +28,10 @@ import java.util.concurrent.LinkedBlockingQueue
  */
 
 class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
-                                                                       group, gameID) {
+                                                                       group,
+                                                                       gameID) {
     override val name: String
-        get() = "Preferans Card Game"
+        get() = "Preferans CardGUI Game"
 
     private enum class State {
         INIT, //start game
@@ -76,13 +76,14 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     //player whose turn is right now
     private var currentPlayerID: Int = 0
     private val bets = Array(N, { i -> Bet.UNKNOWN })
-    private val whists = Array(N, {i -> Whists.UNKNOWN})
-    private var finalWhist: Whists = Whists.UNKNOWN
+    private val whists = Array(N, { i -> Whists.UNKNOWN })
+    private var gameWhist: Whists = Whists.UNKNOWN
     //Player who has highest contract
     private var mainPlayerID: Int = -1
 
     //Bet, that will be played this round
     private var gameBet: Bet = Bet.UNKNOWN
+
 
     //shuffled Deck
     private lateinit var deck: ShuffledDeck
@@ -109,7 +110,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         when (state) {
             State.INIT -> {
-                if(group.users.size != N){
+                if (group.users.size != N) {
                     throw GameExecutionException("Only 3 player Preferans is " +
                                                          "supported")
                 }
@@ -123,7 +124,10 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             State.DECRYPT_HAND -> {
 //                //DEBUG Speedup
 //                mainPlayerID = 0
-//                state = State.WHISTING
+//                currentPlayerID = -1
+//                state = State.PLAY
+//                gameBet = Bet.SEVEN_OF_DIAMONDS
+//                gameWhist = Whists.WHIST_BLIND
 //                decryptHand(responses)
 //                dealHands()
 //                return ""
@@ -149,6 +153,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 currentPlayerID = (currentPlayerID + 1) % N
                 if (currentBet() != Bet.UNKNOWN) {
                     gameBet = currentBet()
+                    logger.log.updateBet(gameBet)
                     mainPlayerID = bets.indexOf(gameBet)
                     state = State.VERIFY_BET
                     return gameBet.type
@@ -171,9 +176,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 return keys.joinToString(" ")
             }
             State.REVEAL_TALON -> {
-                if(gameBet != Bet.PASS){
+                if (gameBet != Bet.PASS) {
                     state = State.REBID
-                }else{
+                } else {
                     //TODO - распасы
                     state = State.END
                 }
@@ -187,41 +192,42 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 dealTalon()
                 currentPlayerID = mainPlayerID
 
-                if (playerID != mainPlayerID){
+                if (playerID != mainPlayerID) {
                     gameGUI.showHint("Waiting for " +
                                              "[${playerOrder[mainPlayerID].name}]" +
                                              "to update his bid according to " +
                                              "Talon")
                     return ""
-                }else{
+                } else {
                     gameGUI.showBiddingOverlay()
                     val res = getBid()
                     gameGUI.hideBiddingOverlay()
                     //TODO - log turn for later validation
-                    val card1 = playCard(playerID)
-                    val card2 = playCard(playerID)
+                    val card1 = playCard(playerID, restrictCards = false)
+                    val card2 = playCard(playerID, restrictCards = false)
                     saltTalon(card1, card2)
                     return res
                 }
             }
             State.WHISTING -> {
                 state = State.WHISTING_RESULT
-                for(msg in responses){
+                for (msg in responses) {
                     val userID = getUserID(User(msg.user))
-                    if(userID == mainPlayerID){
+                    if (userID == mainPlayerID) {
                         bets[userID] = Bet.values().first { x -> x.value == msg.value.toInt() }
                         gameBet = bets[mainPlayerID]
+                        logger.log.updateBet(gameBet)
                     }
                 }
-                if (playerID == mainPlayerID){
+                if (playerID == mainPlayerID) {
                     gameGUI.showHint("Waiting for other players to decide on " +
                                              "whisting")
                     // send (slated) hash of discarded cards to prove, that
                     // you will not play them later
                     return talonHash
-                }else{
+                } else {
                     //remove talon cards
-                    for(i in DECK_SIZE - TALON..DECK_SIZE-1){
+                    for (i in DECK_SIZE - TALON..DECK_SIZE - 1) {
                         val index = deck.originalDeck.cards.indexOf(
                                 deck.encrypted.deck.cards[i])
                         gameGUI.playCard(index)
@@ -229,11 +235,11 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     val whistingGroup = group.clone()
                     whistingGroup.users.remove(playerOrder[mainPlayerID])
                     val whistFuture = runSubGame(WhistingGame(chat,
-                                                             whistingGroup,
-                                                             subGameID(),
-                                                             gameManager,
-                                                             gameGUI,
-                                                             bets[mainPlayerID]),
+                                                              whistingGroup,
+                                                              subGameID(),
+                                                              gameManager,
+                                                              gameGUI,
+                                                              bets[mainPlayerID]),
                                                  Int.MAX_VALUE)
                     // TODO - validate whisting results
                     val res = whistFuture.get().name
@@ -244,21 +250,21 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             }
             State.WHISTING_RESULT -> {
                 whists.fill(Whists.UNKNOWN)
-                finalWhist = Whists.UNKNOWN
-                for(msg in responses){
+                gameWhist = Whists.UNKNOWN
+                for (msg in responses) {
                     val userID = getUserID(User(msg.user))
-                    if (userID == mainPlayerID){
+                    if (userID == mainPlayerID) {
                         talonHash = msg.value
-                    }else{
+                    } else {
                         whists[userID] = Whists.valueOf(msg.value)
                     }
                 }
                 //Validate whists
-                finalWhist = verifyWhists()
-                when(finalWhist){
+                gameWhist = verifyWhists()
+                when (gameWhist) {
 
                     Whists.UNKNOWN -> throw GameExecutionException("Couldn't " +
-                                                            "agree on whisting")
+                                                                           "agree on whisting")
                     Whists.PASS -> {
                         updateScore()
                         state = State.ROUND_INIT
@@ -269,6 +275,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     }
                     Whists.WHIST_BLIND -> {
                         state = State.PLAY
+                        //TODO - store first player ID
+                        currentPlayerID = -1
                     }
                     Whists.WHIST_OPEN -> {
                         state = State.OPEN_HAND_KEY_EXHANGE
@@ -277,28 +285,118 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             }
             State.OPEN_HAND_KEY_EXHANGE -> {
                 state = State.OPEN_HAND_DECRYPT
-                if(playerID == mainPlayerID){
+                if (playerID == mainPlayerID) {
                     return ""
                 }
                 val keys = mutableListOf<BigInteger>()
-                for(i in 0..DECK_SIZE-1){
-                    if(cardHolders[i] == playerID){
+                for (i in 0..DECK_SIZE - 1) {
+                    if (cardHolders[i] == playerID) {
                         keys.add(deck.encrypted.keys[i])
                     }
                 }
                 return keys.joinToString(" ")
             }
             State.OPEN_HAND_DECRYPT -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val userID = getUserID(User(msg.user))
-                    if(userID != mainPlayerID && userID != playerID){
-                        val keys = msg.value.split(" ").map { x -> BigInteger(x) }
+                    if (userID != mainPlayerID && userID != playerID) {
+                        val keys = msg.value.split(" ").map { x ->
+                            BigInteger(x)
+                        }
                         decryptUserHand(User(msg.user), keys)
                     }
                 }
+                //TODO - store first player ID
+                currentPlayerID = -1
                 state = State.PLAY
             }
             State.PLAY -> {
+                //In case of Open Whist we need spetial case -
+                //one user can manage cards of another
+                var mainMuser: Int
+                if(currentPlayerID != -1 && gameWhist == Whists.WHIST_OPEN &&
+                        whists[currentPlayerID]
+                        == Whists.PASS){
+                    mainMuser = whists.indexOf(Whists.WHIST_OPEN)
+                }else{
+                    mainMuser = currentPlayerID
+                }
+
+                for (msg in responses) {
+                    val userID = getUserID(User(msg.user))
+                    if (userID == mainMuser) {
+                        //TODO - switch first players
+                        val split = msg.value.split(" ")
+                        if (split.size < 2) {
+                            throw GameExecutionException("Invalid card " +
+                                                                 "received")
+                        }
+                        val cardID = split[0].toInt()
+                        val key = BigInteger(split[1])
+                        var index = deck.originalDeck.cards.indexOf(deck.encrypted.deck.cards[cardID])
+
+                        if (index == -1) {
+                            logger.log.registerCardKey(currentPlayerID,
+                                                       cardID, key)
+
+                            deck.encrypted.deck.decryptCardWithKey(cardID, key)
+                            index = deck.originalDeck.cards.indexOf(deck.encrypted.deck.cards[cardID])
+                            if (index == -1) {
+                                throw GameExecutionException("Can not decrypt" +
+                                                                     " card")
+                            }
+                            originalCardHolders[index] = currentPlayerID
+                            if (playerID != currentPlayerID) {
+                                gameGUI.revealPlayerCard(
+                                        getTablePlayerId(currentPlayerID),
+                                        index)
+                            }
+                        }
+                        if(playerID != currentPlayerID){
+                            gameGUI.playCard(index)
+                        }
+                        currentPlayerID = logger.log.registerPlay(currentPlayerID
+                                                                       to index) ?:
+                                throw GameExecutionException("Can not find next player")
+
+
+                        if(logger.log.newTurnStarted()){
+                            gameGUI.tableScreen.clearTable()
+                        }
+                        if(logger.log.roundFinished()){
+                            state = State.ROUND_INIT
+                            return ""
+                        }
+                    }
+                }
+                if(mainMuser == -1){
+                    currentPlayerID = mainPlayerID
+                }
+                if(currentPlayerID != -1 && gameWhist == Whists.WHIST_OPEN &&
+                        whists[currentPlayerID]
+                                == Whists.PASS){
+                    mainMuser = whists.indexOf(Whists.WHIST_OPEN)
+                }else{
+                    mainMuser = currentPlayerID
+                }
+                //in case of Open whists - someone plays instead of
+                // passed player
+                if (playerID == mainMuser) {
+                    gameGUI.showHint("[${gameBet.type}] It is your turn to " +
+                                             "play " +
+                                             "(play " +
+                                             "${logger.log.enforcedSuit.type} " +
+                                             "if possible)")
+                    val pos = playCard(currentPlayerID)
+                    val index = deck.encrypted.deck.cards.indexOf(
+                            deck.originalDeck.cards[pos])
+                    return "$index ${deck.encrypted.keys[index]}"
+                }
+                else{
+                    gameGUI.showHint("[${gameBet.type}] Waiting for " +
+                                             "${playerOrder[currentPlayerID]
+                            .name} to make hist move")
+                }
 
             }
             State.END -> {
@@ -363,12 +461,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * decrypt cards in my hand
      */
     private fun decryptHand(responses: List<GameMessageProto.GameStateMessage>): String {
-        for(i in 0..DECK_SIZE-1){
+        for (i in 0..DECK_SIZE - 1) {
             logger.log.registerCardKey(playerID, i, deck.encrypted.keys[i])
         }
         deck.encrypted.deck.decryptSeparate(deck.encrypted.keys)
         for (msg in responses) {
-            if(getUserID(User(msg.user)) == playerID){
+            if (getUserID(User(msg.user)) == playerID) {
                 continue
             }
             val keys = msg.value.split(" ").map { x -> BigInteger(x) }
@@ -406,7 +504,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 gameGUI.showHint(
                         "Your turn! You can bid [${maxBet.type}] or higher or PASS")
             }
-            if(bets[playerID] != Bet.UNKNOWN){
+            if (bets[playerID] != Bet.UNKNOWN) {
                 gameGUI.disableBets(Bet.MIZER)
             }
             betQueue.clear()
@@ -429,7 +527,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     /**
      * Receive keys of talon, decrypt it, show to everyone
      */
-    fun decryptTalon(responses: List<GameMessageProto.GameStateMessage>){
+    fun decryptTalon(responses: List<GameMessageProto.GameStateMessage>) {
         gameGUI.showHint("Revealing talon")
         for (msg in responses) {
             if (User(msg.user) == chat.me()) {
@@ -445,7 +543,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                                            DECK_SIZE - TALON + i, keys[i])
 
                 deck.encrypted.deck.decryptCardWithKey(DECK_SIZE - TALON + i,
-                        keys[i])
+                                                       keys[i])
             }
         }
     }
@@ -453,7 +551,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     /**
      * Reveal Talon.
      */
-    fun revealTalon(){
+    fun revealTalon() {
+        val talon = mutableListOf<Int>()
         for (i in 0..TALON - 1) {
             cardHolders[DECK_SIZE - TALON + i] = mainPlayerID
             val index = deck.originalDeck.cards.indexOf(
@@ -463,15 +562,17 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         "Someone sent incorrect talon keys")
             }
             //reveal Common
+            talon.add(index)
             gameGUI.revealTalonCard(index)
         }
+        logger.log.registerTalon(talon)
     }
 
     /**
      * Give talon to main player
      */
-    fun dealTalon(){
-        for(i in 0..TALON-1){
+    fun dealTalon() {
+        for (i in 0..TALON - 1) {
             val cardId = deck.originalDeck.cards.indexOf(deck.encrypted
                                                                  .deck.cards[DECK_SIZE - TALON + i])
             gameGUI.giveCard(cardId, -1, getTablePlayerId(mainPlayerID),
@@ -489,7 +590,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private fun newDeck(): ShuffledDeck? {
         val deckFuture = runSubGame(
                 RandomDeckGame(chat, group.clone(), subGameID(), ECParams,
-                        DECK_SIZE))
+                               DECK_SIZE))
         val deck: Deck
         try {
             deck = deckFuture.get()
@@ -505,7 +606,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
         val shuffleFuture = runSubGame(
                 DeckShuffleGame(chat, group.clone(), subGameID(), ECParams,
-                        deck.clone()))
+                                deck.clone()))
         val shuffled: EncryptedDeck
         try {
             shuffled = shuffleFuture.get()
@@ -551,7 +652,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * If open whist is played - user hand keys are r
      * revealed. Use this
      */
-    private fun decryptUserHand(user: User, keys: List<BigInteger>){
+    private fun decryptUserHand(user: User, keys: List<BigInteger>) {
         val positions = mutableListOf<Int>()
         for (key in cardHolders.keys) {
             if (cardHolders[key] == getUserID(user)) {
@@ -566,8 +667,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         for (i in 0..positions.size - 1) {
             logger.log.registerCardKey(getUserID(user), positions[i], keys[i])
             deck.encrypted.deck.decryptCardWithKey(positions[i], keys[i])
-            val cardID = deck.originalDeck.cards.indexOf( deck.encrypted.deck
-                                                                  .cards[positions[i]])
+            val cardID = deck.originalDeck.cards.indexOf(deck.encrypted.deck
+                                                                 .cards[positions[i]])
             gameGUI.revealPlayerCard(getTablePlayerId(getUserID(user)), cardID)
         }
     }
@@ -611,11 +712,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * @return greatest of all whists
      * (it defines game scenario)
      */
-    private fun verifyWhists(): Whists{
+    private fun verifyWhists(): Whists {
         val activeWhists: MutableList<Whists> = whists.toMutableList()
         activeWhists.removeAt(mainPlayerID)
         return WhistingGame.verifyWhists(activeWhists.toTypedArray())
     }
+
     /**
      * Get current bet result:
      * UNKNOWN - if agreement is not met yet
@@ -638,21 +740,31 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * play any known card that is possesed by
      * player with given id
      * @param playerID - player whose card will be played
+     * @param restrictCards - wether to allow to play
+     * cards that don't match current trump suit
+     * @return ID of picked card
      */
-    fun playCard(vararg playerIDs: Int): Int{
-        val allowed = mutableListOf<Int>()
-        for(key in cardHolders.keys){
-            if(playerIDs.contains(cardHolders[key]!!)){
+    fun playCard(vararg playerIDs: Int, restrictCards: Boolean = true): Int {
+        val allowed = mutableListOf<Card>()
+        for (key in cardHolders.keys) {
+            if (playerIDs.contains(cardHolders[key]!!)) {
                 val card = deck.encrypted.deck.cards[key]
-                allowed.add(deck.originalDeck.cards.indexOf(card))
+                allowed.add(
+                        getCardById32(deck.originalDeck.cards.indexOf(card)))
             }
         }
-        val res = gameGUI.pickCard(*allowed.toIntArray())
-                ?: throw GameExecutionException("Can not pick UNKNOWN card")
+        // TODO - not trump if you have suit
+        val selector = logger.log.getEnforcedSelector()
+        if (restrictCards && allowed.any(selector)) {
+            allowed.removeAll { x -> !selector(x) }
+        }
+        val res = gameGUI.pickCard(*allowed.toTypedArray())
         val index = deck.encrypted.deck.cards.indexOf(deck.originalDeck
                                                               .cards[res])
-        if(index == -1){
-            throw GameExecutionException("Can not pick unknown card")
+        if (index == -1) {
+            println(res)
+            throw GameExecutionException("Can not pick unknown card" +
+                                                 "(contradicts selector)")
         }
         cardHolders[index] = -1
         return res
@@ -673,15 +785,15 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * During the game in GUI - ew are always player 0,
      * meanwhile in game we are not
      */
-    fun getTablePlayerId(id: Int): Int{
+    fun getTablePlayerId(id: Int): Int {
         var res: Int = id - playerID
-        if(res < 0){
+        if (res < 0) {
             res += N
         }
         return res
     }
 
-    fun saltTalon(card1: Int, card2: Int){
+    fun saltTalon(card1: Int, card2: Int) {
         salt = randomString(SALT_LENGTH)
         val temp = listOf(card1, card2).sorted().joinToString(" ")
         talonHash = DigestUtils.sha256Hex(temp + salt)

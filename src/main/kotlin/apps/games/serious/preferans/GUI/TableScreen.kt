@@ -37,11 +37,11 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
 
     private val environment = Environment()
 
-    private var selecting: Card? = null
+    private var selecting: CardGUI? = null
     val deck = CardDeck(atlas, 2)
     val cards: CardBatch
     var actionManager = ActionManager()
-    val topDeck: Card
+    val topDeck: CardGUI
     var showDeck = true
     val overlays = mutableSetOf<Overlay<*>>()
     lateinit var spriteBatch: SpriteBatch
@@ -73,7 +73,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
 
 
         //init deck placement
-        topDeck = deck.getCard(Suit.UNKNOWN, Pip.UNKNOWN)
+        topDeck = deck.getCardModel(Suit.UNKNOWN, Pip.UNKNOWN)
         topDeck.position.set(table.deckPosition)
         topDeck.angle = 180f
         topDeck.update()
@@ -124,7 +124,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      * @param player - receives the card
      * @param card - card to give
      */
-    @Synchronized fun dealPlayer(player: Player, card: Card) {
+    @Synchronized fun dealPlayer(player: Player, card: CardGUI) {
         card.position.set(table.deckPosition)
         val handPos = player.hand.nextCardPosition()
         val angle = player.getAngle()
@@ -136,8 +136,8 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
 
 
         actionManager.addAfterLastReady(
-                Card.animate(card, handPos.x, handPos.y, handPos.z, 0f,
-                        DEAL_SPEED, angle))
+                CardGUI.animate(card, handPos.x, handPos.y, handPos.z, 0f,
+                                DEAL_SPEED, angle))
     }
 
     /**
@@ -145,7 +145,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      * @param player - id of the player that receives the card
      * @param card - card to give
      */
-    @Synchronized fun dealPlayer(player: Int, card: Card) {
+    @Synchronized fun dealPlayer(player: Int, card: CardGUI) {
         dealPlayer(table.players[player], card)
     }
 
@@ -154,7 +154,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      * Deal a card common to all players(e.g.
      * TALON in Preferans, or cards in texas holdem poker)
      */
-    @Synchronized fun dealCommon(card: Card) {
+    @Synchronized fun dealCommon(card: CardGUI) {
         card.position.set(table.deckPosition)
         val handPos = table.commonHand.nextCardPosition()
         val angle = table.getMainPlayer().getAngle()
@@ -162,8 +162,8 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         card.angle = 180f
         cards.add(card)
         actionManager.addAfterLastReady(
-                Card.animate(card, handPos.x, handPos.y, handPos.z, 180f,
-                        DEAL_SPEED, angle))
+                CardGUI.animate(card, handPos.x, handPos.y, handPos.z, 180f,
+                                DEAL_SPEED, angle))
     }
 
     //TODO - mark cards dealt to self as revealed\
@@ -171,14 +171,14 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     /**
      * Reveal card in common hand
      */
-    @Synchronized fun revealCommonCard(card: Card) {
+    @Synchronized fun revealCommonCard(card: CardGUI) {
         val revealCallback = {
             val oldCard = table.commonHand.replaceUnknownCard(card)
             if (oldCard != null) {
                 //TODO - flawless transition
                 card.angle = 180f
-                val action = Card.animate(card, card.position.x,
-                        card.position.y, card.position.z, card.angle + 180f, 1f)
+                val action = CardGUI.animate(card, card.position.x,
+                                             card.position.y, card.position.z, card.angle + 180f, 1f)
                 actionManager.add(action)
                 cards.remove(oldCard)
                 //spawn card facing table
@@ -188,23 +188,43 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
     }
 
-    @Synchronized fun revealPlayerCard(playerID: Int, card: Card){
+    /**
+     * reveal playerID card and execute actions after it
+     */
+    @Synchronized fun revealPlayerCard(playerID: Int, card: CardGUI){
         val hand = table.players[playerID].hand
-        val revealCallback = {
-            val oldCard = hand.replaceUnknownCard(card)
-            if (oldCard != null) {
-                //TODO - flawless transition
-                card.angle = 180f
-                val action = Card.animate(card, card.position.x,
-                                          card.position.y, card.position.z,
-                                          card.angle + 180f, 1f, card.rotation)
-                actionManager.add(action)
-                cards.remove(oldCard)
-                //spawn card facing table
-                cards.add(card)
-            }
+        val oldCard = hand.replaceUnknownCard(card)
+        if (oldCard != null) {
+            //TODO - flawless transition
+            card.angle = 180f
+            val action = CardGUI.animate(card, card.position.x,
+                                         card.position.y, card.position.z,
+                                         card.angle + 180f, 1f, card.rotation)
+            actionManager.add(action)
+
+            cards.remove(oldCard)
+            //spawn card facing table
+            cards.add(card)
         }
-        actionManager.addAfterLastComplete(DelayedAction(0.15f, revealCallback))
+
+
+
+    }
+
+    /**
+     * Remove all cards, that are not in player hands from table
+     */
+    @Synchronized fun clearTable(){
+        val action = DelayedAction(0.15f, {
+            val it = cards.iterator()
+            while(it.hasNext){
+                val next = it.next()
+                if(table.getPlayerWithCard(next) == null){
+                    it.remove()
+                }
+            }
+        })
+        actionManager.addAfterLastComplete(action)
     }
     /**
      * Return hand with given ID.
@@ -224,13 +244,13 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     /**
      * Move card from one hand to another
      */
-    @Synchronized fun moveCard(card: Card, from: Hand, to: Hand, flip:
+    @Synchronized fun moveCard(card: CardGUI, from: Hand, to: Hand, flip:
                                Boolean = false){
         from.cards.remove(card)
         val pos = to.nextCardPosition()
         val toAngle: Float = card.angle + (if (flip) 180f else 0f)
-        val action = Card.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
-                to.getAngle() - from.getAngle())
+        val action = CardGUI.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
+                                     to.getAngle() - from.getAngle())
         actionManager.addAfterLastComplete(action)
         to.cards.add(card)
     }
@@ -242,7 +262,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         if (showDeck) {
             val pos = Vector3(topDeck.position).add(0f, 0f, -1f)
             actionManager.addAfterLastComplete(
-                    Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
+                    CardGUI.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
             showDeck = true
         }
 
@@ -255,7 +275,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         if (!showDeck) {
             val pos = Vector3(topDeck.position).add(0f, 0f, 1f)
             actionManager.addAfterLastComplete(
-                    Card.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
+                    CardGUI.animate(topDeck, pos.x, pos.y, pos.z, 0f, 1f, 0f))
             showDeck = false
         }
 
@@ -297,12 +317,16 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      * animate card played for holders hand
      * @param User - holder of ther card
      */
-    fun animateCardPlay(card: Card){
+    private var deltaZ = 0.01f
+    fun animateCardPlay(card: CardGUI){
         val player = table.getPlayerWithCard(card) ?: return
         player.hand.cards.remove(card)
         val pos = player.getCardspace()
-        actionManager.add(Card.animate(card, pos.x, pos.y, 0.01f, card.angle, 1f,
-                                       card.rotation))
+
+        actionManager.addAfterLastComplete(
+                CardGUI.animate(card, pos.x, pos.y, deltaZ, card.angle, 1f,
+                                card.rotation, doNotRotate = true))
+        deltaZ += 0.001f
     }
 
     override fun touchUp(screenX: Int,
@@ -336,7 +360,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     /**
      * Second click on card
      */
-    private fun setSelected(selecting: Card) {
+    private fun setSelected(selecting: CardGUI) {
         if(!selector.canSelect(selecting)){
             return
         }
@@ -344,16 +368,17 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         val player = table.getPlayerWithCard(selecting) ?: return
         player.hand.removeCard(selecting, actionManager)
         val pos = player.getCardspace()
-        actionManager.add(Card.animate(selecting, pos.x, pos.y, 0.01f, 0f,
-                                       1f, selecting.rotation))
+        actionManager.add(CardGUI.animate(selecting, pos.x, pos.y, deltaZ, 0f,
+                                          1f, selecting.rotation))
+        deltaZ += 0.001f
     }
 
     /**
      * First click on card
      */
-    private fun setSelecting(newSelecting: Card?) {
+    private fun setSelecting(newSelecting: CardGUI?) {
         if (selecting != null) {
-            (selecting as Card).isSelected = false
+            (selecting as CardGUI).isSelected = false
         }
 
         selecting = newSelecting
@@ -367,10 +392,10 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     /**
      * Simple implementation to pick pointed card
      */
-    fun getObject(screenX: Int, screenY: Int): Card? {
+    fun getObject(screenX: Int, screenY: Int): CardGUI? {
         val ray = getCam().getPickRay(screenX.toFloat(), screenY.toFloat())
 
-        var result: Card? = null
+        var result: CardGUI? = null
         var distance = -1f
 
         for (instance in cards) {

@@ -20,7 +20,7 @@ import com.badlogic.gdx.utils.Pool
 /**
  * Class for rendering cards
  */
-class CardBatch(mainMaterial: Material, selectionMaterial: Material) : ObjectSet<Card>(), RenderableProvider, Disposable {
+class CardBatch(mainMaterial: Material, selectionMaterial: Material) : ObjectSet<CardGUI>(), RenderableProvider, Disposable {
     val renderable = Renderable()
     val normalMesh: Mesh
     val selectedMesh: Mesh

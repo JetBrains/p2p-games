@@ -1,9 +1,6 @@
 package apps.games.serious.preferans.GUI
 
-import apps.games.serious.preferans.Bet
-import apps.games.serious.preferans.Pip
-import apps.games.serious.preferans.Suit
-import apps.games.serious.preferans.Whists
+import apps.games.serious.preferans.*
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
@@ -38,7 +35,7 @@ class PreferansGame : Game() {
      * a card from a 32 card deck
      */
     fun dealPlayer(player: Int, cardID: Int) {
-        tableScreen.dealPlayer(player, getCardById(cardID))
+        tableScreen.dealPlayer(player, getCardModelById(cardID))
     }
 
     /**
@@ -47,7 +44,7 @@ class PreferansGame : Game() {
      * in Texas Holdem Poker
      */
     fun dealCommon(cardID: Int) {
-        tableScreen.dealCommon(getCardById(cardID))
+        tableScreen.dealCommon(getCardModelById(cardID))
     }
 
     /**
@@ -247,33 +244,35 @@ class PreferansGame : Game() {
      * Reveal talon card
      */
     fun revealTalonCard(cardID: Int) {
-        tableScreen.revealCommonCard(getCardById(cardID))
+        tableScreen.revealCommonCard(getCardModelById(cardID))
     }
 
     /**
      * Get one of specified cards.
-     * NB: Thhis method wont work for selection
+     * NB: This method wont work for selection
      * of UNKNOWN card.
      */
-    fun pickCard(vararg allowedCardIds: Int): Int?{
-        if(allowedCardIds.contains(-1)){
-            return null
-        }
-        val queue = LinkedBlockingQueue<Card>(1)
-        val allowedCards = allowedCardIds.map { x -> getCardById(x) }
+    fun pickCard(vararg allowedCardIds: Card): Int{
+        val queue = LinkedBlockingQueue<CardGUI>(1)
+        val allowedCards = allowedCardIds.map { x -> tableScreen.deck
+                .getCardModel(x) }
         tableScreen.setSelector(object : CardSelector{
-            override fun select(card: Card){
+            override fun select(card: CardGUI){
                 queue.add(card)
             }
 
-            override fun canSelect(card: Card): Boolean {
+            override fun canSelect(card: CardGUI): Boolean {
                 return allowedCards.contains(card)
             }
         })
 
         val card = queue.take()
         tableScreen.resetSelector()
-        return getIdByCard(card)
+        val res =  getIdByCard(card)
+        if(res == -1){
+            return pickCard(*allowedCardIds)
+        }
+        return res
     }
 
     /**
@@ -285,7 +284,7 @@ class PreferansGame : Game() {
      * to = -1 - means common hand is used
      */
     fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true){
-        val card = getCardById(cardID)
+        val card = getCardModelById(cardID)
         val fromHand = tableScreen.getHandById(from) ?: return
         val toHand = tableScreen.getHandById(to) ?: return
         tableScreen.moveCard(card, fromHand, toHand, flip)
@@ -295,14 +294,15 @@ class PreferansGame : Game() {
      * animate card played by user
      */
     fun playCard(cardID: Int){
-        val card = getCardById(cardID)
+        val card = getCardModelById(cardID)
         tableScreen.animateCardPlay(card)
     }
 
     fun revealPlayerCard(player: Int, cardID: Int){
-        val card = getCardById(cardID)
+        val card = getCardModelById(cardID)
         tableScreen.revealPlayerCard(player, card)
     }
+
 
     /**
      * In Preferans we have 32 card deck.
@@ -311,37 +311,25 @@ class PreferansGame : Game() {
      * and translates it into corresponding
      * renderable object
      */
-    private fun getCardById(cardID: Int): Card {
-        val card: Card
-        if (cardID == -1) {
-            card = tableScreen.deck.getCard(Suit.UNKNOWN, Pip.UNKNOWN)
-        } else {
-            val suitId = cardID / 8
-            var pipId: Int = (cardID % 8)
-            if (Pip.TWO.index <= pipId) {
-                pipId += 5
-            }
-            println(pipId)
-            card = tableScreen.deck.getCard(
-                    Suit.values().first { x -> x.index == suitId },
-                    Pip.values().first { x -> x.index == pipId })
-        }
-        return card
+    private fun getCardModelById(cardID: Int): CardGUI {
+        val card = getCardById32(cardID)
+        return tableScreen.deck.getCardModel(card.suit, card.pip)
     }
+
 
     /**
      * In Preferans we have 32 card deck.
      * This function takes card
      * and translates it into corresponding
-     * Card Id (-1 -> 32). -1 - for UNKNOWN
+     * CardGUI Id (-1 -> 32). -1 - for UNKNOWN
      */
-    private fun getIdByCard(card: Card): Int {
+    private fun getIdByCard(card: CardGUI): Int {
         if(card.suit == Suit.UNKNOWN){
             return -1
         }
         val suitID: Int = card.suit.index
         var pipID: Int = card.pip.index
-        if(pipID >= 7){
+        if(pipID >= 6){
             pipID -= 5
         }
         return 8*suitID + pipID

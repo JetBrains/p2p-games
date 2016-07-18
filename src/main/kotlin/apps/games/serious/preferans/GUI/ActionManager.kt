@@ -84,7 +84,7 @@ class DelayedAction<out R>(delay: Float, val action: () -> (R)) : Action(
 }
 
 /***
- * Card action manager. Keeps all
+ * CardGUI action manager. Keeps all
  * cards movements
  */
 class ActionManager {

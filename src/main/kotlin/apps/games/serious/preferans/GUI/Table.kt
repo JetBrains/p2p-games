@@ -52,7 +52,7 @@ class Table(val playersCount: Int, val handSize: Int) : Disposable {
         tableTop.transform.translate(0f, -1.5f, 0f)
     }
 
-    fun getPlayerWithCard(card: Card): Player?{
+    fun getPlayerWithCard(card: CardGUI): Player?{
         for(player in players){
             if(player.hand.cards.contains(card)){
                 return player
@@ -107,7 +107,7 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
 }
 
 class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vector3, val MAX_HAND_WIDTH: Float = 3f) {
-    val cards = mutableListOf<Card>()
+    val cards = mutableListOf<CardGUI>()
     val size: Int
         get() = cards.size
 
@@ -125,8 +125,8 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
      * @param newCard - new card to be shown in place of revealed
      * @return UNKNOWN card that now need's to be removed from table
      */
-    @Synchronized fun replaceUnknownCard(newCard: Card): Card? {
-        for (i in 0..size - 1) {
+    @Synchronized fun replaceUnknownCard(newCard: CardGUI): CardGUI? {
+        for (i in size - 1 downTo 0) {
             if (!cards[i].isRevealed) {
                 val res = cards[i]
                 cards[i] = newCard
@@ -162,14 +162,15 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
     /**
      * remove card from hand.
      */
-    @Synchronized fun removeCard(card: Card, actionManager: ActionManager){
+    @Synchronized fun removeCard(card: CardGUI, actionManager: ActionManager){
         val index = cards.indexOf(card)
         if(index == -1){
             return
         }
         for(i in index+1..size-1){
             val pos = cards[i-1].position
-            actionManager.add(Card.animate(cards[i],pos.x, pos.y, pos.z, cards[i]
+            actionManager.add(
+                    CardGUI.animate(cards[i], pos.x, pos.y, pos.z, cards[i]
                     .angle, 2f))
         }
         cards.removeAt(index)

@@ -36,7 +36,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
         var failures = 0
         //TODO - Global constants for connection timeouts
         while (pending.isNotEmpty() && failures < retries / 2) {
-            val msg = stateMessageQueue.pollFirst(20, TimeUnit.MILLISECONDS)
+            val msg = stateMessageQueue.pollFirst(200, TimeUnit.MILLISECONDS)
             if (msg == null) {
                 failures++
                 continue
@@ -76,7 +76,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
             if (pending.isEmpty()) {
                 break
             }
-            Thread.sleep(50)
+            Thread.sleep(500)
         }
         timestamp++
         return found.values.toMutableList()
@@ -141,12 +141,13 @@ class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
                         "Failed to receive response from everyone")
             }
 
-            val computed = game.evaluate(responses)
-
-            sendResponse(computed, game.getData())
-
-
-
+            try {
+                val computed = game.evaluate(responses)
+                sendResponse(computed, game.getData())
+            }catch (e: GameExecutionException){
+                println(e.message)
+                throw e
+            }
             stateMessageQueue.addAll(nextStepMessages)
             nextStepMessages.clear()
         }

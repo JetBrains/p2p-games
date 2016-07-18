@@ -1,5 +1,6 @@
 package apps.games.serious.preferans.GUI
 
+import apps.games.serious.preferans.Card
 import apps.games.serious.preferans.Pip
 import apps.games.serious.preferans.Suit
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -37,9 +38,9 @@ private fun convert(front: FloatArray, back: FloatArray): FloatArray {
 }
 
 /**
- * Card GUI representation
+ * CardGUI GUI representation
  */
-class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
+class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
     val CARD_WIDTH = 1f
     val CARD_HEIGHT = CARD_WIDTH * 277f / 200f
     val radius = CARD_WIDTH / 2f
@@ -71,20 +72,22 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
 
     companion object {
         //TODO - Maybe cache actions on cards
-        fun animate(card: Card,
-                x: Float,
-                y: Float,
-                z: Float,
-                angle: Float,
-                speed: Float,
-                rotation: Float = 0f,
-                delay: Float = 0.1f): CardAction {
+        fun animate(card: CardGUI,
+                    x: Float,
+                    y: Float,
+                    z: Float,
+                    angle: Float,
+                    speed: Float,
+                    rotation: Float = 0f,
+                    delay: Float = 0.1f,
+                    doNotRotate: Boolean = false): CardAction {
             val action = CardAction(delay)
             action.reset(card)
             action.toPosition.set(x, y, z)
             action.toAngle = angle
             action.speed = speed
             action.toRotation = rotation
+            action.doNotRotate = doNotRotate
             return action
         }
     }
@@ -100,7 +103,7 @@ class Card(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
  * (toRatation degrees)
  */
 class CardAction(delay: Float) : Action(delay) {
-    lateinit var card: Card
+    lateinit var card: CardGUI
     val fromPosition = Vector3()
     var fromAngle: Float = 0.toFloat()
     val toPosition = Vector3()
@@ -109,8 +112,9 @@ class CardAction(delay: Float) : Action(delay) {
     var alpha: Float = 0.toFloat()
     var toRotation: Float = 0.toFloat()
     var finished: Boolean = false
+    var doNotRotate = false
 
-    fun reset(card: Card) {
+    fun reset(card: CardGUI) {
         this.card = card
         fromPosition.set(card.position)
         fromAngle = card.angle
@@ -125,8 +129,11 @@ class CardAction(delay: Float) : Action(delay) {
             finished = true
         }
         card.position.set(fromPosition).lerp(toPosition, alpha)
-        card.angle = fromAngle + alpha * (toAngle - fromAngle)
-        card.rotation = toRotation * alpha
+        if(!doNotRotate){
+            card.angle = fromAngle + alpha * (toAngle - fromAngle)
+            card.rotation = toRotation * alpha
+        }
+
         card.update()
     }
 
@@ -140,8 +147,8 @@ class CardAction(delay: Float) : Action(delay) {
  * cards twice(except UNKNOWN cards)
  */
 class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
-    val cards: Array<Array<Card>> = Array(Suit.values().size,
-            { i -> arrayOf<Card>() })
+    val cards: Array<Array<CardGUI>> = Array(Suit.values().size,
+                                             { i -> arrayOf<CardGUI>() })
     val back = atlas.createSprite("back", backIndex)
 
     init {
@@ -149,24 +156,28 @@ class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
             if (suit == Suit.UNKNOWN) {
                 continue
             }
-            val cardList = mutableListOf<Card>()
+            val cardList = mutableListOf<CardGUI>()
             for (pip in Pip.values()) {
                 if (pip == Pip.UNKNOWN) {
                     continue
                 }
                 val front = atlas.createSprite(suit.type, pip.value)
-                cardList.add(Card(suit, pip, back, front))
+                cardList.add(CardGUI(suit, pip, back, front))
             }
             cards[suit.index] = arrayOf(*cardList.toTypedArray())
         }
     }
 
-    fun getCard(suit: Suit, pip: Pip): Card {
+    fun getCardModel(suit: Suit, pip: Pip): CardGUI {
         if (suit == Suit.UNKNOWN || pip == Pip.UNKNOWN) {
-            return Card(Suit.UNKNOWN, Pip.UNKNOWN, back,
-                    atlas.createSprite("back", (backIndex + 1) % 4))
+            return CardGUI(Suit.UNKNOWN, Pip.UNKNOWN, back,
+                           atlas.createSprite("back", (backIndex + 1) % 4))
         }
         cards[suit.index][pip.index].isRevealed = true
         return cards[suit.index][pip.index]
+    }
+
+    fun getCardModel(card: Card): CardGUI{
+        return getCardModel(card.suit, card.pip)
     }
 }

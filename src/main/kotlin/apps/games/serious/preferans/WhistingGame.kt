@@ -1,4 +1,4 @@
-package apps.games.serious
+package apps.games.serious.preferans
 
 import apps.chat.Chat
 import apps.games.Game
@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue
 private val realWhists = listOf(Whists.WHIST_BLIND, Whists.WHIST_OPEN)
 
 class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
-                   GameManagerClass, val gameGUI: PreferansGame,
+GameManagerClass, val gameGUI: PreferansGame,
                    val maxBet: Bet) : Game<Whists>(chat, group, gameID, gameManager) {
     override val name: String
         get() = "Whisting game"
@@ -41,7 +41,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
     private val playerID = playerOrder.indexOf(chat.me())
     private var currentPlayer = -1
     private val N = 2
-    private val whists = Array(N, {i -> Whists.UNKNOWN})
+    private val whists = Array(N, {i -> Whists.UNKNOWN })
     private val whistQueue = LinkedBlockingQueue<Whists>(1)
     private var result: Whists = Whists.UNKNOWN
     // round of negotiation
@@ -51,7 +51,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         when(state){
-            WhistingGame.State.INIT -> {
+            State.INIT -> {
                 if(N != 2){
                     throw GameExecutionException("In 3-man Preferans whisting" +
                                                          " goes between 2 of " +
@@ -61,7 +61,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
                 gameGUI.showWhistingOverlay()
                 registerCallbacks()
             }
-            WhistingGame.State.BID -> {
+            State.BID -> {
                 for(msg in responses){
                     val userId = getUserID(User(msg.user))
                     if(userId == currentPlayer){
@@ -120,7 +120,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
                                              "whisting")
                 }
             }
-            WhistingGame.State.END -> TODO()
+            State.END -> TODO()
         }
         return ""
     }
@@ -247,7 +247,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
          * whisted
          * @return highest whist - unknown if something is wrong
          */
-        fun verifyWhists(whists: Array<Whists>): Whists{
+        fun verifyWhists(whists: Array<Whists>): Whists {
             var possible: Boolean = true
             if(whists.size != 2){
                 possible = false
@@ -255,8 +255,7 @@ class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
             possible = possible &&
                     ((whists[0] == Whists.PASS && whists[1] in realWhists) ||
                      (whists[0] == Whists.PASS && whists[1] == Whists.PASS) ||
-                     (whists[0] == Whists.PASS && whists[1] == Whists
-                             .WHIST_HALF)) ||
+                     (whists[0] == Whists.PASS && whists[1] == Whists.WHIST_HALF)) ||
                     (whists[0] in realWhists && whists[1] == Whists.PASS) ||
                     (whists[0] == Whists.WHIST_BLIND && whists[1] == Whists.WHIST_BLIND)
             if(!possible){
