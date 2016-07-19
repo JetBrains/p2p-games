@@ -510,4 +510,10 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         atlas.dispose()
         cards.dispose()
     }
+
+    fun clear(){
+        cards.clear()
+        table.clear()
+        deck.reset()
+    }
 }

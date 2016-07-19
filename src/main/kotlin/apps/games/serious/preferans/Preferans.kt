@@ -56,7 +56,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private lateinit var gameGUI: PreferansGame
     private lateinit var application: LwjglApplication
 
-    private val DECK_SIZE = 32
+    private val DECK_SIZE = 5
     //TALON - always last two cards of the deck
     private val TALON = 2
 
@@ -374,8 +374,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         if(logger.log.newTurnStarted()){
                             gameGUI.tableScreen.clearTable()
                         }
+
                         if(logger.log.roundFinished()){
-                            state = State.ROUND_INIT
+                            state = State.VERYFY_ROUND
                             if(playerID == mainPlayerID){
                                 return salt
                             }else{
@@ -456,9 +457,17 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     }
 
     private fun updateScore() {
+        if(gameWhist == Whists.PASS){
+
+        }
+        val roundResult = logger.log.countWonTurns()
+        var res: String = ""
+        for(key in roundResult.keys){
+            res += "<${playerOrder[key].name}> has win ${roundResult[key]} turns \n"
+        }
+        chat.sendMessage(res)
         chat.sendMessage("Evething seems to be consistent. My current score " +
-                                 "is: " +
-                                 "[TODO]")
+                                 "is: " + "[TODO]")
     }
 
     /**
@@ -502,6 +511,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         //Deal all cards, except last two
         cardHolders.clear()
         gameGUI.clear()
+        //reset bet and whist
+        gameBet = Bet.UNKNOWN
+        gameWhist = Whists.UNKNOWN
         whists.fill(Whists.UNKNOWN)
         bets.fill(Bet.UNKNOWN)
         val resultKeys = mutableListOf<BigInteger>()

@@ -2,6 +2,7 @@ package apps.games.serious.preferans
 
 import apps.games.GameExecutionException
 import apps.games.primitives.EncryptedDeck
+import com.sun.org.apache.bcel.internal.classfile.InnerClass
 import com.sun.org.apache.bcel.internal.classfile.Unknown
 import org.apache.commons.codec.digest.DigestUtils
 import java.math.BigInteger
@@ -29,6 +30,9 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
 
     //who starts turn
     private val mainPlayer: Int = -1
+
+    //map hoe many turns won
+    private val turnsWon: MutableMap<Int, Int> = mutableMapOf()
 
     var enforcedSuit = Suit.UNKNOWN
 
@@ -66,10 +70,15 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
             val maxCard = maxWithTrump(plays.map { x -> x.second }, gameBet
                     .trump, enforcedSuit)
             enforcedSuit = Suit.UNKNOWN
-            return plays.first { x -> x.second == maxCard }.first
+            val res = plays.first { x -> x.second == maxCard }.first
+            if(turnsWon[res] == null){
+                turnsWon[res] = 0
+            }
+            turnsWon[res] = (turnsWon[res] as Int) + 1
+            return  res
         }
-        //first play in turn - update enforced Bet
-        if(log.size % N == 1){
+        //first play in turn - update enforced Bet (except first turn of PASS bet
+        if(log.size % N == 1 && !(log.size == 1 && gameBet == Bet.PASS)){
             enforcedSuit = getCardById32(play.second).suit
         }
         return (play.first + 1) % N
@@ -142,6 +151,14 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     }
 
     /**
+     * For each player - hount how many turns has he won this round
+     * @return Map<Int, Int> - map player Ids to nowber of turns won
+     */
+    fun countWonTurns(): Map<Int, Int>{
+        return turnsWon
+    }
+
+    /**
      * Check, that every player submitted allowed card for each turn. This
      * is only verifyable at the end, when all plays(keys) are known
      */
@@ -156,13 +173,19 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
             }
             playedCards[entry.first]!!.add(entry.second)
         }
-        for(i in 0..DECK_SIZE-TALON_SIZE step N){
+        for(i in 0..log.size-1 step N){
             val turn = log.slice(i..i+N-1)
             if(turn.distinctBy { x -> x.first }.size != N){
                 return false
             }
-            val enforsedSuit: Suit = turn[0].second.suit
-            for(j in 1..N){
+            val enforsedSuit: Suit
+            if(i == 0 && gameBet == Bet.PASS){
+                enforsedSuit = talon[0].suit
+            }else{
+                enforsedSuit = turn[0].second.suit
+            }
+
+            for(j in 0..N-1){
                 val player = turn[j].first
                 val suit = turn[j].second.suit
                 if(!playedCards.containsKey(player)){

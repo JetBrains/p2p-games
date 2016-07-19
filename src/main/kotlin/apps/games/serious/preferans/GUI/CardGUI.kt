@@ -69,6 +69,11 @@ class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
         transform.trn(position.x, position.y, z)
     }
 
+    fun reset(){
+        angle = 0f
+        position.set(0f, 0f, 0f)
+        rotation = 0f
+    }
 
     companion object {
         //TODO - Maybe cache actions on cards
@@ -86,6 +91,7 @@ class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
             action.toPosition.set(x, y, z)
             action.toAngle = angle
             action.speed = speed
+            action.fromRotation = card.rotation
             action.toRotation = rotation
             action.doNotRotate = doNotRotate
             return action
@@ -105,12 +111,13 @@ class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
 class CardAction(delay: Float) : Action(delay) {
     lateinit var card: CardGUI
     val fromPosition = Vector3()
-    var fromAngle: Float = 0.toFloat()
+    var fromAngle: Float = 0f
     val toPosition = Vector3()
-    var toAngle: Float = 0.toFloat()
-    var speed: Float = 0.toFloat()
-    var alpha: Float = 0.toFloat()
-    var toRotation: Float = 0.toFloat()
+    var toAngle: Float = 0f
+    var speed: Float = 0f
+    var alpha: Float = 0f
+    var fromRotation: Float = 0f
+    var toRotation: Float = 0f
     var finished: Boolean = false
     var doNotRotate = false
 
@@ -131,7 +138,7 @@ class CardAction(delay: Float) : Action(delay) {
         card.position.set(fromPosition).lerp(toPosition, alpha)
         if(!doNotRotate){
             card.angle = fromAngle + alpha * (toAngle - fromAngle)
-            card.rotation = toRotation * alpha
+            card.rotation = fromRotation + alpha * (toRotation - fromRotation)
         }
 
         card.update()
@@ -179,5 +186,15 @@ class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
 
     fun getCardModel(card: Card): CardGUI{
         return getCardModel(card.suit, card.pip)
+    }
+
+    fun reset(){
+        for (suit in Suit.values()){
+            for(pip in Pip.values()){
+                if(suit != Suit.UNKNOWN && pip != Pip.UNKNOWN){
+                    getCardModel(suit, pip).reset()
+                }
+            }
+        }
     }
 }

@@ -65,6 +65,12 @@ class Table(val playersCount: Int, val handSize: Int) : Disposable {
         return players[0]
     }
 
+    fun clear(){
+        commonHand.clear()
+        for(player in players){
+            player.hand.clear()
+        }
+    }
 
     override fun dispose() {
         tableTopModel.dispose()
@@ -160,6 +166,13 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
     }
 
     /**
+     * clear hand info for reusage
+     */
+    @Synchronized fun clear(){
+        cards.clear()
+    }
+
+    /**
      * remove card from hand.
      */
     @Synchronized fun removeCard(card: CardGUI, actionManager: ActionManager){
@@ -171,7 +184,7 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
             val pos = cards[i-1].position
             actionManager.add(
                     CardGUI.animate(cards[i], pos.x, pos.y, pos.z, cards[i]
-                    .angle, 2f))
+                    .angle, 2f, cards[i].rotation))
         }
         cards.removeAt(index)
     }

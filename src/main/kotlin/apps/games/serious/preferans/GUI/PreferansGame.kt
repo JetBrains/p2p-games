@@ -366,7 +366,7 @@ class PreferansGame : Game() {
     }
 
     fun clear() {
-        tableScreen.cards.clear()
+        tableScreen.clear()
     }
 }
 

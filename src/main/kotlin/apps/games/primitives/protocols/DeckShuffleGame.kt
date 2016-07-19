@@ -80,13 +80,14 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
                 if (hashes.size != 1) {
                     throw GameExecutionException("Someone has different deck")
                 }
-                state = State.SHUFFLE
+                state = State.VALIDATE_KEYS
                 return DigestUtils.sha256Hex(lockKeys.joinToString(" "))
             }
             State.VALIDATE_KEYS -> {
                 for (msg in responses){
                     keyHashes[User(msg.user)] = msg.value
                 }
+                state = State.SHUFFLE
                 return ""
             }
             State.SHUFFLE -> {
