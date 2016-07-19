@@ -92,7 +92,16 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
     }
 
     /**
+     * Some games want to run
+     */
+    fun skipSubGame(){
+        subGameCounter++
+    }
+
+    /**
      * Init subgame.
+     * if only a subset of users plays that game - other have to
+     * @link skipSubgame, for names to be consistent
      * @param game - game to start
      */
     fun <S> runSubGame(game: Game<S>, maxRetries: Int = 5): Future<S> {

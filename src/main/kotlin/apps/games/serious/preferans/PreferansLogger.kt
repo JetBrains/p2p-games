@@ -114,6 +114,23 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     }
 
     /**
+     * Take a collection of cards. Filter cards, that are playable
+     * ont the next turn
+     * @param cards - mutable collection of cards to filter
+     */
+
+    fun filterPlayableCards(cards: MutableCollection<Card>){
+        if(!cards.any(getEnforcedSelector())){
+            return
+        }
+        if(cards.any { x -> x.suit == enforcedSuit }){
+            cards.retainAll {x -> x.suit == enforcedSuit}
+        }else{
+            cards.retainAll{ x -> x.suit == gameBet.trump }
+        }
+    }
+
+    /**
      * check if tound is finished(all cards are played)
      */
     fun roundFinished(): Boolean{

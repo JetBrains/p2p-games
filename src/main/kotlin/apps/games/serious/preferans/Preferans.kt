@@ -163,6 +163,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             State.VERIFY_BET -> {
                 state = State.REVEAL_TALON
                 gameGUI.hideBiddingOverlay()
+
+
                 val hashes = responses.map { x -> x.value }
                 if (hashes.distinct().size != 1) {
                     throw GameExecutionException("Couldn't agree on final bet")
@@ -176,15 +178,18 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 return keys.joinToString(" ")
             }
             State.REVEAL_TALON -> {
+                decryptTalon(responses)
+                revealTalon()
+
                 if (gameBet != Bet.PASS) {
                     state = State.REBID
                 } else {
                     //TODO - распасы
-                    state = State.END
+                    logger.log.updateBet(Bet.PASS)
+                    currentPlayerID = -1
+                    state = State.PLAY
                 }
 
-                decryptTalon(responses)
-                revealTalon()
                 return ""
             }
             State.REBID -> {
@@ -222,6 +227,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 if (playerID == mainPlayerID) {
                     gameGUI.showHint("Waiting for other players to decide on " +
                                              "whisting")
+                    skipSubGame()
                     // send (slated) hash of discarded cards to prove, that
                     // you will not play them later
                     return talonHash
@@ -444,6 +450,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         deck = newDeck() ?: return ""
         //Deal all cards, except last two
         cardHolders.clear()
+        gameGUI.clear()
+        whists.fill(Whists.UNKNOWN)
+        bets.fill(Bet.UNKNOWN)
         val resultKeys = mutableListOf<BigInteger>()
 
         for (i in 0..deck.originalDeck.size - 1 - TALON) {
@@ -754,9 +763,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             }
         }
         // TODO - not trump if you have suit
-        val selector = logger.log.getEnforcedSelector()
-        if (restrictCards && allowed.any(selector)) {
-            allowed.removeAll { x -> !selector(x) }
+        if (restrictCards) {
+            logger.log.filterPlayableCards(allowed)
         }
         val res = gameGUI.pickCard(*allowed.toTypedArray())
         val index = deck.encrypted.deck.cards.indexOf(deck.originalDeck

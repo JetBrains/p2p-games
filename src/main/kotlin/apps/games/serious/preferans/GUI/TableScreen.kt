@@ -30,6 +30,9 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     private val cam3d = PerspectiveCamera()
     private val camController = FirstPersonCameraController(cam3d)
     private val cam2d = OrthographicCamera()
+    private var zoomed = false
+    private val cam2dZoom = OrthographicCamera()
+    private val zoomAspectRatio = 5f/3f
 
     private var is2dMode: Boolean = true
 
@@ -99,9 +102,8 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      */
     override fun render(delta: Float) {
         val delta = Math.min(1 / 30f, Gdx.graphics.deltaTime)
-
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-
+        Gdx.gl20.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
         camController.update()
 
         actionManager.update(delta)
@@ -117,6 +119,17 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         for(overlay in overlays){
             overlay.render(getCam())
         }
+        if(zoomed){
+            //TODO - no overlapping
+            val height = Gdx.graphics.height/4
+            Gdx.gl20.glViewport(0, Gdx.graphics.height - height,
+                                (height*zoomAspectRatio).toInt(),height)
+            game.batch.begin(cam2dZoom)
+            game.batch.render(cards, environment)
+            game.batch.render(table.tableTop, environment)
+            game.batch.end()
+        }
+
     }
 
     /**
@@ -311,6 +324,13 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         cam2d.viewportHeight = 20f
         cam3d.update()
         cam2d.update()
+
+        cam2dZoom.position.set(0f, 0f, 5f)
+        cam2dZoom.lookAt(0f, 0f, 1f)
+        cam2dZoom.viewportWidth = 10f*zoomAspectRatio
+        cam2dZoom.viewportHeight = 10f
+        cam2dZoom.zoom = 0.25f
+
     }
 
     /**
@@ -333,6 +353,10 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
             screenY: Int,
             pointer: Int,
             button: Int): Boolean {
+        if(button == Input.Buttons.MIDDLE){
+            zoomed = false
+            return true
+        }
         if (selecting != null) {
             if (selecting == getObject(screenX, screenY)) {
                 setSelected(selecting!!)
@@ -344,6 +368,36 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
             setSelecting(getObject(screenX, screenY))
         }
         return selecting != null
+    }
+
+    override fun touchDragged(screenX: Int,
+                                       screenY: Int,
+                                       pointer: Int): Boolean {
+            if(zoomed){
+                val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
+                        .toFloat(), 0f))
+                cam2dZoom.position.set(pos)
+                cam2dZoom.lookAt(pos.x, pos.y, 0f)
+                cam2dZoom.update()
+                return true
+            }
+            return false
+    }
+
+    override fun touchDown(screenX: Int,
+                           screenY: Int,
+                           pointer: Int,
+                           button: Int): Boolean {
+        if(button == Input.Buttons.MIDDLE){
+            val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
+                    .toFloat(), 0f))
+            cam2dZoom.position.set(pos)
+            cam2dZoom.lookAt(pos.x, pos.y, 0f)
+            cam2dZoom.update()
+            zoomed = true
+            return true
+        }
+        return false
     }
 
     /**
@@ -434,6 +488,10 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
             return true
         }
         return false
+    }
+
+    override fun keyDown(keycode: Int): Boolean {
+        return super.keyDown(keycode)
     }
 
     override fun show() {

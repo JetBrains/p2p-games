@@ -364,6 +364,10 @@ class PreferansGame : Game() {
         batch.dispose()
         font.dispose()
     }
+
+    fun clear() {
+        tableScreen.cards.clear()
+    }
 }
 
 fun main(args: Array<String>) {

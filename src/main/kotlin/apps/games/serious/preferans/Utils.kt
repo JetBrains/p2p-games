@@ -37,11 +37,14 @@ fun getCardById32(cardID: Int): Card {
 fun maxWithTrump(cards: Collection<Card>, trump: Suit = Suit.UNKNOWN,
                  enforcedSuit: Suit = Suit.UNKNOWN): Card?{
     val trumpPlays = cards.filter {x -> x.suit == trump}
-    val maxTrump = trumpPlays.maxBy { x -> x.pip.value }
+    val maxValue: Int = Pip.values().maxBy { x -> x.value}!!.value + 1
+
+    val maxTrump = trumpPlays.maxBy { x -> if(x.pip == Pip.ACE) maxValue else x.pip.value}
     if (maxTrump != null) {
         return maxTrump
     }
-    return cards.filter { x -> x.suit == enforcedSuit }.maxBy { v -> v.pip.value }
+    return cards.filter { x -> x.suit == enforcedSuit }.maxBy { v -> if(v.pip == Pip.ACE)
+                                                                maxValue else v.pip.value }
 
 }
 
