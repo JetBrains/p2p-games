@@ -1,7 +1,9 @@
 package apps.games.serious.preferans
 
 import apps.games.GameExecutionException
+import apps.games.primitives.EncryptedDeck
 import com.sun.org.apache.bcel.internal.classfile.Unknown
+import org.apache.commons.codec.digest.DigestUtils
 import java.math.BigInteger
 
 /**
@@ -16,6 +18,8 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     private var gameType: Bet = Bet.UNKNOWN
 
     private var talon = Array(TALON_SIZE, {i -> getCardById32(-1)})
+    private var talonDiscard = Array(TALON_SIZE, {i -> getCardById32(-1)})
+
     //todo - check talon. only main player can play it's cards
 
     private var fail: Boolean = false
@@ -136,7 +140,83 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     fun roundFinished(): Boolean{
         return (TALON_SIZE + log.size) == DECK_SIZE
     }
+
+    /**
+     * Check, that every player submitted allowed card for each turn. This
+     * is only verifyable at the end, when all plays(keys) are known
+     */
+    fun verifyRoundPlays(): Boolean{
+        if(!roundFinished()){
+            return false
+        }
+        val playedCards = mutableMapOf<Int, MutableSet<Card>>()
+        for(entry in log){
+            if(playedCards[entry.first] == null){
+                playedCards[entry.first] = mutableSetOf()
+            }
+            playedCards[entry.first]!!.add(entry.second)
+        }
+        for(i in 0..DECK_SIZE-TALON_SIZE step N){
+            val turn = log.slice(i..i+N-1)
+            if(turn.distinctBy { x -> x.first }.size != N){
+                return false
+            }
+            val enforsedSuit: Suit = turn[0].second.suit
+            for(j in 1..N){
+                val player = turn[j].first
+                val suit = turn[j].second.suit
+                if(!playedCards.containsKey(player)){
+                    return false
+                }
+                if(suit != enforsedSuit){
+                    if(playedCards[player]!!.any { x -> x.suit == enforsedSuit }){
+                        return false
+                    }
+                    if(suit != gameBet.trump && playedCards[player]!!.any { x ->
+                                                        x.suit == gameBet.trump }){
+                        return false
+                    }
+                }
+                playedCards[player]!!.remove(turn[j].second)
+            }
+        }
+        return true
+    }
+
+    /**
+     * Calculate discarded talon
+     * @return list of talon card positions in original deck
+     * null - if can calculate based on current information
+     */
+    fun getDiscardedTalon(): List<Int>?{
+        if(log.size != DECK_SIZE-TALON_SIZE){
+            return null
+        }
+        val talon = mutableListOf<Int>()
+        for(i in 0..DECK_SIZE-1){
+            if(!log.any { x -> x.second == getCardById32(i) }){
+                talon.add(i)
+            }
+        }
+        talon.sort()
+        return talon
+    }
+
+    /**
+     * Calculate hash for user key set - used to
+     * validate, that no card exchange cooperation was present
+     * @param player - id of player, whose key hash is being calculated
+     * @return Sting - resulting hash. Null if current information is
+     * insuffitient to calculate requested hash
+     */
+    fun getUserKeysHash(player: Int): String?{
+        if(keyMap[player].contains(null)){
+            return null
+        }
+        return DigestUtils.sha256Hex(keyMap[player].joinToString(" "))
+    }
 }
+
 
 
 class GameLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){

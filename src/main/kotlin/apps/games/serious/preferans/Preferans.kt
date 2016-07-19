@@ -46,6 +46,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         OPEN_HAND_KEY_EXHANGE, //if after whisting game whisted only ny one
         OPEN_HAND_DECRYPT, // player and he dycided top open hands - exchange keys
         PLAY, //play cards =)
+        VERYFY_ROUND, //Verify talon, cards played and key sets
         END
     }
 
@@ -60,8 +61,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private val TALON = 2
 
     //to sorted array to preserve order
-    private val playerOrder: List<User> = group.users.sortedBy { x -> x.name }
-    private val playerID = playerOrder.indexOf(chat.me())
+    private val playerOrder: MutableList<User> = group.users.sortedBy { x ->
+                                                        x.name }.toMutableList()
+    private var playerID = playerOrder.indexOf(chat.me())
 
     //Required - three players.
     //TODO - add checker for number of players
@@ -184,9 +186,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 if (gameBet != Bet.PASS) {
                     state = State.REBID
                 } else {
-                    //TODO - распасы
                     logger.log.updateBet(Bet.PASS)
                     currentPlayerID = -1
+                    //Talon belongs to noone
+                    for(i in DECK_SIZE-TALON..DECK_SIZE-1){
+                        cardHolders[i] = -1
+                    }
                     state = State.PLAY
                 }
 
@@ -371,7 +376,11 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         }
                         if(logger.log.roundFinished()){
                             state = State.ROUND_INIT
-                            return ""
+                            if(playerID == mainPlayerID){
+                                return salt
+                            }else{
+                                return ""
+                            }
                         }
                     }
                 }
@@ -379,8 +388,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     currentPlayerID = mainPlayerID
                 }
                 if(currentPlayerID != -1 && gameWhist == Whists.WHIST_OPEN &&
-                        whists[currentPlayerID]
-                                == Whists.PASS){
+                                            whists[currentPlayerID] == Whists.PASS){
                     mainMuser = whists.indexOf(Whists.WHIST_OPEN)
                 }else{
                     mainMuser = currentPlayerID
@@ -405,6 +413,41 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 }
 
             }
+            State.VERYFY_ROUND -> {
+                for(msg in responses){
+                    val userID = getUserID(User(msg.user))
+                    if(userID == mainPlayerID){
+                        salt = msg.value
+                    }
+                }
+                if(!logger.log.verifyRoundPlays()){
+                    throw GameExecutionException("Someone cheated: didn't " +
+                                                         "play correct card")
+                }
+                if(gameBet != Bet.PASS){
+                    val talon = logger.log.getDiscardedTalon() ?: throw
+                                GameExecutionException("can not figure out talon")
+                    val computedTalonHash = DigestUtils.sha256Hex(talon.joinToString(" ") + salt)
+                    if(computedTalonHash != talonHash){
+                        throw GameExecutionException("Failed to validate talon")
+                    }
+                }
+                for(i in 0..N-1){
+                    val playerKeyHash = logger.log.getUserKeysHash(i) ?:
+                            throw GameExecutionException("Someone didn't " +
+                                                                 "provide all" +
+                                                                 " of his keys")
+                    if(playerKeyHash != deck.encrypted.hashes[playerOrder[i]]){
+                        throw GameExecutionException("Key hash validation " +
+                                                             "failed. Maybe " +
+                                                             "someone spawed " +
+                                                             "thei keys")
+                    }
+                }
+                updateScore()
+
+                state = State.ROUND_INIT
+            }
             State.END -> {
                 println("WOLOLOLOLOOLOO")
             }
@@ -413,7 +456,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     }
 
     private fun updateScore() {
-        TODO()
+        chat.sendMessage("Evething seems to be consistent. My current score " +
+                                 "is: " +
+                                 "[TODO]")
     }
 
     /**
@@ -445,6 +490,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
      * return keys for cards that I don't hold
      */
     private fun initRound(responses: List<GameMessageProto.GameStateMessage>): String {
+        //shift order
+        val first = playerOrder.removeAt(0)
+        playerOrder.add(first)
+        playerID = playerOrder.indexOf(chat.me())
+        logger.newRound()
+
         gameGUI.showHint("Shuffling cards")
         //If we can not create deck - game aborted
         deck = newDeck() ?: return ""
