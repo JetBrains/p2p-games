@@ -44,8 +44,48 @@ class PreferansScoreCounter(users: Collection<User>){
         if(mainPlayer == null || whists == null){
             throw GameExecutionException("Failed to agree")
         }
-
         subsequentPasses = 0
+        //mizer
+        if(gameBet == Bet.MIZER){
+            val penalty: Int = (handsTaken[mainPlayer] as Int) * Bet.MIZER.penalty
+            heap[mainPlayer] = (heap[mainPlayer] as Int) + penalty
+            if(handsTaken[mainPlayer] == 0){
+                bullet[mainPlayer] = (bullet[mainPlayer] as Int) + Bet.MIZER.bullet
+
+            }
+            return
+        }
+        //Ordinary contract
+        if((handsTaken[mainPlayer] as Int) >= gameBet.contract){
+            bullet[mainPlayer] = (bullet[mainPlayer] as Int) + gameBet.bullet
+        }else{
+            val remiz = gameBet.contract - (handsTaken[mainPlayer] as Int)
+            heap[mainPlayer] = (heap[mainPlayer] as Int) + remiz * gameBet.penalty
+        }
+        //Half-whist
+        if(whists.containsValue(Whists.WHIST_HALF)){
+            val user = whists.filterKeys { x -> whists[x] == Whists.WHIST_HALF }.keys.first()
+            val gameBonus = (gameBet.whistNorm / 2) * gameBet.whistBounty
+            this.whists[user to mainPlayer] = (this.whists[user to mainPlayer] as Int) + gameBonus
+        }
+        var totalWhisted: Int = 0
+        var playersWhisted: Int = 0
+        for(user in handsTaken.keys){
+            if(user != mainPlayer){
+                totalWhisted += (handsTaken[user] as Int)
+                if(whists[user] != Whists.PASS){
+                    playersWhisted ++
+                }
+            }
+        }
+        if(playersWhisted == 0){ // everybody passed
+            return
+        }
+        if(playersWhisted == 1){ // one whisted, second passed
+            //todo
+        }else{ // both whisted
+            //todo
+        }
 
     }
 }

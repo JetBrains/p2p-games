@@ -183,9 +183,9 @@ GameManagerClass, val gameGUI: PreferansGame,
         gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST(Both " +
                                  "whist are equal)")
         gameGUI.enableWhists(Whists.PASS, Whists.WHIST_BLIND,
-                             Whists.WHIST_OPEN, Whists.WHIST_HALF)
+                             Whists.WHIST_OPEN)
         //if first player passed - second can go half whist
-        if(playerID == 1 && whists[0] == Whists.PASS){
+        if(playerID == 1 && whists[0] == Whists.PASS && maxBet.value <= Bet.MIZER.value){
             gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST or " +
                                      "HALF WHIST(Both " +
                                      "whist are equal)")
