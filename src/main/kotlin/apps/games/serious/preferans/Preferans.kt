@@ -217,7 +217,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     val card1 = playCard(playerID, restrictCards = false)
                     val card2 = playCard(playerID, restrictCards = false)
                     saltTalon(card1, card2)
-                    return res
+                    return res + " " + talonHash
                 }
             }
             State.WHISTING -> {
@@ -225,9 +225,11 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 for (msg in responses) {
                     val userID = getUserID(User(msg.user))
                     if (userID == mainPlayerID) {
-                        bets[userID] = Bet.values().first { x -> x.value == msg.value.toInt() }
+                        val split = msg.value.split(" ")
+                        bets[userID] = Bet.values().first { x -> x.value == split[0].toInt() }
                         gameBet = bets[mainPlayerID]
                         logger.log.updateBet(gameBet)
+                        talonHash = split[1]
                     }
                 }
                 if (playerID == mainPlayerID) {
@@ -265,9 +267,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                 gameWhist = Whists.UNKNOWN
                 for (msg in responses) {
                     val userID = getUserID(User(msg.user))
-                    if (userID == mainPlayerID) {
-                        talonHash = msg.value
-                    } else {
+                    if (userID != mainPlayerID) {
                         whists[userID] = Whists.valueOf(msg.value)
                     }
                 }
@@ -325,18 +325,18 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
             State.PLAY -> {
                 //In case of Open Whist we need spetial case -
                 //one user can manage cards of another
-                var mainMuser: Int
+                var mainUser: Int
                 if(currentPlayerID != -1 && gameWhist == Whists.WHIST_OPEN &&
                         whists[currentPlayerID]
                         == Whists.PASS){
-                    mainMuser = whists.indexOf(Whists.WHIST_OPEN)
+                    mainUser = whists.indexOf(Whists.WHIST_OPEN)
                 }else{
-                    mainMuser = currentPlayerID
+                    mainUser = currentPlayerID
                 }
 
                 for (msg in responses) {
                     val userID = getUserID(User(msg.user))
-                    if (userID == mainMuser) {
+                    if (userID == mainUser) {
                         //TODO - switch first players
                         val split = msg.value.split(" ")
                         if (split.size < 2) {
@@ -386,18 +386,18 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         }
                     }
                 }
-                if(mainMuser == -1){
-                    currentPlayerID = mainPlayerID
+                if(mainUser == -1){
+                    currentPlayerID ++
                 }
                 if(currentPlayerID != -1 && gameWhist == Whists.WHIST_OPEN &&
                                             whists[currentPlayerID] == Whists.PASS){
-                    mainMuser = whists.indexOf(Whists.WHIST_OPEN)
+                    mainUser = whists.indexOf(Whists.WHIST_OPEN)
                 }else{
-                    mainMuser = currentPlayerID
+                    mainUser = currentPlayerID
                 }
                 //in case of Open whists - someone plays instead of
                 // passed player
-                if (playerID == mainMuser) {
+                if (playerID == mainUser) {
                     gameGUI.showHint("[${gameBet.type}] It is your turn to " +
                                              "play " +
                                              "(play " +

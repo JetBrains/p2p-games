@@ -28,6 +28,7 @@ class PreferansScoreCounter(users: Collection<User>){
         }
     }
     private var subsequentPasses: Int = 0
+
     fun updateScore(handsTaken: Map<User, Int>, gameBet: Bet,
                     whists: Map<User, Whists>? = null, mainPlayer: User? = null){
         if(gameBet == Bet.PASS){
@@ -36,16 +37,15 @@ class PreferansScoreCounter(users: Collection<User>){
             }
             val handCost = subsequentPasses * 2
             for(user in handsTaken.keys){
-                heap[user] = (heap[user] as Int) + handCost *
-                        (handsTaken[user] as Int)
+                heap[user] = (heap[user] as Int) + handCost * (handsTaken[user] as Int)
             }
             return
         }
         if(mainPlayer == null || whists == null){
-            //TODO - better exceptin
             throw GameExecutionException("Failed to agree")
         }
 
         subsequentPasses = 0
+
     }
 }
