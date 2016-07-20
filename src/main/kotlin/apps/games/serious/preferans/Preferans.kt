@@ -100,6 +100,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     val SALT_LENGTH = 256
     private var salt: String = ""
     private var talonHash: String = ""
+    private var talonKeys: String = ""
 
     override fun getInitialMessage(): String {
         return playerOrder.hashCode().toString()
@@ -378,7 +379,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                         if(logger.log.roundFinished()){
                             state = State.VERYFY_ROUND
                             if(playerID == mainPlayerID){
-                                return salt
+                                return salt + " " + talonKeys
                             }else{
                                 return ""
                             }
@@ -415,10 +416,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
             }
             State.VERYFY_ROUND -> {
+                var split: List<String> = listOf()
                 for(msg in responses){
                     val userID = getUserID(User(msg.user))
                     if(userID == mainPlayerID){
-                        salt = msg.value
+                        split = msg.value.split(" ")
+                        salt = split[0]
                     }
                 }
                 if(!logger.log.verifyRoundPlays()){
@@ -431,6 +434,11 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                     val computedTalonHash = DigestUtils.sha256Hex(talon.joinToString(" ") + salt)
                     if(computedTalonHash != talonHash){
                         throw GameExecutionException("Failed to validate talon")
+                    }
+                    for(i in 1..split.size-1 step 2){
+                        val index = split[i].toInt()
+                        val key = BigInteger(split[i+1])
+                        logger.log.registerCardKey(mainPlayerID, index, key)
                     }
                 }
                 for(i in 0..N-1){
@@ -516,6 +524,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         gameWhist = Whists.UNKNOWN
         whists.fill(Whists.UNKNOWN)
         bets.fill(Bet.UNKNOWN)
+        talonHash = ""
+        talonKeys = ""
+        salt = ""
         val resultKeys = mutableListOf<BigInteger>()
 
         for (i in 0..deck.originalDeck.size - 1 - TALON) {
@@ -866,8 +877,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     fun saltTalon(card1: Int, card2: Int) {
         salt = randomString(SALT_LENGTH)
-        val temp = listOf(card1, card2).sorted().joinToString(" ")
+        val discarded = listOf(card1, card2).sorted()
+        val temp = discarded.joinToString(" ")
         talonHash = DigestUtils.sha256Hex(temp + salt)
+        talonKeys = discarded.map { x -> deck.encrypted.deck.cards.indexOf(deck.originalDeck.cards[x]) }
+                             .map { x -> "$x ${deck.encrypted.keys[x]}"}.joinToString(" ")
+
     }
 
     override fun getResult() {
