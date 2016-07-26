@@ -46,7 +46,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     var actionManager = ActionManager()
     val topDeck: CardGUI
     var showDeck = true
-    val overlays = mutableSetOf<Overlay<*>>()
+    val overlays = mutableListOf<Overlay>()
     lateinit var spriteBatch: SpriteBatch
     lateinit var font: BitmapFont
 
@@ -228,12 +228,11 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
      * Remove all cards, that are not in player hands from table
      */
     @Synchronized fun clearTable(){
+        val toRemove = cards.filter { x -> table.getPlayerWithCard(x) == null }
         val action = DelayedAction(0.15f, {
-            val it = cards.iterator()
-            while(it.hasNext){
-                val next = it.next()
-                if(table.getPlayerWithCard(next) == null){
-                    it.remove()
+            synchronized(cards){
+                for(card in toRemove){
+                    cards.remove(card)
                 }
             }
         })
@@ -297,15 +296,15 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     /**
      * Add overlay
      */
-    @Synchronized fun addOverlay(overlay: Overlay<*>){
-        overlays.add(overlay)
+    @Synchronized fun addOverlay(overlay: Overlay){
+        overlays.add(0, overlay)
         updateInputProcessor()
     }
 
     /**
      * Remove overlay
      */
-    @Synchronized fun removeOverlay(overlay: Overlay<*>){
+    @Synchronized fun removeOverlay(overlay: Overlay){
         overlays.remove(overlay)
         updateInputProcessor()
     }
@@ -320,8 +319,14 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         cam3d.lookAt(0f, -8f, 0f)
         cam2d.position.set(0f, 0f, 11f)
         cam2d.lookAt(0f, 0f, 0f)
-        cam2d.viewportWidth = 20f
-        cam2d.viewportHeight = 20f
+        if (width > height) {
+            cam2d.viewportHeight = 21f
+            cam2d.viewportWidth = cam2d.viewportHeight * width.toFloat()/ height.toFloat()
+        } else {
+            cam2d.viewportWidth = 21f
+            cam2d.viewportHeight = cam2d.viewportWidth * height.toFloat() / width.toFloat()
+        }
+
         cam3d.update()
         cam2d.update()
 

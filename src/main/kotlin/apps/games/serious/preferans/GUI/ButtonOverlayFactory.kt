@@ -1,6 +1,7 @@
 package apps.games.serious.preferans.GUI
 
 import apps.games.serious.preferans.Bet
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
@@ -19,16 +20,40 @@ import entity.User
  * Created by user on 7/14/16.
  */
 
-abstract class Overlay<T: Enum<T>>{
+
+abstract class Overlay{
+    var isVisible = false
+    val stage: Stage
+    init {
+        stage = Stage()
+    }
+    private val baseX = 1024f
+    private val baseY = 1024f
+
+    val scaleX = Gdx.graphics.width/baseX
+    val scaleY = Gdx.graphics.height/baseY
+    open fun render(cam: Camera) {
+        if (isVisible) {
+            stage.camera.projection.set(cam.projection)
+            stage.draw()
+        }
+    }
+
+    fun resize(width: Int, height: Int) {
+        stage.viewport.update(width, height, true)
+    }
+}
+
+abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
     lateinit var skin: Skin
-    lateinit var stage: Stage
+
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
     val buttons = mutableMapOf<T, TextButton>()
     val textButtonStyle: TextButton.TextButtonStyle
-    var isVisible = false
 
     init {
-        stage = Stage()
+
+
         table = com.badlogic.gdx.scenes.scene2d.ui.Table()
 
         table.setPosition(500f, 500f)
@@ -108,20 +133,12 @@ abstract class Overlay<T: Enum<T>>{
     fun <R> addCallback(option: T, callback: (T) -> (R)) {
         val button = buttons[option] ?: return
         button.clearListeners()
-        button.addListener(ListenerFactory.create(option, button, callback))
+        button.addListener(ListenerFactory.create(option, button, {x: T ->
+            if (isVisible){callback(x)}}))
+
     }
 
 
-    fun render(cam: Camera) {
-        if (isVisible) {
-            stage.camera.projection.set(cam.projection)
-            stage.draw()
-        }
-    }
-
-    fun resize(width: Int, height: Int) {
-        stage.viewport.update(width, height, true)
-    }
 
     companion object ListenerFactory {
         fun <R, T: Enum<T>> create(option: T,
@@ -140,11 +157,11 @@ abstract class Overlay<T: Enum<T>>{
     }
 }
 
-class OverlayFactory{
+class ButtonOverlayFactory {
     companion object{
         fun <T: Enum<T>>create(clazz: Class<T>, breaks: List<T> = listOf(),
-         skips: List<T> = listOf(), names: Map<T, String> = mapOf()): Overlay<T>{
-            return object : Overlay<T>(){
+         skips: List<T> = listOf(), names: Map<T, String> = mapOf()): ButtonOverlay<T>{
+            return object : ButtonOverlay<T>(){
                 override fun create() {
                     for (value in clazz.enumConstants) {
                         if (value in skips) {
@@ -174,7 +191,7 @@ class OverlayFactory{
     }
 }
 
-class OverlayVisibilityAction(val overlay: Overlay<*>, val show: Boolean,
+class OverlayVisibilityAction(val overlay: ButtonOverlay<*>, val show: Boolean,
                               delay: Float = 0.10f) : Action(delay) {
     internal var finished = false
     override fun execute(delta: Float) {

@@ -12,12 +12,13 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class PreferansGame : Game() {
+class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : Game() {
     lateinit var batch: ModelBatch
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
-    lateinit var biddingOverlay: Overlay<Bet>
-    lateinit var whistingOverlay: Overlay<Whists>
+    lateinit var biddingOverlay: ButtonOverlay<Bet>
+    lateinit var whistingOverlay: ButtonOverlay<Whists>
+    lateinit var scoreOverlay: ScoreOverlay
 
     var loaded = false
     override fun create() {
@@ -25,7 +26,8 @@ class PreferansGame : Game() {
         font = BitmapFont()
         font.data.scale(2f)
         tableScreen = TableScreen(this)
-        initOverlays()
+        initButtonOverlays()
+        initScoreOverlay(scoreCounter, me)
         setScreen(tableScreen)
         loaded = true
     }
@@ -335,24 +337,27 @@ class PreferansGame : Game() {
         return 8*suitID + pipID
     }
 
-    private fun initOverlays(){
+    private fun initButtonOverlays(){
         val betBreaks  = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
                                 Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
         val betSkips = listOf(Bet.UNKNOWN)
         val betNames = Bet.values().associate { x -> Pair(x, x.type) }
-        biddingOverlay = OverlayFactory.create(Bet::class.java, betBreaks,
-                                               betSkips, betNames)
+        biddingOverlay = ButtonOverlayFactory.create(Bet::class.java, betBreaks,
+                                                     betSkips, betNames)
         biddingOverlay.create()
 
         val whistBreaks = listOf(Whists.WHIST_HALF)
         val whistIgnore = listOf(Whists.UNKNOWN)
         val whistNames = Whists.values().associate { x -> Pair(x, x.type) }
-        whistingOverlay = OverlayFactory.create(Whists::class.java,
-                                                whistBreaks, whistIgnore, whistNames)
+        whistingOverlay = ButtonOverlayFactory.create(Whists::class.java,
+                                                      whistBreaks, whistIgnore, whistNames)
         whistingOverlay.create()
-
     }
 
+    fun initScoreOverlay(scoreCounter: PreferansScoreCounter, playerID: Int){
+        scoreOverlay = ScoreOverlay(scoreCounter, playerID)
+        tableScreen.addOverlay(scoreOverlay)
+    }
 
 
     override fun render() {
@@ -375,7 +380,8 @@ fun main(args: Array<String>) {
     config.width = 1024
     config.height = 1024
     config.forceExit = false
-    val gameGUI = PreferansGame()
+    val gameGUI = PreferansGame(PreferansScoreCounter(listOf(User(Settings.hostAddress, "sfsefse"))), 1)
     LwjglApplication(gameGUI, config)
+
     println("6 \u2660")
 }

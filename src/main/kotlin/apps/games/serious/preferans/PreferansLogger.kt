@@ -16,20 +16,10 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     private val keyMap = Array(N, {i -> Array<BigInteger?>(DECK_SIZE, {j ->
         null})})
 
-    private var gameType: Bet = Bet.UNKNOWN
-
     private var talon = Array(TALON_SIZE, {i -> getCardById32(-1)})
-    private var talonDiscard = Array(TALON_SIZE, {i -> getCardById32(-1)})
-
-    //todo - check talon. only main player can play it's cards
-
-    private var fail: Boolean = false
 
     // log of plays <user, card>
     private val log = mutableListOf<Pair<Int, Card>>()
-
-    //who starts turn
-    private val mainPlayer: Int = -1
 
     //map hoe many turns won
     private val turnsWon: MutableMap<Int, Int> = mutableMapOf()
@@ -154,7 +144,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
      * For each player - hount how many turns has he won this round
      * @return Map<Int, Int> - map player Ids to nowber of turns won
      */
-    fun countWonTurns(): Map<Int, Int>{
+    fun countWonTurns(): MutableMap<Int, Int>{
         return turnsWon
     }
 
