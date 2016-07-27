@@ -47,6 +47,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         OPEN_HAND_DECRYPT, // player and he dycided top open hands - exchange keys
         PLAY, //play cards =)
         VERYFY_ROUND, //Verify talon, cards played and key sets
+        FINALIZE, //Count scores, send logs
         END
     }
 
@@ -241,12 +242,10 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
                     Whists.UNKNOWN -> throw GameExecutionException("Couldn't agree on whisting")
                     Whists.PASS -> {
-                        updateScore()
-                        state = State.ROUND_INIT
+                        state = State.VERYFY_ROUND
                     }
                     Whists.WHIST_HALF -> {
-                        updateScore()
-                        state = State.ROUND_INIT
+                        state = State.VERYFY_ROUND
                     }
                     Whists.WHIST_BLIND -> {
                         state = State.PLAY
@@ -327,7 +326,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
                                         index)
                             }
                         }
-                        if(playerID != currentPlayerID){
+                        if(playerID != mainUser){
                             gameGUI.playCard(index)
                         }
                         currentPlayerID = logger.log.registerPlay(currentPlayerID
@@ -379,10 +378,20 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
             }
             State.VERYFY_ROUND -> {
-                verifyRound(responses)
+                if(gameWhist != Whists.PASS && gameWhist != Whists.WHIST_HALF){
+                    verifyRound(responses)
+                }
                 updateScore()
+                if(scoreCounter.endOfGameReached()){
+                    state = State.FINALIZE
+                }else{
+                    state = State.ROUND_INIT
+                }
 
-                state = State.ROUND_INIT
+            }
+            State.FINALIZE -> {
+                chat.sendMessage(logger.formatLog())
+                state = State.END
             }
             State.END -> { }
         }
@@ -896,6 +905,17 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     override fun getResult() {
         return Unit
+    }
+
+    override fun getFinalMessage(): String {
+        val s = scoreCounter.getFinalScores().map { x ->
+            if (x.value > 0) {
+                "[${x.key.name}] has won ${x.value}"
+            } else {
+                "[Player ${x.key.name}] has won ${x.value}"
+            }
+        }.joinToString("\n")
+        return "Final winning are: \n" + s
     }
 
     override fun close() {

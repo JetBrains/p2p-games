@@ -228,6 +228,30 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
         }
         return DigestUtils.sha256Hex(keyMap[player].joinToString(" "))
     }
+
+    /**
+     * Created formated log of this round
+     */
+    fun formatLog(): String{
+        val status = StringBuilder("Status: ")
+        if(verifyRoundPlays()){
+            status.append("OK\n")
+        }else{
+            status.append("FAIL\n")
+        }
+        status.append("Talon cards: ")
+        status.append(talon.joinToString(" ") + "\n")
+        status.append("Known keys: \n")
+        for(i in 0..N-1){
+            status.append("User $i keys: ")
+            status.append(keyMap[i].joinToString(" "))
+            status.append("\n")
+        }
+        status.append("Play log: ")
+        status.append(log.map { x -> "User ${x.first} played ${x.second.pip} " +
+                                     "${x.second.suit} \n" }.joinToString("\n"))
+        return status.toString()
+    }
 }
 
 
@@ -239,5 +263,12 @@ class GameLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     fun newRound(){
         pastLogs.add(log)
         log = RoundLogger(N, DECK_SIZE,TALON_SIZE)
+    }
+
+    /**
+     * format complete game log
+     */
+    fun formatLog(): String{
+        return pastLogs.map { x -> x.formatLog() }.joinToString("=================")
     }
 }

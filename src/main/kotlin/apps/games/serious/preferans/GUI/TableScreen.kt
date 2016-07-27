@@ -517,6 +517,9 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     }
 
     fun clear(){
+        synchronized(actionManager){
+            actionManager.clear()
+        }
         cards.clear()
         table.clear()
         deck.reset()

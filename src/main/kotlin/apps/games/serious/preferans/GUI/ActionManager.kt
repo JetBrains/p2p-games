@@ -148,4 +148,13 @@ class ActionManager {
         }
 
     }
+
+    fun clear(){
+        synchronized(actions){
+            actions.clear()
+        }
+        synchronized(pending){
+            pending.clear()
+        }
+    }
 }

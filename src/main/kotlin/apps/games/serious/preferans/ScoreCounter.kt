@@ -3,6 +3,7 @@ package apps.games.serious.preferans
 import apps.games.GameExecutionException
 import com.sun.javaws.exceptions.InvalidArgumentException
 import entity.User
+import java.util.*
 
 /**
  * Created by user on 7/19/16.
@@ -11,8 +12,16 @@ import entity.User
 /**
  * Class for computing preferans score
  * (update heap/bullet/whists)
+ * @param users - list of users who participate in this game
+ * @param maxBulletSum - maximum bullet per player. Game will not stop
+ * @param heapMultiplier - heap to whist ratio
+ * @param bulletMultiplier - bullet to heap ratio
+ * until total bullet is [maxBulletSum] * [N], where [N] - number of
+ * players
  */
-class PreferansScoreCounter(val users: List<User>){
+class PreferansScoreCounter(val users: List<User>, val maxBulletSum: Int = 5,
+                            val heapMultiplier: Int = 10,
+                            val bulletMultiplier: Int = 2){
     val heap: MutableMap<User, Int> = mutableMapOf()
     val bullet: MutableMap<User, Int> = mutableMapOf()
     //Pair of <A, B> - how many whists A has on player B
@@ -81,6 +90,44 @@ class PreferansScoreCounter(val users: List<User>){
             1 -> oneWhisted(gameBet, handsTaken, mainPlayer, whisters, passed)
             2 -> bothWhisted(gameBet, handsTaken, mainPlayer, whisters)
         }
+    }
+
+    /**
+     * Check whether bullet sum exceeded end of game
+     * value [maxBulletSum]
+     */
+    fun endOfGameReached(): Boolean{
+        return bullet.values.sum() >= maxBulletSum * users.size
+    }
+
+    fun getFinalScores(): Map<User, Int>{
+        val result = mutableMapOf<User, Int>()
+        for(user1 in users){
+            result[user1] = 0
+        }
+        val tBullet = HashMap(bullet)
+        var tHeap = HashMap(heap)
+        for(user in users){
+            if(!tBullet.containsKey(user)){
+                throw IllegalArgumentException("Can not compute score. Check, that game is valid")
+            }
+            tBullet[user] = (tBullet[user] as Int) - maxBulletSum
+            tHeap[user] = (tHeap[user] as Int) - (tBullet[user] as Int) *
+                    bulletMultiplier
+        }
+        val minHeap: Int = tHeap.values.min() ?: throw IllegalArgumentException("Can not compute score. Check, that game is valid")
+        tHeap = HashMap(tHeap.mapValues { x -> x.value - minHeap })
+        val avgHeap = tHeap.values.average()
+        val resHeap = tHeap.mapValues { x ->  avgHeap - x.value}
+        for(user1 in users){
+            result[user1] = (result[user1] as Int) + ((resHeap[user1] as Double) * heapMultiplier).toInt()
+            for(user2 in users){
+                result[user1] = (result[user1] as Int) +
+                                (whists[user1 to user2] as Int) -
+                                (whists[user2 to user1] as Int)
+            }
+        }
+        return result
     }
 
     /**
