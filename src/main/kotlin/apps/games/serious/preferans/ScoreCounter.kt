@@ -19,7 +19,7 @@ import java.util.*
  * until total bullet is [maxBulletSum] * [N], where [N] - number of
  * players
  */
-class PreferansScoreCounter(val users: List<User>, val maxBulletSum: Int = 5,
+class PreferansScoreCounter(val users: List<User>, val maxBulletSum: Int = 50,
                             val heapMultiplier: Int = 10,
                             val bulletMultiplier: Int = 2){
     val heap: MutableMap<User, Int> = mutableMapOf()
