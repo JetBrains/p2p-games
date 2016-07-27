@@ -13,13 +13,13 @@ import java.util.*
  * Class for computing preferans score
  * (update heap/bullet/whists)
  * @param users - list of users who participate in this game
- * @param maxBulletSum - maximum bullet per player. Game will not stop
+ * @param maxBulletPerUser - maximum bullet per player. Game will not stop
  * @param heapMultiplier - heap to whist ratio
  * @param bulletMultiplier - bullet to heap ratio
- * until total bullet is [maxBulletSum] * [N], where [N] - number of
+ * until total bullet is [maxBulletPerUser] * [N], where [N] - number of
  * players
  */
-class PreferansScoreCounter(val users: List<User>, val maxBulletSum: Int = 50,
+class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 50,
                             val heapMultiplier: Int = 10,
                             val bulletMultiplier: Int = 2){
     val heap: MutableMap<User, Int> = mutableMapOf()
@@ -94,10 +94,10 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletSum: Int = 50,
 
     /**
      * Check whether bullet sum exceeded end of game
-     * value [maxBulletSum]
+     * value [maxBulletPerUser]
      */
     fun endOfGameReached(): Boolean{
-        return bullet.values.sum() >= maxBulletSum * users.size
+        return bullet.values.sum() >= maxBulletPerUser * users.size
     }
 
     fun getFinalScores(): Map<User, Int>{
@@ -111,7 +111,7 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletSum: Int = 50,
             if(!tBullet.containsKey(user)){
                 throw IllegalArgumentException("Can not compute score. Check, that game is valid")
             }
-            tBullet[user] = (tBullet[user] as Int) - maxBulletSum
+            tBullet[user] = (tBullet[user] as Int) - maxBulletPerUser
             tHeap[user] = (tHeap[user] as Int) - (tBullet[user] as Int) *
                     bulletMultiplier
         }

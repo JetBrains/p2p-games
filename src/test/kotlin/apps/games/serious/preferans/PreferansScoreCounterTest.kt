@@ -22,7 +22,7 @@ class PreferansScoreCounterTest {
     @Test
     fun checkOneUserBullet() {
         val scoreCounter = PreferansScoreCounter(listOf(user1, user2, user3),
-                                             maxBulletSum = 5)
+                                                 maxBulletPerUser = 5)
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mapOf(user1 to Whists.UNKNOWN, user2 to Whists.PASS, user3 to Whists.PASS)
         scoreCounter.updateScore(handsTaken, Bet.TEN_NO_TRUMP, whists, user1)
@@ -54,7 +54,7 @@ class PreferansScoreCounterTest {
     @Test
     fun checkEveryoneBullet() {
         val scoreCounter = PreferansScoreCounter(listOf(user1, user2, user3),
-                                                 maxBulletSum = 10)
+                                                 maxBulletPerUser = 10)
 
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mapOf(user1 to Whists.PASS, user2 to Whists.PASS, user3 to Whists.PASS)
@@ -96,7 +96,7 @@ class PreferansScoreCounterTest {
     @Test
     fun checkAllCells() {
         val scoreCounter = PreferansScoreCounter(listOf(user1, user2, user3),
-                                                 maxBulletSum = 10)
+                                                 maxBulletPerUser = 10)
 
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mutableMapOf(user1 to Whists.PASS, user2 to Whists.WHIST_BLIND, user3 to Whists.PASS)
