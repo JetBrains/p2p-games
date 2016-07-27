@@ -31,10 +31,9 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
 
     /**
      * Register that
-     * @param userID - user with this ID
-     * @param card - holds for this card
-     * (position in shuffled deck)
-     * @param key - has that key
+     * @param userID - ID of holder
+     * @param card - position in shuffled deck
+     * @param key - key
      */
     fun registerCardKey(userID: Int, card: Int, key: BigInteger){
         keyMap[userID][card] = key
@@ -44,11 +43,10 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
      * Assuming N - is the number of players, register
      * set of N Keys - cards played starting from the
      * first player of this round(one, who goes first)
-     * @param plays - set of plays, starting from the
-     * first player. Pair<Int, Int> . First item - playerID
+     * @param plays -  Pair<Int, Int> . First item - playerID
      * second - CardId
      *
-     * @return id of the player who starts next round
+     * @return id of the player whose turn is next
      * @throws GameExecutionException - if someone played
      * inconsistent with rules
      */
@@ -86,6 +84,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
         for(i in 0..TALON_SIZE-1){
             talon[i] = getCardById32(talonCards[i])
         }
+        updateBet(gameBet)
     }
 
     fun updateBet(bet: Bet){

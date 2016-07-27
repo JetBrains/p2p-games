@@ -20,6 +20,10 @@ fun randomString(n: Int): String {
     return BigInteger(6 * n, secureRandom).toString(32).substring(n)
 }
 
+/**
+ * Generate a random integer in given range
+ * @param n - max value(not included)
+ */
 fun randomInt(n: Int = Int.MAX_VALUE): Int {
     var res = BigInteger(32, secureRandom).toInt() % n
     if (res < 0) {
@@ -28,10 +32,18 @@ fun randomInt(n: Int = Int.MAX_VALUE): Int {
     return res
 }
 
+/**
+ * Generate a random BigInteger
+ * @bits - bit length of generated number
+ */
 fun randomBigInt(bits: Int): BigInteger {
     return BigInteger(bits, secureRandom)
 }
 
+/**
+ * Generate a random BigInteger in giver Range
+ * @param n - upper bound for generated value
+ */
 fun randomBigInt(n: BigInteger): BigInteger {
     val bits = n.bitLength()
     var res: BigInteger = BigInteger(bits, secureRandom)
@@ -41,21 +53,37 @@ fun randomBigInt(n: BigInteger): BigInteger {
     return res
 }
 
+/**
+ * Generate a random point on Elliptic curve
+ * @param curveSpec - specificatoin of the curve
+ */
 fun randomECPoint(curveSpec: ECParameterSpec): ECPoint {
     val order = randomBigInt(curveSpec.n)
     return curveSpec.g.multiply(order)
 }
 
+/**
+ * Create a random permutuation of [0..n-1]
+ * @param n - max value(not included)
+ */
 fun randomPermutuation(n: Int): List<Int> {
     val list = (0..n - 1).toList()
     Collections.shuffle(list)
     return list
 }
 
+/**
+ * shuffle list
+ * @param list - list to shuffle
+ */
 fun <T> shuffle(list: List<T>) {
     Collections.shuffle(list, secureRandom)
 }
 
+/**
+ * create a shuffled copy of an Array
+ * @param array - array to copy and shuffle
+ */
 fun <T> shuffleArray(array: Array<T>) {
     val shuffled = array.toList()
     shuffle(shuffled)

@@ -1,4 +1,4 @@
-package apps.games.serious
+package apps.games.serious.lotto
 
 import apps.chat.Chat
 import apps.games.GameManager
@@ -53,7 +53,8 @@ class LottoTest{
         group = mock(Group::class.java) ?: throw AssertionError("Initialization error")
         doReturn(User(Settings.hostAddress, chat!!.username)).`when`(chat)?.me()
 
-        doReturn("1 2 3 4 5").`when`(chat)?.getUserInput(anyString(), any(Ticket.getValidator(5, 30).javaClass))
+        doReturn("1 2 3 4 5").`when`(chat)?.getUserInput(anyString(), any(
+                Ticket.getValidator(5, 30).javaClass))
         doReturn(NettyGroupBroker()).`when`(chat)?.groupBroker
         doReturn(group).`when`(chat)?.group
 
@@ -81,7 +82,8 @@ class LottoTest{
             (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         }
         // We are the only player - we should win
-        assertTrue("Ticket is incorrect", (lotto as Lotto).verifyTicket(sampleTicket))
+        assertTrue("Ticket is incorrect", (lotto as Lotto).verifyTicket(
+                sampleTicket))
         assertTrue("Somehow we lost to ourself", (lotto as Lotto).win())
     }
 
@@ -102,7 +104,8 @@ class LottoTest{
         for(i in 1..4){
             (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         }
-        assertFalse("We had only four rounds. How can You win?!", (lotto as Lotto).verifyTicket(sampleTicket))
+        assertFalse("We had only four rounds. How can You win?!", (lotto as Lotto).verifyTicket(
+                sampleTicket))
     }
 
 }
