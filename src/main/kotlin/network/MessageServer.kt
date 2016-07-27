@@ -9,6 +9,9 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
+import io.netty.handler.ssl.SslHandler
+import io.netty.util.concurrent.Future
+import io.netty.util.concurrent.GenericFutureListener
 import network.dispatching.Dispatcher
 import proto.GameMessageProto
 import proto.GenericMessageProto
@@ -46,6 +49,11 @@ class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<Gene
  */
 class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) : SimpleChannelInboundHandler<GenericMessageProto.GenericMessage>() {
     var response: GenericMessageProto.GenericMessage? = null
+
+    override fun channelActive(ctx: ChannelHandlerContext) {
+        ctx.pipeline().get(SslHandler::class.java).handshakeFuture().addListener { print("Ssl connection established\n") }
+    }
+
     override fun channelRead0(ctx: ChannelHandlerContext?,
             msg: GenericMessageProto.GenericMessage?) {
         if (msg != null) {
@@ -78,6 +86,9 @@ class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.Generi
 class MessageServerChannelInitializer(val dispatcher: Dispatcher<GenericMessageProto.GenericMessage>) : ChannelInitializer<SocketChannel>() {
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
+        val ctx = SslContextFactory.serverContext
+        pipeline.addLast(ctx.newHandler(ch.alloc()))
+
         pipeline.addLast(ProtobufVarint32FrameDecoder())
         pipeline.addLast(ProtobufDecoder(
                 GenericMessageProto.GenericMessage.getDefaultInstance()))

@@ -9,9 +9,12 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
+import io.netty.handler.ssl.SslContext
+import io.netty.handler.ssl.SslContextBuilder
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 import java.util.concurrent.LinkedBlockingQueue
+import javax.net.ssl.TrustManagerFactory
 
 /**
  * Created by Mark Geller on 6/21/16.
@@ -130,6 +133,8 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
 class MessageClientChannelInitializer : ChannelInitializer<SocketChannel>() {
     override fun initChannel(ch: SocketChannel?) {
         val pipeline = ch!!.pipeline()
+        val ctx = SslContextFactory.clientContext
+        pipeline.addLast(ctx.newHandler(ch.alloc(), Settings.clientAddress.hostName, Settings.clientAddress.port))
         pipeline.addLast(ProtobufVarint32FrameDecoder())
         pipeline.addLast(ProtobufDecoder(
                 GenericMessageProto.GenericMessage.getDefaultInstance()))
