@@ -34,6 +34,7 @@ class ChatGUI(internal var chat: Chat) {
     var isClosed: Boolean = false
 
 
+
     init{
         gameList = JComboBox(gameOptions)
         gameList.selectedIndex = 1
@@ -93,7 +94,7 @@ class ChatGUI(internal var chat: Chat) {
 
         chatFrame.add(mainPanel)
         chatFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
-        chatFrame.setSize(470, 300)
+        chatFrame.setSize(600, 350)
         chatFrame.isVisible = true
         chatFrame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent?) {
@@ -109,7 +110,7 @@ class ChatGUI(internal var chat: Chat) {
 
     fun refreshTitle(title: String) {
         appName = title
-        chatFrame.title = title
+        chatFrame.title = appName
     }
 
     fun displayMessage(user: String, msg: String) {

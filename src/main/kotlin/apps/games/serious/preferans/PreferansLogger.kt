@@ -2,6 +2,8 @@ package apps.games.serious.preferans
 
 import apps.games.GameExecutionException
 import apps.games.primitives.EncryptedDeck
+import apps.games.serious.getCardById32
+import apps.games.serious.maxWithTrump
 import com.sun.org.apache.bcel.internal.classfile.InnerClass
 import com.sun.org.apache.bcel.internal.classfile.Unknown
 import org.apache.commons.codec.digest.DigestUtils
@@ -16,7 +18,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     private val keyMap = Array(N, {i -> Array<BigInteger?>(DECK_SIZE, {j ->
         null})})
 
-    private var talon = Array(TALON_SIZE, {i -> getCardById32(-1)})
+    private var talon = Array(TALON_SIZE, {i -> getCardById32(-1) })
 
     // log of plays <user, card>
     private val log = mutableListOf<Pair<Int, Card>>()

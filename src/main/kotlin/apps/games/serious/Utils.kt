@@ -1,6 +1,10 @@
-package apps.games.serious.preferans
+package apps.games.serious
 
 import apps.games.GameExecutionException
+import apps.games.serious.TableGUI.CardGUI
+import apps.games.serious.preferans.Card
+import apps.games.serious.preferans.Pip
+import apps.games.serious.preferans.Suit
 
 
 /**
@@ -28,6 +32,24 @@ fun getCardById32(cardID: Int): Card {
                 Pip.values().first { x -> x.index == pipId })
     }
     return card
+}
+
+/**
+ * In Preferans we have 32 card deck.
+ * This function takes card
+ * and translates it into corresponding
+ * CardGUI Id (-1 -> 32). -1 - for UNKNOWN
+ */
+fun getId32ByCard(card: CardGUI): Int {
+    if(card.suit == Suit.UNKNOWN){
+        return -1
+    }
+    val suitID: Int = card.suit.index
+    var pipID: Int = card.pip.index
+    if(pipID >= 6){
+        pipID -= 5
+    }
+    return 8*suitID + pipID
 }
 
 /**

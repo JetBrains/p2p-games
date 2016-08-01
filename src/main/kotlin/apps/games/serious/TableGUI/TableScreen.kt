@@ -24,7 +24,7 @@ import com.badlogic.gdx.math.Vector3
  */
 
 
-class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
+class TableScreen(val game: GameView) : InputAdapter(), Screen {
     companion object DefaultSelector: CardSelector
 
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))

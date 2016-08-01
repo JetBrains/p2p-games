@@ -1,6 +1,8 @@
 package apps.games.serious.preferans.GUI
 
 import apps.games.serious.TableGUI.*
+import apps.games.serious.getCardById32
+import apps.games.serious.getId32ByCard
 import apps.games.serious.preferans.*
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
@@ -13,8 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : Game() {
-    lateinit var batch: ModelBatch
+class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var biddingOverlay: ButtonOverlay<Bet>
@@ -279,7 +280,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : Game(
 
         val card = queue.take()
         tableScreen.resetSelector()
-        val res =  getIdByCard(card)
+        val res =  getId32ByCard(card)
         if(res == -1){
             return pickCard(*allowedCardIds)
         }
@@ -327,24 +328,6 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : Game(
         return tableScreen.deck.getCardModel(card.suit, card.pip)
     }
 
-
-    /**
-     * In Preferans we have 32 card deck.
-     * This function takes card
-     * and translates it into corresponding
-     * CardGUI Id (-1 -> 32). -1 - for UNKNOWN
-     */
-    private fun getIdByCard(card: CardGUI): Int {
-        if(card.suit == Suit.UNKNOWN){
-            return -1
-        }
-        val suitID: Int = card.suit.index
-        var pipID: Int = card.pip.index
-        if(pipID >= 6){
-            pipID -= 5
-        }
-        return 8*suitID + pipID
-    }
 
     private fun initButtonOverlays(){
         val betBreaks  = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,

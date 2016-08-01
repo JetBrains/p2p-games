@@ -9,6 +9,7 @@ import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
 import apps.games.serious.TableGUI.Player
 import apps.games.serious.TableGame
+import apps.games.serious.getCardById32
 import apps.games.serious.preferans.GUI.PreferansGame
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
@@ -21,6 +22,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.jce.ECNamedCurveTable
 import proto.GameMessageProto
 import java.math.BigInteger
+import java.util.*
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.LinkedBlockingQueue
@@ -91,13 +93,20 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     //Log everything
     private val logger = GameLogger(N, DECK_SIZE, TALON)
     //Scoring
-    private val scoreCounter = PreferansScoreCounter(playerOrder)
+    private val scoreCounter: PreferansScoreCounter
 
     //Salt and hash talon for later verification
     val SALT_LENGTH = 256
     private var salt: String = ""
     private var talonHash: String = ""
     private var talonKeys: String = ""
+
+
+    init{
+        val order = listOf(*playerOrder.toTypedArray())
+        Collections.rotate(order, getTablePlayerId(playerID))
+        scoreCounter = PreferansScoreCounter(order)
+    }
 
     override fun getInitialMessage(): String {
         return playerOrder.hashCode().toString()
@@ -436,7 +445,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
-        //gameGUI.initScoreOverlay(scoreCounter, playerID)
         return ""
     }
 
