@@ -2,7 +2,6 @@ package network.dispatching
 
 import com.google.protobuf.Descriptors
 import com.google.protobuf.GeneratedMessage
-import com.sun.javaws.exceptions.InvalidArgumentException
 import proto.GenericMessageProto
 
 /**
@@ -56,14 +55,12 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
 
         //TODO - custom exceptions
         enumType = sample.descriptorForType.findEnumTypeByName("Type") ?:
-                throw InvalidArgumentException(Array(1,
-                        { x: Int -> "Provided type has no Type Enum subclass" }))
+                throw IllegalArgumentException("Provided type has no Type Enum subclass")
 
         enumClass = sample.javaClass.declaredClasses.firstOrNull { x ->
             x.isEnum && x.simpleName.equals("Type")
         } ?:
-                throw InvalidArgumentException(Array(1,
-                        { x: Int -> "Provided type has no Type Enum subclass" }))
+                throw IllegalArgumentException("Provided type has no Type Enum subclass")
 
         enumFieldDescriptor = sample.descriptorForType.findFieldByName("type")
 
@@ -85,8 +82,7 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
     fun <E : Enum<E>, T : GeneratedMessage> register(x: E,
             listener: Dispatcher<T>) {
         if (!enumClass.isInstance(x)) {
-            throw InvalidArgumentException(Array(1,
-                    { x: Int -> "type of provided event doesn't correspond to this Dispatcher handle type" }))
+            throw IllegalArgumentException("type of provided event doesn't correspond to this Dispatcher handle type" )
         }
         listeners[enumType.findValueByName(x.name)]!!.add(listener)
     }

@@ -3,6 +3,7 @@ package apps.games
 import Settings
 import apps.chat.Chat
 import apps.chat.ChatManager
+import apps.games.serious.Cheat.Cheat
 import apps.games.serious.preferans.Preferans
 import crypto.random.randomString
 import entity.Group
@@ -88,7 +89,7 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
             //TODO - respond to someone
             return null
         }
-        val game = Preferans(chat, group, msg.gameID)
+        val game = GameFactory.instantiateGame(msg.gameType, chat, group, msg.gameID)
         games[msg.gameID] = game
         if (group != chat.group) {
             sendEndGame(msg.gameID,

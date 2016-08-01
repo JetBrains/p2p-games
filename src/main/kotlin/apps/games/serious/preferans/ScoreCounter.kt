@@ -1,7 +1,6 @@
 package apps.games.serious.preferans
 
 import apps.games.GameExecutionException
-import com.sun.javaws.exceptions.InvalidArgumentException
 import entity.User
 import java.util.*
 
@@ -19,7 +18,7 @@ import java.util.*
  * until total bullet is [maxBulletPerUser] * [N], where [N] - number of
  * players
  */
-class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 50,
+class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 5,
                             val heapMultiplier: Int = 10,
                             val bulletMultiplier: Int = 2){
     val heap: MutableMap<User, Int> = mutableMapOf()

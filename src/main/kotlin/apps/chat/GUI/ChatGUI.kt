@@ -5,7 +5,10 @@ package apps.chat.GUI
  */
 
 import apps.chat.Chat
+import apps.games.Game
+import apps.games.GameFactory
 import apps.games.GameManager
+import apps.games.serious.preferans.Preferans
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -23,10 +26,18 @@ class ChatGUI(internal var chat: Chat) {
     internal var sendMessage = JButton("Send Message")
     //TODO - JComboBox game selection
     internal var startGame: JButton = JButton("Start Game")
+    private val gameOptions = GameFactory.getGameNames().toTypedArray()
+    private val gameList: JComboBox<String>
+
     internal var messageBox: JTextField = JTextField()
     internal var chatBox: JTextArea = JTextArea()
     var isClosed: Boolean = false
 
+
+    init{
+        gameList = JComboBox(gameOptions)
+        gameList.selectedIndex = 1
+    }
     fun display() {
         val mainPanel = JPanel()
         mainPanel.layout = BorderLayout()
@@ -74,6 +85,7 @@ class ChatGUI(internal var chat: Chat) {
         southPanel.add(messageBox, left)
         southPanel.add(sendMessage, right)
 
+        northPanel.add(gameList, left)
         northPanel.add(startGame, right)
 
         mainPanel.add(BorderLayout.NORTH, northPanel)
@@ -122,7 +134,8 @@ class ChatGUI(internal var chat: Chat) {
 
     internal inner class startGameButtonListener : ActionListener {
         override fun actionPerformed(event: ActionEvent) {
-            GameManager.sendGameInitRequest(chat, "wololololo")
+            val s = gameOptions[gameList.selectedIndex]
+            GameManager.sendGameInitRequest(chat, s)
         }
     }
 

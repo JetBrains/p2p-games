@@ -1,4 +1,4 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.TableGUI
 
 /**
  * Created by user on 7/13/16.

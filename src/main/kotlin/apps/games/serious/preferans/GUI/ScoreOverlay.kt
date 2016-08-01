@@ -1,5 +1,6 @@
 package apps.games.serious.preferans.GUI
 
+import apps.games.serious.TableGUI.Overlay
 import apps.games.serious.preferans.PreferansScoreCounter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input

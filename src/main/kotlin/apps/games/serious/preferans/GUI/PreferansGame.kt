@@ -1,5 +1,6 @@
 package apps.games.serious.preferans.GUI
 
+import apps.games.serious.TableGUI.*
 import apps.games.serious.preferans.*
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
@@ -29,6 +30,14 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : Game(
         initButtonOverlays()
         initScoreOverlay(scoreCounter, me)
         setScreen(tableScreen)
+        val s = "Switch 2D/3D:            C\n" +
+                "Move:                         WASD \n" +
+                "Strafe:                        Q, E \n" +
+                "Select card:                left mouse\n" +
+                "Play card:                   left mosue on selected card\n" +
+                "Zoom camara:            midde mouse button\n"+
+                "Toggle camera zoom: SPACE"
+        tableScreen.controlsHint = s
         loaded = true
     }
 
@@ -258,7 +267,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : Game(
         val queue = LinkedBlockingQueue<CardGUI>(1)
         val allowedCards = allowedCardIds.map { x -> tableScreen.deck
                 .getCardModel(x) }
-        tableScreen.setSelector(object : CardSelector{
+        tableScreen.setSelector(object : CardSelector {
             override fun select(card: CardGUI){
                 queue.add(card)
             }
@@ -382,6 +391,7 @@ fun main(args: Array<String>) {
     config.forceExit = false
     val gameGUI = PreferansGame(PreferansScoreCounter(listOf(User(Settings.hostAddress, "sfsefse"))), 1)
     LwjglApplication(gameGUI, config)
-
+    Thread.sleep(2000)
+    gameGUI.showBiddingOverlay()
     println("6 \u2660")
 }

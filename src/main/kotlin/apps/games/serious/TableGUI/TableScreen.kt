@@ -1,5 +1,6 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.TableGUI
 
+import apps.games.serious.preferans.GUI.PreferansGame
 import apps.games.serious.preferans.Pip
 
 import apps.games.serious.preferans.Suit
@@ -53,6 +54,8 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     private var selector: CardSelector = DefaultSelector
 
     var hint: String = ""
+    var controlsHint = ""
+
 
     private val DEAL_SPEED = 1f
 
@@ -115,6 +118,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
 
         spriteBatch.begin()
         font.draw(spriteBatch, hint, 100f, 100f)
+        font.draw(spriteBatch, controlsHint, 700f, 1000f)
         spriteBatch.end()
         for(overlay in overlays){
             overlay.render(getCam())
@@ -317,6 +321,7 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
         cam3d.viewportHeight = height.toFloat()
         cam3d.position.set(0f, -12f, 12f) //experimental constants
         cam3d.lookAt(0f, -8f, 0f)
+        cam3d.up.set(0f, 0f, 1f)
         cam2d.position.set(0f, 0f, 11f)
         cam2d.lookAt(0f, 0f, 0f)
         if (width > height) {
@@ -490,6 +495,10 @@ class TableScreen(val game: PreferansGame) : InputAdapter(), Screen {
     override fun keyUp(keycode: Int): Boolean {
         if (keycode == Input.Keys.C) {
             is2dMode = !is2dMode
+            return true
+        }
+        if(keycode == Input.Keys.SPACE){
+            zoomed = !zoomed
             return true
         }
         return false

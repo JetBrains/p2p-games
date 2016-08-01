@@ -5,7 +5,7 @@ import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameManagerClass
 import apps.games.serious.preferans.Bet
-import apps.games.serious.preferans.GUI.Player
+import apps.games.serious.TableGUI.Player
 import apps.games.serious.preferans.GUI.PreferansGame
 import apps.games.serious.preferans.Whists
 import entity.Group
@@ -50,6 +50,10 @@ GameManagerClass, val gameGUI: PreferansGame,
     //TODO - show only one button instead of two
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
+        //log everything to all-chat
+        for(msg in responses){
+            chat.sendMessage(msg.value)
+        }
         when(state){
             State.INIT -> {
                 if(N != 2){

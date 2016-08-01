@@ -1,4 +1,4 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.TableGUI
 
 import apps.games.serious.preferans.Card
 import apps.games.serious.preferans.Pip
@@ -184,7 +184,7 @@ class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
         return cards[suit.index][pip.index]
     }
 
-    fun getCardModel(card: Card): CardGUI{
+    fun getCardModel(card: Card): CardGUI {
         return getCardModel(card.suit, card.pip)
     }
 

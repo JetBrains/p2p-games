@@ -10,7 +10,7 @@ import java.util.*
  * Created by user on 6/24/16.
  */
 
-private val secureRandom = SecureRandom()
+val secureRandom = SecureRandom()
 
 /**
  * Generate crypto.random string

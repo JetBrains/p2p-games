@@ -7,10 +7,12 @@ import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
-import apps.games.serious.preferans.GUI.Player
+import apps.games.serious.TableGUI.Player
+import apps.games.serious.TableGame
 import apps.games.serious.preferans.GUI.PreferansGame
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
+import crypto.RSA.ECParams
 import crypto.random.randomString
 import entity.ChatMessage
 import entity.Group
@@ -27,9 +29,8 @@ import java.util.concurrent.LinkedBlockingQueue
  * Created by user on 7/6/16.
  */
 
-class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
-                                                                       group,
-                                                                       gameID) {
+class Preferans(chat: Chat, group: Group, gameID: String) :
+                                          TableGame(chat, group, gameID) {
     override val name: String
         get() = "Preferans CardGUI Game"
 
@@ -51,7 +52,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         END
     }
 
-    private val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
     private var state: State = State.INIT
 
     private lateinit var gameGUI: PreferansGame
@@ -60,11 +60,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private val DECK_SIZE = 32
     //TALON - always last two cards of the deck
     private val TALON = 2
-
-    //to sorted array to preserve order
-    private val playerOrder: MutableList<User> = group.users.sortedBy { x ->
-                                                        x.name }.toMutableList()
-    private var playerID = playerOrder.indexOf(chat.me())
 
     //Required - three players.
     //TODO - add checker for number of players
@@ -76,8 +71,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
     private val originalCardHolders: MutableMap<Int, Int> = mutableMapOf()
 
-    //player whose turn is right now
-    private var currentPlayerID: Int = 0
+
     private val bets = Array(N, { i -> Bet.UNKNOWN })
     private val whists = Array(N, { i -> Whists.UNKNOWN })
     private var gameWhist: Whists = Whists.UNKNOWN
@@ -114,6 +108,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
     }
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
+        for(msg in responses){
+            chat.showMessage(msg.value)
+        }
         when (state) {
             State.INIT -> {
                 if (group.users.size != N) {
@@ -877,21 +874,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         gameGUI.registerBiddingCallback(callback, *Bet.values())
     }
 
-    fun getUserID(user: User): Int {
-        return playerOrder.indexOf(user)
-    }
 
-    /**
-     * During the game in GUI - ew are always player 0,
-     * meanwhile in game we are not
-     */
-    fun getTablePlayerId(id: Int): Int {
-        var res: Int = id - playerID
-        if (res < 0) {
-            res += N
-        }
-        return res
-    }
 
     fun saltTalon(card1: Int, card2: Int) {
         salt = randomString(SALT_LENGTH)
@@ -903,10 +886,10 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
 
     }
 
-    override fun getResult() {
-        return Unit
-    }
 
+    /**
+     * final message - log of winnings
+     */
     override fun getFinalMessage(): String {
         val s = scoreCounter.getFinalScores().map { x ->
             if (x.value > 0) {
@@ -918,6 +901,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) : Game<Unit>(chat,
         return "Final winning are: \n" + s
     }
 
+    /**
+     * stop app
+     */
     override fun close() {
         application.stop()
     }

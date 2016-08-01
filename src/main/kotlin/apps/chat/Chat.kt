@@ -36,6 +36,14 @@ open class Chat(val chatId: Int) : Runnable {
     }
 
     /**
+     * Receive and process general purpose message
+     * we pass nullable parameter for mocking purposes
+     */
+    open fun showMessage(msg: String) {
+        chatGUI.displayMessage(username, msg)
+    }
+
+    /**
      * register new chat member
      */
     fun addMember(user: User) {

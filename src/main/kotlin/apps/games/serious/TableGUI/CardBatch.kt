@@ -1,4 +1,4 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.TableGUI
 
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Mesh
@@ -43,7 +43,7 @@ class CardBatch(mainMaterial: Material, selectionMaterial: Material) : ObjectSet
     }
 
     override fun getRenderables(renderables: Array<Renderable>,
-            pool: Pool<Renderable>?) {
+                                pool: Pool<Renderable>?) {
         meshBuilder.begin(normalMesh.vertexAttributes)
         meshBuilder.part("cards", GL20.GL_TRIANGLES, renderable.meshPart)
         for (card in this) {

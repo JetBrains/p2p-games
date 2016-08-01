@@ -1,4 +1,4 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.TableGUI
 
 import apps.games.serious.preferans.Bet
 import com.badlogic.gdx.Gdx
@@ -56,7 +56,7 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
 
         table = com.badlogic.gdx.scenes.scene2d.ui.Table()
 
-        table.setPosition(500f, 500f)
+        table.setPosition(500f * scaleX, 500f * scaleY)
         // A skin can be loaded via JSON or defined programmatically, either is fine. Using a skin is optional but strongly
         // recommended solely for the convenience of getting a texture, region, etc as a drawable, tinted drawable, etc.
         skin = Skin()
@@ -133,7 +133,7 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
     fun <R> addCallback(option: T, callback: (T) -> (R)) {
         val button = buttons[option] ?: return
         button.clearListeners()
-        button.addListener(ListenerFactory.create(option, button, {x: T ->
+        button.addListener(ListenerFactory.create(option, button, { x: T ->
             if (isVisible){callback(x)}}))
 
     }
@@ -142,8 +142,8 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
 
     companion object ListenerFactory {
         fun <R, T: Enum<T>> create(option: T,
-                       betButton: Button,
-                       callback: (T) -> (R)): EventListener {
+                                   betButton: Button,
+                                   callback: (T) -> (R)): EventListener {
             return object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
                     if (!betButton.isDisabled) {
@@ -160,7 +160,7 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
 class ButtonOverlayFactory {
     companion object{
         fun <T: Enum<T>>create(clazz: Class<T>, breaks: List<T> = listOf(),
-         skips: List<T> = listOf(), names: Map<T, String> = mapOf()): ButtonOverlay<T>{
+         skips: List<T> = listOf(), names: Map<T, String> = mapOf()): ButtonOverlay<T> {
             return object : ButtonOverlay<T>(){
                 override fun create() {
                     for (value in clazz.enumConstants) {
@@ -196,6 +196,7 @@ class OverlayVisibilityAction(val overlay: ButtonOverlay<*>, val show: Boolean,
     internal var finished = false
     override fun execute(delta: Float) {
         overlay.isVisible = show
+        overlay.resize(Gdx.graphics.width, Gdx.graphics.height)
         finished = true
     }
 
