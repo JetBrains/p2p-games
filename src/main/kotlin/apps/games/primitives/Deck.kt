@@ -17,8 +17,8 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
 
     /**
      * check if this deck contains specified
-     * card
-     * @param card - card to find
+     * cardID
+     * @param card - cardID to find
      */
     fun contains(card: ECPoint): Boolean {
         return cards.contains(card)
@@ -55,7 +55,7 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
 
 
     /**
-     * encrypt each card with it's own
+     * encrypt each cardID with it's own
      * key provided by keys
      * @param keys - Collection of keys
      * to encrypt cards
@@ -71,7 +71,7 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
     }
 
     /**
-     * deccrypt each card with it's own
+     * deccrypt each cardID with it's own
      * key provided by keys
      * @param keys - Collection of keys
      * to decrypt cards
@@ -88,8 +88,8 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
     }
 
     /**
-     * encrypt a single card with give key
-     * @param n - id of card to decrypt
+     * encrypt a single cardID with give key
+     * @param n - id of cardID to decrypt
      * @param key - encryption key
      */
     fun encryptCardWithKey(n: Int, key: BigInteger) {
@@ -97,8 +97,8 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
     }
 
     /**
-     * Decrypt a single card with give key
-     * @param n - id of card to decrypt
+     * Decrypt a single cardID with give key
+     * @param n - id of cardID to decrypt
      * @param key - decryption key
      */
     fun decryptCardWithKey(n: Int, key: BigInteger) {

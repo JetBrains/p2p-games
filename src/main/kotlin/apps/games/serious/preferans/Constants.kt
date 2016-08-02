@@ -45,8 +45,6 @@ enum class Bet(var type: String, var value: Int, var trump: Suit,
 }
 
 
-data class Card(val suit: Suit, val pip: Pip)
-
 /**
  * CardGUI Suit representation
  */

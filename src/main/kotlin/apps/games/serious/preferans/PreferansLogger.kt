@@ -2,7 +2,8 @@ package apps.games.serious.preferans
 
 import apps.games.GameExecutionException
 import apps.games.primitives.EncryptedDeck
-import apps.games.serious.getCardById32
+import apps.games.serious.Card
+import apps.games.serious.getCardById
 import apps.games.serious.maxWithTrump
 import com.sun.org.apache.bcel.internal.classfile.InnerClass
 import com.sun.org.apache.bcel.internal.classfile.Unknown
@@ -18,9 +19,9 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     private val keyMap = Array(N, {i -> Array<BigInteger?>(DECK_SIZE, {j ->
         null})})
 
-    private var talon = Array(TALON_SIZE, {i -> getCardById32(-1) })
+    private var talon = Array(TALON_SIZE, {i -> getCardById(-1, DECK_SIZE) })
 
-    // log of plays <user, card>
+    // log of plays <user, cardID>
     private val log = mutableListOf<Pair<Int, Card>>()
 
     //map hoe many turns won
@@ -53,7 +54,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
      * inconsistent with rules
      */
     fun registerPlay(play: Pair<Int, Int>): Int? {
-        log.add(play.first to getCardById32(play.second))
+        log.add(play.first to getCardById(play.second, DECK_SIZE))
         //If current turn has ended - update
         if(log.isNotEmpty() && log.size % N == 0){
             val plays = log.slice(log.size-N..log.size-1)
@@ -69,7 +70,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
         }
         //first play in turn - update enforced Bet (except first turn of PASS bet
         if(log.size % N == 1 && !(log.size == 1 && gameBet == Bet.PASS)){
-            enforcedSuit = getCardById32(play.second).suit
+            enforcedSuit = getCardById(play.second, DECK_SIZE).suit
         }
         return (play.first + 1) % N
     }
@@ -84,7 +85,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
             throw GameExecutionException("Invalid talon")
         }
         for(i in 0..TALON_SIZE-1){
-            talon[i] = getCardById32(talonCards[i])
+            talon[i] = getCardById(talonCards[i], DECK_SIZE)
         }
         updateBet(gameBet)
     }
@@ -106,7 +107,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
 
 
     /**
-     * get selector that checks, wether card is enforced
+     * get selector that checks, wether cardID is enforced
      * or trump
      */
     fun getEnforcedSelector(): (Card) -> (Boolean){
@@ -150,7 +151,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
     }
 
     /**
-     * Check, that every player submitted allowed card for each turn. This
+     * Check, that every player submitted allowed cardID for each turn. This
      * is only verifyable at the end, when all plays(keys) are known
      */
     fun verifyRoundPlays(): Boolean{
@@ -199,7 +200,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
 
     /**
      * Calculate discarded talon
-     * @return list of talon card positions in original deck
+     * @return list of talon cardID positions in original deck
      * null - if can calculate based on current information
      */
     fun getDiscardedTalon(): List<Int>?{
@@ -208,7 +209,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
         }
         val talon = mutableListOf<Int>()
         for(i in 0..DECK_SIZE-1){
-            if(!log.any { x -> x.second == getCardById32(i) }){
+            if(!log.any { x -> x.second == getCardById(i, DECK_SIZE) }){
                 talon.add(i)
             }
         }
@@ -218,7 +219,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val  TALON_SIZE: Int){
 
     /**
      * Calculate hash for user key set - used to
-     * validate, that no card exchange cooperation was present
+     * validate, that no cardID exchange cooperation was present
      * @param player - id of player, whose key hash is being calculated
      * @return Sting - resulting hash. Null if current information is
      * insuffitient to calculate requested hash

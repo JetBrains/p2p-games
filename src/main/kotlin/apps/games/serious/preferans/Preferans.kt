@@ -1,30 +1,22 @@
 package apps.games.serious.preferans
 
 import apps.chat.Chat
-import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
-import apps.games.primitives.protocols.DeckShuffleGame
-import apps.games.primitives.protocols.RandomDeckGame
-import apps.games.serious.TableGUI.Player
-import apps.games.serious.TableGame
-import apps.games.serious.getCardById32
+import apps.games.serious.Card
+import apps.games.serious.CardGame
+import apps.games.serious.getCardById
 import apps.games.serious.preferans.GUI.PreferansGame
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
-import crypto.RSA.ECParams
 import crypto.random.randomString
-import entity.ChatMessage
 import entity.Group
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
-import org.bouncycastle.jce.ECNamedCurveTable
 import proto.GameMessageProto
 import java.math.BigInteger
 import java.util.*
-import java.util.concurrent.CancellationException
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.LinkedBlockingQueue
 
 /**
@@ -32,7 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue
  */
 
 class Preferans(chat: Chat, group: Group, gameID: String) :
-                                          TableGame(chat, group, gameID) {
+                                          CardGame(chat, group, gameID, 32) {
     override val name: String
         get() = "Preferans CardGUI Game"
 
@@ -59,7 +51,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     private lateinit var gameGUI: PreferansGame
     private lateinit var application: LwjglApplication
 
-    private val DECK_SIZE = 32
     //TALON - always last two cards of the deck
     private val TALON = 2
 
@@ -68,8 +59,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     private val N = 3
 
-    //map cards to players, that holded that card.
-    //cardholder -1 - for played card
+    //map cards to players, that holded that cardID.
+    //cardholder -1 - for played cardID
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
     private val originalCardHolders: MutableMap<Int, Int> = mutableMapOf()
 
@@ -82,10 +73,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     //Bet, that will be played this round
     private var gameBet: Bet = Bet.UNKNOWN
-
-
-    //shuffled Deck
-    private lateinit var deck: ShuffledDeck
 
     //Receive bets
     private val betQueue = LinkedBlockingQueue<Bet>(1)
@@ -118,7 +105,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         for(msg in responses){
-            chat.showMessage(msg.value)
+            chat.showMessage("[${msg.user.name}] said ${msg.value}")
         }
         when (state) {
             State.INIT -> {
@@ -308,7 +295,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                         //TODO - switch first players
                         val split = msg.value.split(" ")
                         if (split.size < 2) {
-                            throw GameExecutionException("Invalid card " +
+                            throw GameExecutionException("Invalid cardID " +
                                                                  "received")
                         }
                         val cardID = split[0].toInt()
@@ -323,7 +310,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                             index = deck.originalDeck.cards.indexOf(deck.encrypted.deck.cards[cardID])
                             if (index == -1) {
                                 throw GameExecutionException("Can not decrypt" +
-                                                                     " card")
+                                                                     " cardID")
                             }
                             originalCardHolders[index] = currentPlayerID
                             if (playerID != currentPlayerID) {
@@ -450,7 +437,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     /**
      * Start next round of the game:
-     * create and shuffle deck. compute who holds which card
+     * create and shuffle deck. compute who holds which cardID
      * return keys for cards that I don't hold
      */
     private fun initRound(responses: List<GameMessageProto.GameStateMessage>): String {
@@ -462,7 +449,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
         gameGUI.showHint("Shuffling cards")
         //If we can not create deck - game aborted
-        deck = newDeck() ?: return ""
+        updateDeck()
         //Deal all cards, except last two
         cardHolders.clear()
         gameGUI.clear()
@@ -519,7 +506,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         }
         if(!logger.log.verifyRoundPlays()){
             throw GameExecutionException("Someone cheated: didn't " +
-                                                 "play correct card")
+                                                 "play correct cardID")
         }
         if(gameBet != Bet.PASS){
             val talon = logger.log.getDiscardedTalon() ?: throw
@@ -653,54 +640,13 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         }
     }
 
-    /**
-     * Create a new deck and shuffle it.
-     * In Preferans this is executed before
-     * each round
-     * @return Pair of original Deck and
-     * shuffle result - EncryptedDeck
-     */
-    private fun newDeck(): ShuffledDeck? {
-        val deckFuture = runSubGame(
-                RandomDeckGame(chat, group.clone(), subGameID(), ECParams,
-                               DECK_SIZE))
-        val deck: Deck
-        try {
-            deck = deckFuture.get()
-        } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
-            state = State.END
-            return null
-        } catch(e: ExecutionException) {
-            chat.showMessage(
-                    ChatMessage(chat, e.message ?: "Something went wrong"))
-            e.printStackTrace()
-            throw GameExecutionException("Subgame failed")
-        }
-
-        val shuffleFuture = runSubGame(
-                DeckShuffleGame(chat, group.clone(), subGameID(), ECParams,
-                                deck.clone()))
-        val shuffled: EncryptedDeck
-        try {
-            shuffled = shuffleFuture.get()
-        } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
-            state = State.END
-            return null
-        } catch(e: ExecutionException) {
-            chat.showMessage(
-                    ChatMessage(chat, e.message ?: "Something went wrong"))
-            e.printStackTrace()
-            throw GameExecutionException("Subgame failed")
-        }
-        return ShuffledDeck(deck, shuffled)
-    }
 
     /**
      * Take a list of keys sent by user,
      * keys should correspond to cards, that are not
      * by that user. I.E. If player holds cards
      * 1, 4, 7 in shuffled deck, keys - contains
-     * key for every card, that is not in TALON,
+     * key for every cardID, that is not in TALON,
      * and are not possesed by that user
      */
     private fun decryptRoundInit(user: User, keys: List<BigInteger>) {
@@ -767,7 +713,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
             }
             val currentPlayerId: Int = cardHolders[i] ?: throw
             GameExecutionException(
-                    "Invalid card distribution")
+                    "Invalid cardID distribution")
             val guiID = getTablePlayerId(currentPlayerId)
             gameGUI.dealPlayer(guiID, cardID)
         }
@@ -844,20 +790,19 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * play any known card that is possesed by
+     * play any known cardID that is possesed by
      * player with given id
-     * @param playerID - player whose card will be played
+     * @param playerID - player whose cardID will be played
      * @param restrictCards - wether to allow to play
      * cards that don't match current trump suit
-     * @return ID of picked card
+     * @return ID of picked cardID
      */
     fun playCard(vararg playerIDs: Int, restrictCards: Boolean = true): Int {
         val allowed = mutableListOf<Card>()
         for (key in cardHolders.keys) {
             if (playerIDs.contains(cardHolders[key]!!)) {
                 val card = deck.encrypted.deck.cards[key]
-                allowed.add(
-                        getCardById32(deck.originalDeck.cards.indexOf(card)))
+                allowed.add(getCardById(deck.originalDeck.cards.indexOf(card), DECK_SIZE))
             }
         }
         if (restrictCards) {
@@ -868,7 +813,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                                                               .cards[res])
         if (index == -1) {
             println(res)
-            throw GameExecutionException("Can not pick unknown card" +
+            throw GameExecutionException("Can not pick unknown cardID" +
                                                  "(contradicts selector)")
         }
         cardHolders[index] = -1
@@ -876,9 +821,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     fun registerCallbacks() {
-        val callback = { x: Bet ->
-            betQueue.offer(x)
-        }
+        val callback = { x: Bet -> betQueue.offer(x) }
         gameGUI.registerBiddingCallback(callback, *Bet.values())
     }
 

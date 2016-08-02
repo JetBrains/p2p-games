@@ -31,7 +31,8 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     private val cam3d = PerspectiveCamera()
     private val camController = FirstPersonCameraController(cam3d)
     private val cam2d = OrthographicCamera()
-    private var zoomed = false
+    private var zoomed : Boolean = false
+    private var shouldMoveZoomedCam: Boolean = false
     private val cam2dZoom = OrthographicCamera()
     private val zoomAspectRatio = 5f/3f
 
@@ -137,9 +138,9 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * Deal specified card to a specified player
-     * @param player - receives the card
-     * @param card - card to give
+     * Deal specified cardID to a specified player
+     * @param player - receives the cardID
+     * @param card - cardID to give
      */
     @Synchronized fun dealPlayer(player: Player, card: CardGUI) {
         card.position.set(table.deckPosition)
@@ -158,9 +159,9 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * Deal specified card to a player with a give playerId
-     * @param player - id of the player that receives the card
-     * @param card - card to give
+     * Deal specified cardID to a player with a give playerId
+     * @param player - id of the player that receives the cardID
+     * @param card - cardID to give
      */
     @Synchronized fun dealPlayer(player: Int, card: CardGUI) {
         dealPlayer(table.players[player], card)
@@ -168,7 +169,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
 
 
     /**
-     * Deal a card common to all players(e.g.
+     * Deal a cardID common to all players(e.g.
      * TALON in Preferans, or cards in texas holdem poker)
      */
     @Synchronized fun dealCommon(card: CardGUI) {
@@ -186,7 +187,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     //TODO - mark cards dealt to self as revealed\
 
     /**
-     * Reveal card in common hand
+     * Reveal cardID in common hand
      */
     @Synchronized fun revealCommonCard(card: CardGUI) {
         val revealCallback = {
@@ -198,7 +199,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
                                              card.position.y, card.position.z, card.angle + 180f, 1f)
                 actionManager.add(action)
                 cards.remove(oldCard)
-                //spawn card facing table
+                //spawn cardID facing table
                 cards.add(card)
             }
         }
@@ -206,7 +207,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * reveal playerID card and execute actions after it
+     * reveal playerID cardID and execute actions after it
      */
     @Synchronized fun revealPlayerCard(playerID: Int, card: CardGUI){
         val hand = table.players[playerID].hand
@@ -220,7 +221,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
             actionManager.add(action)
 
             cards.remove(oldCard)
-            //spawn card facing table
+            //spawn cardID facing table
             cards.add(card)
         }
 
@@ -258,7 +259,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * Move card from one hand to another
+     * Move cardID from one hand to another
      */
     @Synchronized fun moveCard(card: CardGUI, from: Hand, to: Hand, flip:
                                Boolean = false){
@@ -344,8 +345,8 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * animate card played for holders hand
-     * @param User - holder of ther card
+     * animate cardID played for holders hand
+     * @param User - holder of ther cardID
      */
     private var deltaZ = 0.01f
     fun animateCardPlay(card: CardGUI){
@@ -363,27 +364,31 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
             screenY: Int,
             pointer: Int,
             button: Int): Boolean {
+
         if(button == Input.Buttons.MIDDLE){
             zoomed = false
             return true
         }
-        if (selecting != null) {
-            if (selecting == getObject(screenX, screenY)) {
-                setSelected(selecting!!)
+        if(button == Input.Buttons.LEFT){
+            if (selecting != null) {
+                if (selecting == getObject(screenX, screenY)) {
+                    setSelected(selecting!!)
+                } else {
+                    setSelecting(getObject(screenX, screenY))
+                }
+
             } else {
                 setSelecting(getObject(screenX, screenY))
             }
-
-        } else {
-            setSelecting(getObject(screenX, screenY))
+            return selecting != null
         }
-        return selecting != null
+        return false
     }
 
     override fun touchDragged(screenX: Int,
                                        screenY: Int,
                                        pointer: Int): Boolean {
-            if(zoomed){
+            if(zoomed && shouldMoveZoomedCam){
                 val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
                         .toFloat(), 0f))
                 cam2dZoom.position.set(pos)
@@ -398,6 +403,8 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
                            screenY: Int,
                            pointer: Int,
                            button: Int): Boolean {
+        shouldMoveZoomedCam = (button != Input.Buttons.LEFT)
+
         if(button == Input.Buttons.MIDDLE){
             val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
                     .toFloat(), 0f))
@@ -422,7 +429,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * Second click on card
+     * Second click on cardID
      */
     private fun setSelected(selecting: CardGUI) {
         if(!selector.canSelect(selecting)){
@@ -438,7 +445,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * First click on card
+     * First click on cardID
      */
     private fun setSelecting(newSelecting: CardGUI?) {
         if (selecting != null) {
@@ -454,7 +461,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
     }
 
     /**
-     * Simple implementation to pick pointed card
+     * Simple implementation to pick pointed cardID
      */
     fun getObject(screenX: Int, screenY: Int): CardGUI? {
         val ray = getCam().getPickRay(screenX.toFloat(), screenY.toFloat())

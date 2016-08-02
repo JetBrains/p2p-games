@@ -2,30 +2,44 @@ package apps.games.serious
 
 import apps.games.GameExecutionException
 import apps.games.serious.TableGUI.CardGUI
-import apps.games.serious.preferans.Card
 import apps.games.serious.preferans.Pip
 import apps.games.serious.preferans.Suit
 
 
+
+data class Card(val suit: Suit, val pip: Pip)
+private val MAX_DECK_SIZE = 54
 /**
  * Created by user on 7/18/16.d
  */
+
 /**
- * Given Id of card in 32 card deck -
+ * Given Id of cardID in n card deck -
  * return an object representing it's
- * Suit and Pip
- * @param cardID - card to find
+ * Suit and Pip.
+ * @param cardID - ID of card to find
+ * @param n - deck size. n/4 hightest
+ * cards in each pip
  * @return Card - Suit and Pip
  */
-fun getCardById32(cardID: Int): Card {
+fun getCardById(cardID: Int, n: Int): Card {
+    if(n > MAX_DECK_SIZE){
+        throw IllegalArgumentException("Can not process deck with more that 52 cards")
+    }
     val card: Card
     if (cardID == -1) {
         card = Card(Suit.UNKNOWN, Pip.UNKNOWN)
     } else {
-        val suitId = cardID / 8
-        var pipId: Int = (cardID % 8)
+        //All count Pips, that are not UNKNOWN
+        val totalPips = Pip.values().size - 1
+        //All count Suits, that are not UNKNOWN
+        val totalSuits = Suit.values().size -1
+        val nPips = n / totalSuits
+        val gapSize = totalPips - nPips
+        val suitId = cardID / nPips
+        var pipId: Int = (cardID % nPips)
         if (Pip.TWO.index <= pipId) {
-            pipId += 5
+            pipId += gapSize
         }
         card = Card(
                 Suit.values().first { x -> x.index == suitId },
@@ -35,25 +49,47 @@ fun getCardById32(cardID: Int): Card {
 }
 
 /**
- * In Preferans we have 32 card deck.
- * This function takes card
+ * This function takes cardID
  * and translates it into corresponding
- * CardGUI Id (-1 -> 32). -1 - for UNKNOWN
+ * Card Id (-1 -> n). -1 - for UNKNOWN
+ * @param card - card to translate
+ * @param n - deck size
  */
-fun getId32ByCard(card: CardGUI): Int {
+fun getIdByCard(card: Card, n: Int): Int {
+    if(n > MAX_DECK_SIZE){
+        throw IllegalArgumentException("Can not process deck with more that 52 cards")
+    }
     if(card.suit == Suit.UNKNOWN){
         return -1
     }
     val suitID: Int = card.suit.index
     var pipID: Int = card.pip.index
-    if(pipID >= 6){
-        pipID -= 5
+    //All count Pips, that are not UNKNOWN
+    val totalPips = Pip.values().size - 1
+    //All count Suits, that are not UNKNOWN
+    val totalSuits = Suit.values().size -1
+    val nPips = n / totalSuits
+    val gapSize = totalPips - nPips
+
+    if(pipID - gapSize >= Pip.TWO.index){
+        pipID -= gapSize
     }
-    return 8*suitID + pipID
+    return nPips*suitID + pipID
 }
 
+
+
 /**
- * Find max card in collection, considering
+ * Get cardGUI object and translate it
+ * into card ID
+ */
+fun getIdByCard(card: CardGUI, n: Int): Int{
+    return getIdByCard(Card(card.suit, card.pip), n)
+}
+
+
+/**
+ * Find max cardID in collection, considering
  * trump suit and enforcedSuit
  */
 fun maxWithTrump(cards: Collection<Card>, trump: Suit = Suit.UNKNOWN,

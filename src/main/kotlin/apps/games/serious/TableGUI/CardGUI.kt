@@ -1,6 +1,6 @@
 package apps.games.serious.TableGUI
 
-import apps.games.serious.preferans.Card
+import apps.games.serious.Card
 import apps.games.serious.preferans.Pip
 import apps.games.serious.preferans.Suit
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -102,7 +102,7 @@ class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
 }
 
 /**
- * Class represents card translation
+ * Class represents cardID translation
  * Moves cards on table rotating them
  * around Z axis - toAngle/From angle
  * around Y axis - around Y axis

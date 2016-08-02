@@ -1,8 +1,7 @@
 package apps.games.serious.preferans.GUI
 
+import apps.games.serious.*
 import apps.games.serious.TableGUI.*
-import apps.games.serious.getCardById32
-import apps.games.serious.getId32ByCard
 import apps.games.serious.preferans.*
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
@@ -15,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameView() {
+class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DECK_SIZE: Int = 32) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var biddingOverlay: ButtonOverlay<Bet>
@@ -34,8 +33,8 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
         val s = "Switch 2D/3D:            C\n" +
                 "Move:                         WASD \n" +
                 "Strafe:                        Q, E \n" +
-                "Select card:                left mouse\n" +
-                "Play card:                   left mosue on selected card\n" +
+                "Select cardID:                left mouse\n" +
+                "Play cardID:                   left mosue on selected cardID\n" +
                 "Zoom camara:            midde mouse button\n"+
                 "Toggle camera zoom: SPACE"
         tableScreen.controlsHint = s
@@ -44,14 +43,14 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
 
     /**
      * Give a player with specified ID
-     * a card from a 32 card deck
+     * a cardID from a 32 cardID deck
      */
     fun dealPlayer(player: Int, cardID: Int) {
         tableScreen.dealPlayer(player, getCardModelById(cardID))
     }
 
     /**
-     * Deal a common card. For example
+     * Deal a common cardID. For example
      * TALON in Prefenernce or cards
      * in Texas Holdem Poker
      */
@@ -253,7 +252,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
     }
 
     /**
-     * Reveal talon card
+     * Reveal talon cardID
      */
     fun revealTalonCard(cardID: Int) {
         tableScreen.revealCommonCard(getCardModelById(cardID))
@@ -262,7 +261,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
     /**
      * Get one of specified cards.
      * NB: This method wont work for selection
-     * of UNKNOWN card.
+     * of UNKNOWN cardID.
      */
     fun pickCard(vararg allowedCardIds: Card): Int{
         val queue = LinkedBlockingQueue<CardGUI>(1)
@@ -280,7 +279,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
 
         val card = queue.take()
         tableScreen.resetSelector()
-        val res =  getId32ByCard(card)
+        val res =  getIdByCard(card, DECK_SIZE)
         if(res == -1){
             return pickCard(*allowedCardIds)
         }
@@ -288,11 +287,11 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
     }
 
     /**
-     * Move card from hand of one player to the hand of another
-     * @param cardID - card to move(any unknown card is picked, if cardID = -1)
-     * @param from - id of player, to take card from
+     * Move cardID from hand of one player to the hand of another
+     * @param cardID - cardID to move(any unknown cardID is picked, if cardID = -1)
+     * @param from - id of player, to take cardID from
      * from = -1 - means common hand is used
-     * @param to - id of player, to give card to
+     * @param to - id of player, to give cardID to
      * to = -1 - means common hand is used
      */
     fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true){
@@ -303,7 +302,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
     }
 
     /**
-     * animate card played by user
+     * animate cardID played by user
      */
     fun playCard(cardID: Int){
         val card = getCardModelById(cardID)
@@ -317,14 +316,14 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int) : GameV
 
 
     /**
-     * In Preferans we have 32 card deck.
-     * This function takes card ID (0 -> 32)
-     * or -1 for UNKNOWN card
+     * In Preferans we have 32 cardID deck.
+     * This function takes cardID ID (0 -> 32)
+     * or -1 for UNKNOWN cardID
      * and translates it into corresponding
      * renderable object
      */
     private fun getCardModelById(cardID: Int): CardGUI {
-        val card = getCardById32(cardID)
+        val card = getCardById(cardID, DECK_SIZE)
         return tableScreen.deck.getCardModel(card.suit, card.pip)
     }
 
@@ -375,6 +374,5 @@ fun main(args: Array<String>) {
     val gameGUI = PreferansGame(PreferansScoreCounter(listOf(User(Settings.hostAddress, "sfsefse"))), 1)
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
-    gameGUI.showBiddingOverlay()
     println("6 \u2660")
 }

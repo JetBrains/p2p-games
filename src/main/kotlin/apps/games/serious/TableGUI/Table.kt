@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.Disposable
  */
 
 
-class Table(val playersCount: Int, val handSize: Int) : Disposable {
+class Table(val playersCount: Int, var handSize: Int) : Disposable {
     private val tableTopModel: Model
     val tableTop: ModelInstance
     val deckPosition = Vector3(0.5f, -0.5f, 0.1f)
@@ -88,7 +88,7 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
     }
 
     /**
-     * get place, that selected card sould be put in
+     * get place, that selected cardID sould be put in
      */
     fun getCardspace(): Vector3 {
         return Vector3(position).add(Vector3(direction).scl(3.5f))
@@ -125,11 +125,11 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
     }
 
     /**
-     * find first not revealed card and return an action
+     * find first not revealed cardID and return an action
      * revealing it
      *
-     * @param newCard - new card to be shown in place of revealed
-     * @return UNKNOWN card that now need's to be removed from table
+     * @param newCard - new cardID to be shown in place of revealed
+     * @return UNKNOWN cardID that now need's to be removed from table
      */
     @Synchronized fun replaceUnknownCard(newCard: CardGUI): CardGUI? {
         for (i in size - 1 downTo 0) {
@@ -146,14 +146,14 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
     }
 
     /**
-     * position for next card to put into this hand
+     * position for next cardID to put into this hand
      */
     fun nextCardPosition(): Vector3 {
         return getCardPositionById(size)
     }
 
     /**
-     * get position of n-th card in hand
+     * get position of n-th cardID in hand
      */
     fun getCardPositionById(n: Int): Vector3 {
         val result = Vector3(position)
@@ -173,7 +173,7 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
     }
 
     /**
-     * remove card from hand.
+     * remove cardID from hand.
      */
     @Synchronized fun removeCard(card: CardGUI, actionManager: ActionManager){
         val index = cards.indexOf(card)
