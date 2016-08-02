@@ -251,7 +251,11 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
             if(choice == Choice.ADD){
                 val count = getAddCount()
                 val pip = getPip()
-
+                val pickedCards = Array(count.size, {i -> gameGUI.pickCard(*playerCards.toTypedArray())})
+                for(card in pickedCards){
+                    println(getCardById(card, DECK_SIZE))
+                    //TODO Add to logger. Salt. Hash. add to getData()
+                }
                 return "${choice.name} ${count.type} ${pip.type}"
             }else{
                 return "${choice.name}"
