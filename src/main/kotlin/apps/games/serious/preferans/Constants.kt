@@ -1,5 +1,7 @@
 package apps.games.serious.preferans
 
+import apps.games.serious.Suit
+
 /**
  * Created by user on 7/7/16.
  */
@@ -44,39 +46,6 @@ enum class Bet(var type: String, var value: Int, var trump: Suit,
     TEN_NO_TRUMP("10 NO TRUMP", 26, Suit.UNKNOWN, 10, 10, 20, 20, 10, 1),
 }
 
-
-/**
- * CardGUI Suit representation
- */
-enum class Suit(val type: String, val index: Int) {
-    UNKNOWN("unknown", -1),
-    CLUBS("clubs", 0),
-    DIAMONDS("diamonds", 1),
-    HEARTS("hearts", 2),
-    SPADES("spades", 3)
-}
-
-/**
- * CardGUI Pip representation
- */
-enum class Pip(val value: Int) {
-    UNKNOWN(-1),
-    ACE(1),
-    TWO(2),
-    THREE(3),
-    FOUR(4),
-    FIVE(5),
-    SIX(6),
-    SEVEN(7),
-    EIGHT(8),
-    NINE(9),
-    TEN(10),
-    JACK(11),
-    QUEEN(12),
-    KING(13);
-
-    val index = value - 1
-}
 
 /**
  * Different outcomes of whisting in preferance

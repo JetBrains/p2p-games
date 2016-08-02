@@ -3,6 +3,7 @@ package apps.games.serious.preferans
 import apps.games.GameExecutionException
 import apps.games.primitives.EncryptedDeck
 import apps.games.serious.Card
+import apps.games.serious.Suit
 import apps.games.serious.getCardById
 import apps.games.serious.maxWithTrump
 import com.sun.org.apache.bcel.internal.classfile.InnerClass

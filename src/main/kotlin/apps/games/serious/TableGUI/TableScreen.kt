@@ -1,9 +1,9 @@
 package apps.games.serious.TableGUI
 
 import apps.games.serious.preferans.GUI.PreferansGame
-import apps.games.serious.preferans.Pip
+import apps.games.serious.Pip
 
-import apps.games.serious.preferans.Suit
+import apps.games.serious.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -121,9 +121,12 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         font.draw(spriteBatch, hint, 100f, 100f)
         font.draw(spriteBatch, controlsHint, 700f, 1000f)
         spriteBatch.end()
-        for(overlay in overlays){
-            overlay.render(getCam())
+        synchronized(overlays){
+            for(overlay in overlays){
+                overlay.render(getCam())
+            }
         }
+
         if(zoomed){
             //TODO - no overlapping
             val height = Gdx.graphics.height/4
@@ -241,6 +244,9 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
                 }
             }
         })
+        for(player in table.players){
+            player.cardSpaceHand.clear()
+        }
         actionManager.addAfterLastComplete(action)
     }
     /**
@@ -353,7 +359,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         val player = table.getPlayerWithCard(card) ?: return
         player.hand.cards.remove(card)
         val pos = player.getCardspace()
-
+        player.cardSpaceHand.cards.add(card)
         actionManager.addAfterLastComplete(
                 CardGUI.animate(card, pos.x, pos.y, deltaZ, card.angle, 1f,
                                 card.rotation, doNotRotate = true))
@@ -439,6 +445,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         val player = table.getPlayerWithCard(selecting) ?: return
         player.hand.removeCard(selecting, actionManager)
         val pos = player.getCardspace()
+        player.cardSpaceHand.cards.add(selecting)
         actionManager.add(CardGUI.animate(selecting, pos.x, pos.y, deltaZ, 0f,
                                           1f, selecting.rotation))
         deltaZ += 0.001f
@@ -489,9 +496,11 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     }
 
     fun updateInputProcessor(){
-        val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }
-                .toTypedArray())
-        Gdx.input.inputProcessor = InputMultiplexer(overlayProcessor, this, camController)
+        synchronized(overlays){
+            val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }
+                    .toTypedArray())
+            Gdx.input.inputProcessor = InputMultiplexer(overlayProcessor, this, camController)
+        }
     }
 
     @Synchronized fun setSelector(cardSelector: CardSelector){

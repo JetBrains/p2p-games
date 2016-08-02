@@ -90,6 +90,8 @@ class Table(val playersCount: Int, var handSize: Int) : Disposable {
 class Player(val position: Vector3, val direction: Vector3, handSize: Int, val Id: Int, val talbe: Table) {
     val hand = Hand(position, handSize, direction)
 
+    val cardSpaceHand: Hand = Hand(Vector3(position).scl(0.7f), 4, direction, 4.5f)
+
     /**
      * get angle between player and center of the table
      */
@@ -101,7 +103,7 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
      * get place, that selected cardID sould be put in
      */
     fun getCardspace(): Vector3 {
-        return Vector3(position).add(Vector3(direction).scl(3.5f))
+        return cardSpaceHand.nextCardPosition()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -182,6 +184,9 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
      * clear hand info for reusage
      */
     @Synchronized fun clear(){
+        for(card in cards){
+            card.reset()
+        }
         cards.clear()
     }
 

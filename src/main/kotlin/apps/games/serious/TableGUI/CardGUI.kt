@@ -1,8 +1,8 @@
 package apps.games.serious.TableGUI
 
 import apps.games.serious.Card
-import apps.games.serious.preferans.Pip
-import apps.games.serious.preferans.Suit
+import apps.games.serious.Pip
+import apps.games.serious.Suit
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureAtlas

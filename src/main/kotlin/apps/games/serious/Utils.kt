@@ -2,8 +2,8 @@ package apps.games.serious
 
 import apps.games.GameExecutionException
 import apps.games.serious.TableGUI.CardGUI
-import apps.games.serious.preferans.Pip
-import apps.games.serious.preferans.Suit
+import apps.games.serious.Pip
+import apps.games.serious.Suit
 
 
 
@@ -87,6 +87,34 @@ fun getIdByCard(card: CardGUI, n: Int): Int{
     return getIdByCard(Card(card.suit, card.pip), n)
 }
 
+
+/**
+ * Get list of all Pips that appear in
+ * n-card deck
+ */
+fun getPipsInDeck(n: Int): List<Pip>{
+    //All count Pips, that are not UNKNOWN
+    val totalPips = Pip.values().size - 1
+    //All count Suits, that are not UNKNOWN
+    val totalSuits = Suit.values().size -1
+    val nPips = n / totalSuits
+    val gapSize = totalPips - nPips
+
+    val res = mutableListOf<Pip>()
+    for(pip in Pip.values().sortedBy{x -> x.value}){
+        if(pip == Pip.UNKNOWN){
+            continue
+        }
+        if(pip == Pip.ACE){
+            res.add(pip)
+            continue
+        }
+        if(pip.index - Pip.TWO.index >= gapSize){
+            res.add(pip)
+        }
+    }
+    return res
+}
 
 /**
  * Find max cardID in collection, considering

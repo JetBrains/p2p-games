@@ -6,6 +6,8 @@ import apps.games.GameExecutionException
 import apps.games.serious.Card
 import apps.games.serious.Cheat.GUI.CheatGame
 import apps.games.serious.CardGame
+import apps.games.serious.Cheat.logger.CheatGameLogger
+import apps.games.serious.Pip
 import apps.games.serious.getCardById
 import apps.games.serious.preferans.Bet
 import apps.games.serious.preferans.GUI.PreferansGame
@@ -38,6 +40,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         DECRYPT_HAND,
         INIT_ROUND,
         END,
+        ENDLESS_LOOP
     }
 
     private var state: State = State.INIT
@@ -51,12 +54,15 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
     private val playerCards = mutableSetOf<Card>()
 
+    private val extraData = mutableListOf<ByteArray>()
+
     val logger = CheatGameLogger(N)
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         for(msg in responses){
             chat.showMessage("[${msg.user.name}] said ${msg.value}")
         }
+        extraData.clear()
         when(state){
 
             State.INIT -> {
@@ -86,11 +92,12 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 if(currentPlayerID == N){
                     state = State.PICK_DECK_SIZE
                     chat.sendMessage("RSA is OK. Generating deck")
+                    currentPlayerID = -1
                     return ""
+
                 }
                 val s = randomString(512) + " " + HANDSHAKE_PHRASE
                 return keyManager.encodeForUser(playerOrder[currentPlayerID], s)
-
             }
             State.PICK_DECK_SIZE -> {
                 val vote = pickDeckSize()
@@ -113,8 +120,22 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 decryptHand(responses)
                 dealHand()
                 state = State.INIT_ROUND
+                currentPlayerID = -1
             }
-            State.INIT_ROUND -> {}
+            State.INIT_ROUND -> {
+                for(msg in responses){
+                    val userID = getUserID(User(msg.user))
+                    if(userID == currentPlayerID){
+                        //TODO
+                        println(msg.value)
+                    }
+                }
+                currentPlayerID = (currentPlayerID + 1) % N
+                return makeMove()
+            }
+            State.ENDLESS_LOOP -> {
+
+            }
             State.END -> TODO()
         }
         return ""
@@ -144,6 +165,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     private fun pickDeckSize(): Int{
         val deckSizeQueue = LinkedBlockingQueue<DeckSizes>(1)
         val callback = {x: DeckSizes -> deckSizeQueue.offer(x)}
+        gameGUI.resetAllSizes()
         gameGUI.registerDeckSizeCallback(callback, *DeckSizes.values())
         gameGUI.showDecksizeOverlay()
         gameGUI.showHint("Pick desired deck size")
@@ -157,6 +179,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * cardID holders
      */
     private fun initiateHands(): String {
+        gameGUI.showHint("Shuffling Cards")
         updateDeck()
         logger.newRound(DECK_SIZE, deck)
         val resultKeys = mutableListOf<BigInteger>()
@@ -214,6 +237,78 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         }
     }
 
+    /**
+     * If we are currentPlayer - make our move
+     * otherwise - update hint
+     */
+    private fun makeMove(): String{
+        if(currentPlayerID == -1){
+            currentPlayerID ++
+        }
+        if(playerID == currentPlayerID){
+            gameGUI.showHint("Decide what will you do:")
+            val choice = getPlayerChoise()
+            if(choice == Choice.ADD){
+                val count = getAddCount()
+                val pip = getPip()
+
+                return "${choice.name} ${count.type} ${pip.type}"
+            }else{
+                return "${choice.name}"
+            }
+        }else{
+            gameGUI.showHint("Waiting for " +
+                    "[${playerOrder[currentPlayerID].name}]" +
+                    "to make his move")
+        }
+        return ""
+    }
+
+    /**
+     * Get player Choice from UI
+     */
+    private fun getPlayerChoise(): Choice{
+        if(logger.log.isNewStack()){
+            return Choice.ADD
+        }
+        val choiceQueue = LinkedBlockingQueue<Choice>(1)
+        val callback = {x: Choice -> choiceQueue.offer(x)}
+        gameGUI.registerChoicesCallback(callback, *Choice.values())
+        gameGUI.resetAllChoices()
+        gameGUI.showChoicesOverlay()
+        val x = choiceQueue.take()
+        gameGUI.hideChoicesOverlay()
+        return x
+    }
+
+
+    /**
+     * Get number of cards that player will play this round
+     */
+    private fun getAddCount(): BetCount{
+        val betCountQueue = LinkedBlockingQueue<BetCount>(1)
+        val callback = {x: BetCount -> betCountQueue.offer(x)}
+        gameGUI.registerBetCountsCallback(callback, *BetCount.values())
+        gameGUI.resetAllBetCounts()
+        gameGUI.showBetCountOverlay()
+        val x = betCountQueue.take()
+        gameGUI.hideBetCountOverlay()
+        return x
+    }
+
+    /**
+     * Get pip of cards that will be claimed this round
+     */
+    private fun getPip(): Pip {
+        val pipQueue = LinkedBlockingQueue<Pip>(1)
+        val callback = {x: Pip -> pipQueue.offer(x)}
+        gameGUI.registerPipCallback(callback, *Pip.values())
+        gameGUI.resetAllPips()
+        gameGUI.showPipOverlay()
+        val x = pipQueue.take()
+        gameGUI.hidePipOverlay()
+        return x
+    }
 
     override fun isFinished(): Boolean {
         return state == State.END
@@ -225,5 +320,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
 
     override fun getResult() {}
 
-
+    override fun getData(): List<ByteArray> {
+        return extraData
+    }
 }
