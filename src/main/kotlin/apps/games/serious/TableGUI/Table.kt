@@ -52,6 +52,16 @@ class Table(val playersCount: Int, var handSize: Int) : Disposable {
         tableTop.transform.translate(0f, -1.5f, 0f)
     }
 
+    /**
+     * Update max Hand Size
+     */
+    fun updateHandSize(n: Int){
+        handSize = Math.min(n, 13) // Hard to see what is going on if more than 13
+        for(player in players){
+            player.hand.MAX_HAND_SIZE = handSize
+        }
+    }
+
     fun getPlayerWithCard(card: CardGUI): Player?{
         for(player in players){
             if(player.hand.cards.contains(card)){
@@ -112,7 +122,7 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
 
 }
 
-class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vector3, val MAX_HAND_WIDTH: Float = 3f) {
+class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vector3, val MAX_HAND_WIDTH: Float = 3f) {
     val cards = mutableListOf<CardGUI>()
     val size: Int
         get() = cards.size
@@ -159,8 +169,11 @@ class Hand(val position: Vector3, val MAX_HAND_SIZE: Int = 6, val direction: Vec
         val result = Vector3(position)
         //get perpendicular vector in Z=0 plane
         val normal = Vector3(direction).crs(0f, 0f, 1f).nor()
-        val step = MAX_HAND_WIDTH / MAX_HAND_SIZE
-        result.add(normal.scl(step * n - 1.4f))
+        val y = n / MAX_HAND_SIZE
+        val x = n % MAX_HAND_SIZE
+        val stepX = MAX_HAND_WIDTH / MAX_HAND_SIZE
+        result.add(Vector3(position).nor().scl(0.5f * y))
+        result.add(normal.scl(stepX * x - 1.4f))
         result.z += (cards.size + 1) * 0.01f
         return result
     }

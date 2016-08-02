@@ -24,7 +24,7 @@ import com.badlogic.gdx.math.Vector3
  */
 
 
-class TableScreen(val game: GameView) : InputAdapter(), Screen {
+class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), Screen {
     companion object DefaultSelector: CardSelector
 
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
@@ -38,7 +38,7 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
 
     private var is2dMode: Boolean = true
 
-    private val table: Table = Table(3, 10)
+    private val table: Table = Table(maxPlayers, 10)
 
     private val environment = Environment()
 
@@ -484,11 +484,14 @@ class TableScreen(val game: GameView) : InputAdapter(), Screen {
         return result
     }
 
+    fun updateDeckSize(deckSize: Int){
+        table.updateHandSize((deckSize / maxPlayers) + 1)
+    }
+
     fun updateInputProcessor(){
         val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }
                 .toTypedArray())
-        Gdx.input.inputProcessor = InputMultiplexer(this, overlayProcessor,
-                                                    camController)
+        Gdx.input.inputProcessor = InputMultiplexer(overlayProcessor, this, camController)
     }
 
     @Synchronized fun setSelector(cardSelector: CardSelector){

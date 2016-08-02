@@ -28,7 +28,7 @@ class CardBatch(mainMaterial: Material, selectionMaterial: Material) : ObjectSet
     val selectedRenderable = Renderable()
 
     init {
-        val maxNumberOfCards = 52
+        val maxNumberOfCards = 53
         val maxNumberOfVertices = maxNumberOfCards * 8
         val maxNumberOfIndices = maxNumberOfCards * 12
         normalMesh = Mesh(false, maxNumberOfVertices, maxNumberOfIndices,

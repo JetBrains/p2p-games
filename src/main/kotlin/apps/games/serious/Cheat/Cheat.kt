@@ -6,6 +6,7 @@ import apps.games.GameExecutionException
 import apps.games.serious.Card
 import apps.games.serious.Cheat.GUI.CheatGame
 import apps.games.serious.CardGame
+import apps.games.serious.getCardById
 import apps.games.serious.preferans.Bet
 import apps.games.serious.preferans.GUI.PreferansGame
 import apps.games.serious.preferans.ShuffledDeck
@@ -35,6 +36,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         PICK_DECK_SIZE,
         GENERATE_DECK,
         DECRYPT_HAND,
+        INIT_ROUND,
         END,
     }
 
@@ -102,14 +104,17 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 val votes = responses.map { x -> x.value.toInt() }
                 DECK_SIZE = votes.maxBy { x -> votes.count { s -> s == x } } ?:
                         throw GameExecutionException("Couldn't agree in deck size")
+                gameGUI.updateDeckSize(DECK_SIZE)
                 chat.sendMessage("We are playing $DECK_SIZE cardID deck")
                 state = State.DECRYPT_HAND
-                initiateHands()
+                return initiateHands()
             }
             State.DECRYPT_HAND -> {
                 decryptHand(responses)
-
+                dealHand()
+                state = State.INIT_ROUND
             }
+            State.INIT_ROUND -> {}
             State.END -> TODO()
         }
         return ""
@@ -125,7 +130,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         config.height = 1024
         config.forceExit = false
         config.title = "Cheate Game[${chat.username}]"
-        gameGUI = CheatGame(playerID)
+        gameGUI = CheatGame(playerID, N = N)
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
@@ -153,6 +158,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      */
     private fun initiateHands(): String {
         updateDeck()
+        logger.newRound(DECK_SIZE, deck)
         val resultKeys = mutableListOf<BigInteger>()
         for (i in 0..DECK_SIZE-1) {
             val holder = i % N
@@ -171,8 +177,12 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * 1, 4, 7 in shuffled deck, keys - contains
      * key for every cardID, that is not in TALON,
      * and are not possesed by that user
+     * Stores known cards in
      */
     private fun decryptHand(responses: List<GameMessageProto.GameStateMessage>){
+        for(i in 0..DECK_SIZE-1){
+            logger.log.registerCardKey(playerID, i, deck.encrypted.keys[i])
+        }
         for (msg in responses){
             val keys = msg.value.split(" ").map { x -> BigInteger(x) }
             val userID = getUserID(User(msg.user))
@@ -181,9 +191,25 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 throw GameExecutionException("Someone failed to provide his keys")
             }
             for(i in 0..keys.size-1){
-                if(logger.log.registerCardKey(userID, positions[i], keys[i])){
-                    TODO()
+                val pos = logger.log.registerCardKey(userID, positions[i], keys[i])
+                if(pos != -1 && cardHolders[positions[i]] == playerID){
+                    playerCards.add(getCardById(pos, DECK_SIZE))
                 }
+            }
+        }
+    }
+
+    /**
+     * Deal decrypted cards to myself and unknown cards
+     * to everyone else
+     */
+    private fun dealHand(){
+        for(card in playerCards){
+            gameGUI.dealPlayer(getTablePlayerId(playerID), card)
+        }
+        for(i in 0..DECK_SIZE-1){
+            if(cardHolders[i] != playerID){
+                gameGUI.dealPlayer(getTablePlayerId(cardHolders[i]!!), -1)
             }
         }
     }

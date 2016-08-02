@@ -29,13 +29,15 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
      * @param userID - ID of holder
      * @param cardID - position in shuffled deck
      * @param key - key
+     * @return position of decrypted card in
+     * original deck (-1 if abscent)
      */
-    fun registerCardKey(userID: Int, cardID: Int, key: BigInteger): Boolean{
+    fun registerCardKey(userID: Int, cardID: Int, key: BigInteger): Int{
         if(keyMap[userID][cardID] == null){
             shuffledDeck.encrypted.deck.decryptCardWithKey(cardID, key)
         }
         keyMap[userID][cardID] = key
-        return shuffledDeck.originalDeck.contains(shuffledDeck.encrypted.deck.cards[cardID])
+        return shuffledDeck.originalDeck.cards.indexOf(shuffledDeck.encrypted.deck.cards[cardID])
     }
 
     fun formatLog(): String = ""

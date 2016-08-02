@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class CheatGame(val me: Int, var DECK_SIZE: Int = 32) : GameView() {
+class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit private var deckSizeOverlay: ButtonOverlay<DeckSizes>
@@ -26,7 +26,7 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32) : GameView() {
         batch = ModelBatch()
         font = BitmapFont()
         font.data.scale(2f)
-        tableScreen = TableScreen(this)
+        tableScreen = TableScreen(this, N)
         initButtonOverlays()
         setScreen(tableScreen)
         val s = "Switch 2D/3D:            C\n" +
@@ -46,6 +46,10 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32) : GameView() {
      */
     fun dealPlayer(player: Int, cardID: Int) {
         tableScreen.dealPlayer(player, getCardModelById(cardID))
+    }
+
+    fun dealPlayer(player: Int, card: Card){
+        tableScreen.dealPlayer(player, tableScreen.deck.getCardModel(card.suit, card.pip))
     }
 
     /**
@@ -175,8 +179,9 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32) : GameView() {
         }
     }
 
-    fun pickDeckSize(){
-
+    fun updateDeckSize(newDeckSize: Int){
+        DECK_SIZE  = newDeckSize
+        tableScreen.updateDeckSize(DECK_SIZE)
     }
 
 
@@ -200,7 +205,7 @@ fun main(args: Array<String>) {
     config.width = 1024
     config.height = 1024
     config.forceExit = false
-    val gameGUI = CheatGame(1)
+    val gameGUI = CheatGame(1, N=3)
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
     println("6 \u2660")
