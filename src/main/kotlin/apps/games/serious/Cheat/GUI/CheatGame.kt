@@ -101,9 +101,6 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
             val card = queue.take()
             tableScreen.resetSelector()
             res =  getIdByCard(card, DECK_SIZE)
-            if(res == -1){
-                return pickCard(*allowedCardIds)
-            }
         }
 
         return res
@@ -132,11 +129,38 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
         tableScreen.animateCardPlay(card)
     }
 
-    fun revealPlayerCard(player: Int, cardID: Int){
-        val card = getCardModelById(cardID)
-        tableScreen.revealPlayerCard(player, card)
+    /**
+     * Animate card movement from players hand
+     */
+    fun animateCardPlay(player: Int){
+        tableScreen.animateUnknownCardPlay(player)
     }
 
+    /**
+     * Pick a card from players cardspace and
+     * return it's relative position
+     */
+    fun pickPlayedCard(player: Int): Int{
+        var res: Int = -1
+        while (res == -1){
+            val queue = LinkedBlockingQueue<Int>(1)
+            tableScreen.setSelector(object : CardSelector {
+                override fun select(card: CardGUI){
+                    queue.add(tableScreen.getPositionInCardSpaceHand(player, card))
+                }
+
+                override fun canSelect(card: CardGUI): Boolean {
+                    return tableScreen.playerCardSpaceSelectionFunction(player)(card)
+                }
+            })
+
+            res = queue.take()
+            tableScreen.resetSelector()
+
+        }
+
+        return res
+    }
 
     /**
      * In Preferans we have 32 cardID deck.

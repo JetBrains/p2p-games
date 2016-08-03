@@ -1,6 +1,10 @@
 package apps.games.serious.Cheat.logger
 
+import apps.games.GameExecutionException
+import apps.games.serious.Cheat.BetCount
+import apps.games.serious.Pip
 import apps.games.serious.preferans.ShuffledDeck
+import entity.User
 import java.math.BigInteger
 
 /**
@@ -37,6 +41,27 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
      */
     fun isNewStack() = currentStack.isNewStack()
 
+
+    /**
+     * Register hash part of commitment scheme
+     * used for adding cards.
+     * @param user - actor, that played cards
+     * @param count - BetCount of cards played
+     * @param claim - claimed Pip of all cards
+     * @param hashes - hashesh of cards played
+     */
+    fun registerAddPlayHashes(user: User, count: BetCount,
+                              claim: Pip = Pip.UNKNOWN,
+                              hashes: List<String>){
+        if(hashes.size != count.size){
+            throw GameExecutionException("Number of hashes in comitment doesn't" +
+                                         " correspond to claimed BetCount")
+        }
+        if(isNewStack()){
+            currentStack.setPip(claim)
+        }
+        currentStack.registerAddCards(user, count, hashes)
+    }
 
     fun formatLog(): String = ""
 

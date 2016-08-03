@@ -1,5 +1,7 @@
 package apps.games.serious.TableGUI
 
+import apps.games.GameExecutionException
+import apps.games.serious.Pip
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g3d.Model
 import com.badlogic.gdx.graphics.g3d.ModelInstance
@@ -7,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.loader.ObjLoader
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Disposable
+import crypto.random.randomInt
 
 /**
  * Created by user on 7/4/16.
@@ -155,6 +158,19 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
             }
         }
         return null
+    }
+
+    /**
+     * get random unknown card from players hand
+     */
+    fun randomUnknownCard(): CardGUI{
+        val idx = randomInt(size)
+        for(i in 0..size-1){
+            if(cards[idx+i].pip == Pip.UNKNOWN){
+                return cards[idx+i]
+            }
+        }
+        throw GameExecutionException("Player has no unknown cards")
     }
 
     /**

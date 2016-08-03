@@ -40,4 +40,6 @@ class CheatGameLogger(val N: Int){
     fun formatLog(): String{
         return pastLogs.map { x -> x.formatLog() }.joinToString("=================")
     }
+
+
 }

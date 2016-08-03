@@ -357,12 +357,22 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     private var deltaZ = 0.01f
     fun animateCardPlay(card: CardGUI){
         val player = table.getPlayerWithCard(card) ?: return
+        animateHandCardHandPlay(player, card)
+    }
+
+    fun animateUnknownCardPlay(playerID: Int){
+        val player = table.players[playerID]
+        val card = player.hand.randomUnknownCard()
+        animateHandCardHandPlay(player, card)
+    }
+
+    private fun animateHandCardHandPlay(player: Player, card: CardGUI){
         player.hand.cards.remove(card)
         val pos = player.getCardspace()
         player.cardSpaceHand.cards.add(card)
         actionManager.addAfterLastComplete(
                 CardGUI.animate(card, pos.x, pos.y, deltaZ, card.angle, 1f,
-                                card.rotation, doNotRotate = true))
+                        card.rotation, doNotRotate = true))
         deltaZ += 0.001f
     }
 
@@ -491,6 +501,49 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         return result
     }
 
+    /**
+     * Get predicate that returns true on cards from players hand
+     */
+    fun playerHandSelectionFunction(playerID: Int): (CardGUI) -> (Boolean) {
+        return {card: CardGUI -> table.players[playerID].hand.cards.contains(card)}
+    }
+
+    /**
+     * Get predicate that returns true on cards from players cardSpace
+     */
+    fun playerCardSpaceSelectionFunction(playerID: Int): (CardGUI) -> (Boolean) {
+        return {card: CardGUI -> table.players[playerID].cardSpaceHand.cards.contains(card)}
+    }
+
+    /**
+     * Given card find it's positoin in players hand
+     */
+    fun getPositionInHand(playerID: Int, card: CardGUI): Int{
+        for(i in 0..table.players[playerID].hand.size-1){
+            if(card === table.players[playerID].hand.cards[i]){
+                return i
+            }
+        }
+        throw ArrayIndexOutOfBoundsException("No such card in player hand")
+    }
+
+    /**
+     * Given card find it's positoin in players cardplace hand
+     */
+    fun getPositionInCardSpaceHand(playerID: Int, card: CardGUI): Int{
+        for(i in 0..table.players[playerID].cardSpaceHand.size-1){
+            if(card === table.players[playerID].cardSpaceHand.cards[i]){
+                return i
+            }
+        }
+        throw ArrayIndexOutOfBoundsException("No such card in player card space")
+    }
+
+
+    /**
+     * Update size of the deck(affects pleyer
+     * hand sizes)
+     */
     fun updateDeckSize(deckSize: Int){
         table.updateHandSize((deckSize / maxPlayers) + 1)
     }

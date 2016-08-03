@@ -18,8 +18,10 @@ import crypto.RSA.RSAKeyManager
 import crypto.random.randomString
 import entity.Group
 import entity.User
+import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.crypto.InvalidCipherTextException
 import proto.GameMessageProto
+import sun.misc.Queue
 import java.math.BigInteger
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -39,6 +41,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         GENERATE_DECK,
         DECRYPT_HAND,
         INIT_ROUND,
+        VERIFY_CARD,
         END,
         ENDLESS_LOOP
     }
@@ -51,9 +54,10 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     private val keyManager = RSAKeyManager()
     private val HANDSHAKE_PHRASE = "HANDSHAKE" // who would've thought
     private val N = group.users.size
+    private val SALT_SIZE = 128
     private val cardHolders: MutableMap<Int, Int> = mutableMapOf()
     private val playerCards = mutableSetOf<Card>()
-
+    private val playQueue = mutableListOf<List<String>>()
     private val extraData = mutableListOf<ByteArray>()
 
     val logger = CheatGameLogger(N)
@@ -123,15 +127,16 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 currentPlayerID = -1
             }
             State.INIT_ROUND -> {
-                for(msg in responses){
-                    val userID = getUserID(User(msg.user))
-                    if(userID == currentPlayerID){
-                        //TODO
-                        println(msg.value)
-                    }
+                val action = processGameResponses(responses)
+                if(action == Choice.ADD){
+                    return makeMove()
+                }else{
+                    state = State.VERIFY_CARD
                 }
-                currentPlayerID = (currentPlayerID + 1) % N
-                return makeMove()
+
+            }
+            State.VERIFY_CARD -> {
+                TODO()
             }
             State.ENDLESS_LOOP -> {
 
@@ -140,7 +145,6 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         }
         return ""
     }
-
 
     /**
      * Start GUI for the Preferans game
@@ -158,6 +162,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         }
         return ""
     }
+
 
     /**
      * Let users pick desired DeckSize
@@ -238,7 +243,63 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
+     * Process messages receive from last turn
+     * update logger, choose next player to make his move
+     *
+     * @return player action(Choice)
+     */
+    private fun processGameResponses(responses: List<GameMessageProto.GameStateMessage>): Choice {
+        for(msg in responses){
+            val user = User(msg.user)
+            val userID = getUserID(user)
+            if(userID == currentPlayerID){
+                val move = msg.value.split(" ")
+                val action: Choice = Choice.valueOf(move[0])
+                when(action){
+                    Choice.ADD -> {
+                        processAddCardHashes(msg)
+                        currentPlayerID = (currentPlayerID + 1) % N
+                    }
+                    Choice.CHECK_TRUE -> TODO()
+                    Choice.CHECK_FALSE -> TODO()
+                }
+                return action
+            }
+        }
+        return Choice.ADD
+    }
+
+    /**
+     * previous player decided to add cards
+     * @param msg - GameStateMessage describing addedcards
+     */
+    private fun processAddCardHashes(msg: GameMessageProto.GameStateMessage){
+        val move = msg.value.split(" ")
+        val user = User(msg.user)
+        val userID = getUserID(user)
+        if(move.size < 2 || move.size > 4){
+            throw GameExecutionException("Unexpectex move: ${msg.value}")
+        }
+        val claim = if(move.size == 2) Pip.UNKNOWN else Pip.valueOf(move[2])
+        if(claim != Pip.UNKNOWN){
+            gameGUI.showHint("All of these cards are ${claim.type}")
+        }
+        val count = BetCount.valueOf(move[1])
+        val hashes = msg.dataList.map { x -> String(x.toByteArray()) }
+        logger.log.registerAddPlayHashes(user, count, claim, hashes)
+        if(playerID != currentPlayerID){
+            for(i in 0..count.size-1){
+                gameGUI.animateCardPlay(getTablePlayerId(userID))
+            }
+        }
+
+    }
+
+
+    /**
      * If we are currentPlayer - make our move
+     * Pick our claim(add card/belive/check for cheat)
+     * if necessary - pick cards and return their hashes
      * otherwise - update hint
      */
     private fun makeMove(): String{
@@ -252,13 +313,23 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 val count = getAddCount()
                 val pip = getPip()
                 val pickedCards = Array(count.size, {i -> gameGUI.pickCard(*playerCards.toTypedArray())})
-                for(card in pickedCards){
-                    println(getCardById(card, DECK_SIZE))
-                    //TODO Add to logger. Salt. Hash. add to getData()
+
+                val stored = pickedCards
+                        .map { x -> deck.encrypted.deck.cards.indexOf(deck.originalDeck.cards[x]) }
+                        .map { x -> "$x ${deck.encrypted.keys[x]} ${randomString(SALT_SIZE)}" }
+                playQueue.add(stored)
+                extraData.clear()
+                for(cardEntry in stored){
+                    extraData.add(DigestUtils.sha256Hex(cardEntry.toByteArray()).toByteArray())
                 }
                 return "${choice.name} ${count.type} ${pip.type}"
             }else{
-                return "${choice.name}"
+                var prevPlayer = (currentPlayerID - 1)
+                if(prevPlayer < 0){
+                    prevPlayer += N
+                }
+                val cardToVerify = gameGUI.pickPlayedCard(getTablePlayerId(prevPlayer))
+                return "${choice.name} $cardToVerify"
             }
         }else{
             gameGUI.showHint("Waiting for " +
@@ -304,6 +375,9 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * Get pip of cards that will be claimed this round
      */
     private fun getPip(): Pip {
+        if(!logger.log.isNewStack()){
+            return Pip.UNKNOWN
+        }
         val pipQueue = LinkedBlockingQueue<Pip>(1)
         val callback = {x: Pip -> pipQueue.offer(x)}
         gameGUI.registerPipCallback(callback, *Pip.values())
