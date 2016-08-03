@@ -17,7 +17,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
         null})})
 
     private val stacks = listOf<PlayStack>()
-    private var currentStack = PlayStack()
+    private var currentStack = PlayStack(DECK_SIZE)
 
     /**
      * Register that
@@ -30,8 +30,12 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
     fun registerCardKey(userID: Int, cardID: Int, key: BigInteger): Int{
         if(keyMap[userID][cardID] == null){
             shuffledDeck.encrypted.deck.decryptCardWithKey(cardID, key)
+            keyMap[userID][cardID] = key
+        }else{
+            if (key != keyMap[userID][cardID]){
+                throw GameExecutionException("Attempt to override card key")
+            }
         }
-        keyMap[userID][cardID] = key
         return shuffledDeck.originalDeck.cards.indexOf(shuffledDeck.encrypted.deck.cards[cardID])
     }
 
@@ -40,6 +44,8 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
      * in the new stack
      */
     fun isNewStack() = currentStack.isNewStack()
+
+    fun stackFinished() = currentStack.isFinished()
 
 
     /**
@@ -61,6 +67,65 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
             currentStack.setPip(claim)
         }
         currentStack.registerAddCards(user, count, hashes)
+    }
+
+    /**
+     * @see [PlayStack.registerVerify]
+     */
+    fun registerVerify(user: User, cardPos: Int, cheat: Boolean){
+        currentStack.registerVerify(user, cardPos, cheat)
+    }
+
+    /**
+     * @serr [PlayStack.registerVerifyResponse]
+     */
+    fun registerVerifyResponse(user: User, response: String): Boolean{
+        return currentStack.registerVerifyResponse(user, response)
+    }
+
+    /**
+     * @see [PlayStack.countUserCardOnStack]
+     */
+    fun countUserCardOnStack(user: User): Int{
+        return currentStack.countUserCardOnStack(user)
+    }
+
+    /**
+     * @see [PlayStack.getLastUserBetCountSize]
+     */
+    fun getLastUserBetCountSize(user: User) : Int{
+        return currentStack.getLastUserBetCountSize(user)
+    }
+
+    /**
+     * @see [PlayStack.nextPlayerToReveal]
+     */
+    fun nextPlayerToReveal(): User{
+        return currentStack.nextPlayerToReveal()
+    }
+
+    /**
+     * @see [PlayStack.nextNumberOfCardsToReveal]
+     */
+    fun nextNumberOfCardsToReveal(): Int{
+        return currentStack.nextNumberOfCardsToReveal()
+    }
+
+    /**
+     * @see [PlayStack.countRevealedCards]
+     */
+    fun countRevealedCards(user: User): Int{
+        return currentStack.countRevealedCards(user)
+    }
+
+    /**
+     * Register encrypted message sent by user
+     */
+    fun regiserEncryptedMessage(user: User, encrypt: List<String>){
+        if(user != nextPlayerToReveal()){
+            throw GameExecutionException("Unexpected encrypted message encountered")
+        }
+        currentStack.registerEncrypt(encrypt)
     }
 
     fun formatLog(): String = ""

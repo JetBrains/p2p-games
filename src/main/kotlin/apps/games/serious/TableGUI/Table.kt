@@ -1,6 +1,7 @@
 package apps.games.serious.TableGUI
 
 import apps.games.GameExecutionException
+import apps.games.serious.Card
 import apps.games.serious.Pip
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g3d.Model
@@ -161,6 +162,22 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
     }
 
     /**
+     * Replace card at given index with another card
+     * @param index - position of card to be replaces
+     * @param newCard - card to be inserted
+     *
+     * @return old card to be removed
+     */
+    @Synchronized fun replaceCardByIndex(index: Int, newCard: CardGUI): CardGUI{
+        val res = cards[index]
+        cards[index] = newCard
+        cards[index] = newCard
+        newCard.position.set(res.position)
+        newCard.rotation = res.rotation
+        return res
+    }
+
+    /**
      * get random unknown card from players hand
      */
     fun randomUnknownCard(): CardGUI{
@@ -210,9 +227,18 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
      * remove cardID from hand.
      */
     @Synchronized fun removeCard(card: CardGUI, actionManager: ActionManager){
-        val index = cards.indexOf(card)
+        var index: Int = -1
+        for(i in 0..size-1){
+            if(cards[i] === card){
+                index = i
+                break
+            }
+        }
         if(index == -1){
-            return
+            index = cards.indexOf(card)
+            if(index == -1){
+                return
+            }
         }
         for(i in index+1..size-1){
             val pos = cards[i-1].position

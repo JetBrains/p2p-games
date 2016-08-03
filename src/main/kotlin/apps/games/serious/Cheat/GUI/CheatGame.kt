@@ -139,8 +139,9 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
     /**
      * Pick a card from players cardspace and
      * return it's relative position
+     * //TODO - restrict cards. Only last turn cards should be selectable
      */
-    fun pickPlayedCard(player: Int): Int{
+    fun pickPlayedCard(player: Int, restrinction : (Int) -> (Boolean) = {x -> true}): Int{
         var res: Int = -1
         while (res == -1){
             val queue = LinkedBlockingQueue<Int>(1)
@@ -150,7 +151,8 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
                 }
 
                 override fun canSelect(card: CardGUI): Boolean {
-                    return tableScreen.playerCardSpaceSelectionFunction(player)(card)
+                    val f = tableScreen.playerCardSpaceSelectionFunction(player)(card)
+                    return f && restrinction(tableScreen.getPositionInCardSpaceHand(player, card))
                 }
             })
 
@@ -345,8 +347,28 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
                 OverlayVisibilityAction(pipOverlay, false))
     }
 
+    /**
+     * Reveal a card played by a given user
+     *
+     * @param player - player whose card will be revealed
+     * @param oldCardIndex - index of card to be played
+     * frrom 0 to all cards in card space
+     * @param newCard - new card to be played
+     */
+    fun revealAndHidePlayedCard(player: Int, oldCardIndex: Int, newCard: Int){
+        tableScreen.revealCardInCardSpaceHand(player, oldCardIndex, getCardModelById(newCard))
+        tableScreen.actionManager.addAfterLastComplete(DelayedAction(0.15f, {
+            tableScreen.revealCardInCardSpaceHand(player, oldCardIndex, getCardModelById(-1))
+        }))
+    }
 
+    fun transferPlayedCardToPlayer(fromPlayer: Int, toPlayer: Int, index: Int, newCard: Int){
+        if(newCard != -1){
+            tableScreen.revealCardInCardSpaceHand(fromPlayer, index, getCardModelById(newCard))
+        }
+        tableScreen.transferCardFromCardSpaceToPlayer(fromPlayer, toPlayer, index)
 
+    }
 
     /**
      * Mark all pips buttons as enabled

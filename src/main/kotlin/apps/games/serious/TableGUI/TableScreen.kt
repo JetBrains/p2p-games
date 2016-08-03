@@ -227,9 +227,41 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
             //spawn cardID facing table
             cards.add(card)
         }
+    }
+
+    /**
+     * Replace specified card in player cardspace with new one
+     */
+    @Synchronized fun revealCardInCardSpaceHand(playerID: Int,
+                                                 oldCardIndex: Int,
+                                                 newCard: CardGUI): Action{
 
 
+        val hand = table.players[playerID].cardSpaceHand
+        val oldCard = hand.replaceCardByIndex(oldCardIndex, newCard)
+        newCard.angle = 180f
+        val action = CardGUI.animate(newCard, newCard.position.x,
+                newCard.position.y, newCard.position.z,
+                newCard.angle + 180f, 1f, newCard.rotation)
+        actionManager.add(action)
 
+        cards.remove(oldCard)
+        //spawn cardID facing table
+        cards.add(newCard)
+        return action
+    }
+
+    /**
+     * Get card by index from cardspace of one player and move it
+     * to hand of another
+     */
+    @Synchronized fun transferCardFromCardSpaceToPlayer(fromPlayer: Int,
+                                                        toPlayer: Int,
+                                                        index: Int){
+        val fromHand = table.players[fromPlayer].cardSpaceHand
+        val toHand = table.players[toPlayer].hand
+        val card = fromHand.cards[index]
+        moveCard(card, fromHand, toHand)
     }
 
     /**
@@ -367,7 +399,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     }
 
     private fun animateHandCardHandPlay(player: Player, card: CardGUI){
-        player.hand.cards.remove(card)
+        player.hand.removeCard(card, actionManager)
         val pos = player.getCardspace()
         player.cardSpaceHand.cards.add(card)
         actionManager.addAfterLastComplete(
