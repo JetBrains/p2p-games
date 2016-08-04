@@ -233,6 +233,26 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
     }
 
     /**
+     * Disable Choices from given list of bets
+     * @param choices - Choices to disable
+     */
+    fun disableChoices(vararg choices: Choice) {
+        for (choice in choices) {
+            choiceOverlay.disableOption(choice)
+        }
+    }
+
+    /**
+     * Disable BetCounts from given list of bets
+     * @param betCounts - BetCounts to disable
+     */
+    fun disableBetCounts(vararg betCounts: BetCount) {
+        for (betCount in betCounts) {
+            numberOverlay.disableOption(betCount)
+        }
+    }
+
+    /**
      * Show DeckSize overlay after all other actions are complete
      */
     fun showDecksizeOverlay() {

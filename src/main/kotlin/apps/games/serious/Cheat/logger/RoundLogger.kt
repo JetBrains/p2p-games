@@ -6,6 +6,7 @@ import apps.games.serious.Pip
 import apps.games.serious.getCardById
 import apps.games.serious.preferans.ShuffledDeck
 import entity.User
+import org.apache.commons.codec.digest.DigestUtils
 import java.math.BigInteger
 
 /**
@@ -144,6 +145,96 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
     }
 
     fun formatLog(): String = ""
+
+    /**
+     * Verify that all plays of the round were consistent
+     *
+     * @param userList - list of participants in the round
+     * @param decoder - function that takes user and encrypted message
+     * and returns decoded message for that user
+     * @param winners - maps User to the fact whether he won
+     */
+    fun verifyRound(userList: List<User>, decoder: (User, String) -> String, winners: Map<User, Boolean>): Boolean{
+        //Check, that nobody exchanged cards before the game started
+        for(user in 0..N-1){
+            if(getUserKeysHash(user) != shuffledDeck.encrypted.hashes[userList[user]]){
+                return false
+            }
+        }
+        //restore play order to see, that all plays were consistent
+        val cards = Array(N, {i -> mutableSetOf<Int>()})
+        for (i in 0..DECK_SIZE-1) {
+            val holder = i % N
+            cards[holder].add(i)
+        }
+        for (stack in stacks){
+            checkStack(userList, stack, cards, decoder)
+        }
+        val tmp = winners.mapKeys { x -> userList.indexOf(x.key) }
+        return tmp.all { x -> x.value == cards[x.key].isEmpty() }
+    }
+
+    /**
+     * Verify, that all plays of this stack are consistent.
+     * Only hashes and card ownership is checked. Player order
+     * is enforced by design: if al least one player is not cheating
+     * his game will crush due to unexpected message
+     *
+     * @param userList - list of all users, who participate in the game
+     * @param stack - stack to be verified
+     * @param userCards - array of mutalbeSets, represents cards owned
+     * by users at the moment
+     * @param decoder - function that takes user and encrypted message
+     * and returns decoded message for that user
+     *
+     * @return true if all playes were consistent. Otherwise - returns false
+     */
+    fun checkStack(userList: List<User>, stack: PlayStack, userCards: Array<MutableSet<Int>>,
+                   decoder: (User, String) -> (String)): Boolean{
+
+        val cards = mutableListOf<Int>()
+        //TODO - take note of gaps in userList if game is played untill last player
+        var receiverId: Int = userList.indexOf(stack.claims.last().user)
+        if(!stack.guessedCorrect){
+            receiverId = (receiverId + 1) % N
+        }
+        for(i in 0..stack.size-1){
+            val userId = userList.indexOf(stack.claims[i].user)
+            for(j in 0..stack.claims[i].count.size-1){
+                val s = decoder(userList[receiverId], stack.encrypts[i][j])
+                if(DigestUtils.sha256Hex(s) != stack.claims[i].hashes[j]){
+                    return false
+                }
+                val card = s.split(" ")[0].toInt()
+                val key = BigInteger(s.split(" ")[1])
+                if (key != keyMap[userId][card]){
+                    return false
+                }
+                if(!userCards[userId].contains(card)){
+                    return false
+                }
+                userCards[userId].remove(card)
+                cards.add(card)
+            }
+        }
+
+        userCards[receiverId].addAll(cards)
+        return true
+    }
+
+    /**
+     * Calculate hash for user key set - used to
+     * validate, that no cardID exchange cooperation was present
+     * @param player - id of player, whose key hash is being calculated
+     * @return Sting - resulting hash. Null if current information is
+     * insuffitient to calculate requested hash
+     */
+    fun getUserKeysHash(player: Int): String?{
+        if(keyMap[player].contains(null)){
+            return null
+        }
+        return DigestUtils.sha256Hex(keyMap[player].joinToString(" "))
+    }
 
     override public fun clone(): RoundLogger {
         return super.clone() as RoundLogger

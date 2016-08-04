@@ -6,8 +6,10 @@ import apps.games.serious.Cheat.BetCount
 import apps.games.serious.Pip
 import apps.games.serious.getCardById
 import apps.games.serious.getPipsInDeck
+import apps.games.serious.preferans.ShuffledDeck
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
+import java.nio.charset.CharsetDecoder
 
 /**
  * Created by user on 8/2/16.
@@ -18,12 +20,15 @@ import org.apache.commons.codec.digest.DigestUtils
 
 class PlayStack(val DECK_SIZE: Int) {
     private var pip = Pip.UNKNOWN
-    data class Claim(val user: User, val count: BetCount, val hashes: List<String>)
-    private val claims = mutableListOf<Claim>()
-    private val encrypts = mutableListOf<List<String>>()
+    class Claim(val user: User, val count: BetCount, val hashes: List<String>)
+    val claims = mutableListOf<Claim>()
+    val encrypts = mutableListOf<List<String>>()
+    val size: Int
+        get() = claims.size
     private lateinit var verifierPlayer: User
     private var verificationCard: Int = -1
     private var cheat: Boolean = false
+    var guessedCorrect: Boolean = false
     /**
      * Check if it is a fresh stack. If it is -
      * we need to initialize pip before adding data
@@ -137,7 +142,8 @@ class PlayStack(val DECK_SIZE: Int) {
      * player was right to believe
      */
     fun checkResponseCard(cardId: Int): Boolean{
-        return (getCardById(cardId, DECK_SIZE).pip == pip) xor cheat
+        guessedCorrect = (getCardById(cardId, DECK_SIZE).pip == pip) xor cheat
+        return guessedCorrect
     }
 
     /**

@@ -8,6 +8,7 @@ package apps.games.serious.Cheat
 
 
 enum class DeckSizes(val type: String,val size: Int){
+    DEBUG("DEBUG", 8),
     SMALL("36 CARD", 36),
     LARGE("52 CARD", 52)
 }
