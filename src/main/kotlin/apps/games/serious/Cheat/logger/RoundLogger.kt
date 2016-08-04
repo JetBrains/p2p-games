@@ -3,6 +3,7 @@ package apps.games.serious.Cheat.logger
 import apps.games.GameExecutionException
 import apps.games.serious.Cheat.BetCount
 import apps.games.serious.Pip
+import apps.games.serious.getCardById
 import apps.games.serious.preferans.ShuffledDeck
 import entity.User
 import java.math.BigInteger
@@ -16,7 +17,7 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
     private val keyMap = Array(N, {i -> Array<BigInteger?>(DECK_SIZE, { j ->
         null})})
 
-    private val stacks = listOf<PlayStack>()
+    private val stacks = mutableListOf<PlayStack>()
     private var currentStack = PlayStack(DECK_SIZE)
 
     /**
@@ -47,6 +48,13 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
 
     fun stackFinished() = currentStack.isFinished()
 
+    /**
+     * Start next stack
+     */
+    fun nextStack() {
+        stacks.add(currentStack)
+        currentStack = PlayStack(DECK_SIZE)
+    }
 
     /**
      * Register hash part of commitment scheme
@@ -77,10 +85,17 @@ class RoundLogger(val N: Int,val  DECK_SIZE: Int,val shuffledDeck: ShuffledDeck)
     }
 
     /**
-     * @serr [PlayStack.registerVerifyResponse]
+     * @see [PlayStack.registerVerifyResponse]
      */
-    fun registerVerifyResponse(user: User, response: String): Boolean{
-        return currentStack.registerVerifyResponse(user, response)
+    fun registerVerifyResponse(user: User, response: String){
+        currentStack.registerVerifyResponse(user, response)
+    }
+
+    /**
+     * see [PlayStack.checkRsponseCard]
+     */
+    fun checkPip(cardId: Int): Boolean{
+        return currentStack.checkResponseCard(cardId)
     }
 
     /**

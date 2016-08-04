@@ -171,7 +171,6 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
     @Synchronized fun replaceCardByIndex(index: Int, newCard: CardGUI): CardGUI{
         val res = cards[index]
         cards[index] = newCard
-        cards[index] = newCard
         newCard.position.set(res.position)
         newCard.rotation = res.rotation
         return res
@@ -209,7 +208,7 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
         val stepX = MAX_HAND_WIDTH / MAX_HAND_SIZE
         result.add(Vector3(position).nor().scl(0.5f * y))
         result.add(normal.scl(stepX * x - 1.4f))
-        result.z += (cards.size + 1) * 0.01f
+        result.z += (n + 1) * 0.01f
         return result
     }
 
@@ -241,7 +240,7 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
             }
         }
         for(i in index+1..size-1){
-            val pos = cards[i-1].position
+            val pos = getCardPositionById(i-1)
             actionManager.add(
                     CardGUI.animate(cards[i], pos.x, pos.y, pos.z, cards[i]
                     .angle, 2f, cards[i].rotation))

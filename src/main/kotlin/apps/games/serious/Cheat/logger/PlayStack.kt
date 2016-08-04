@@ -120,12 +120,8 @@ class PlayStack(val DECK_SIZE: Int) {
      *
      * @param user who was sending verification message
      * @param response - what he sent
-     *
-     * @return True, if verification was successful,
-     * i.e cheat was claimed and found or
-     * player was right to believe
      */
-    fun registerVerifyResponse(user: User, response: String): Boolean{
+    fun registerVerifyResponse(user: User, response: String){
         if(verifierPlayer != user){
             throw GameExecutionException("Someone else response instead of last player")
         }
@@ -133,7 +129,14 @@ class PlayStack(val DECK_SIZE: Int) {
         if(hash != claims.last().hashes[verificationCard]){
             throw GameExecutionException("Invalid card revealed during verificatoin")
         }
-        val cardId = response.split(" ")[0].toInt()
+    }
+
+    /**
+     * @return True, if verification was successful,
+     * i.e cheat was claimed and found or
+     * player was right to believe
+     */
+    fun checkResponseCard(cardId: Int): Boolean{
         return (getCardById(cardId, DECK_SIZE).pip == pip) xor cheat
     }
 

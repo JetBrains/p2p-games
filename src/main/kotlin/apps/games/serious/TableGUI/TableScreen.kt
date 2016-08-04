@@ -261,7 +261,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         val fromHand = table.players[fromPlayer].cardSpaceHand
         val toHand = table.players[toPlayer].hand
         val card = fromHand.cards[index]
-        moveCard(card, fromHand, toHand)
+        moveCard(card, fromHand, toHand, true)
     }
 
     /**
@@ -305,7 +305,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         val pos = to.nextCardPosition()
         val toAngle: Float = card.angle + (if (flip) 180f else 0f)
         val action = CardGUI.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
-                                     to.getAngle() - from.getAngle())
+                                     to.getAngle())
         actionManager.addAfterLastComplete(action)
         to.cards.add(card)
     }

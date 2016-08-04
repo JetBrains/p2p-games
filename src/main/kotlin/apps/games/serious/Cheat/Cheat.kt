@@ -152,8 +152,14 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
             State.PASS_KEYS -> {
                 processEncryptedMessages(responses)
                 if(logger.log.stackFinished()){
-                    Thread.sleep(10000000)
-                    //TODO
+                    currentPlayerID = (receiverPlayerID + 1) % N
+                    receiverPlayerID = -1
+                    if(playQueue.isNotEmpty()){
+                        throw GameExecutionException("Not all cards were revealed")
+                    }
+                    logger.log.nextStack()
+                    state = State.INIT_ROUND
+                    return ""
                 }
                 currentPlayerID = getUserID(logger.log.nextPlayerToReveal())
                 if(playerID == currentPlayerID){
@@ -279,6 +285,9 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
             val user = User(msg.user)
             val userID = getUserID(user)
             if(userID == currentPlayerID){
+                if(logger.log.isNewStack() && msg.value.isEmpty()){
+                    continue
+                }
                 val move = msg.value.split(" ")
                 val action: Choice = Choice.valueOf(move[0])
                 var prevPlayer = (currentPlayerID - 1)
@@ -448,12 +457,14 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
             val user = User(msg.user)
             val userId = getUserID(user)
             if(userId == currentPlayerID){
-                val guess = logger.log.registerVerifyResponse(user, msg.value)
+                logger.log.registerVerifyResponse(user, msg.value)
+                val parts = msg.value.split(" ")
+                val cardId = parts[0].toInt()
+                val cardKey = BigInteger(parts[1])
+                val card = logger.log.registerCardKey(userId, cardId, cardKey)
+                val guess = logger.log.checkPip(card)
                 if(playerID != currentPlayerID){
-                    val parts = msg.value.split(" ")
-                    val cardId = parts[0].toInt()
-                    val cardKey = BigInteger(parts[1])
-                    val card = logger.log.registerCardKey(userId, cardId, cardKey)
+
                     if(playerCards.contains(getCardById(card, DECK_SIZE))){
                         throw GameExecutionException("I already hald the card, that was revealed")
                     }
@@ -471,7 +482,16 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         }
     }
 
+    /**
+     * This function is used during revealing cards to
+     * one player. It tages list of responses, exactly one
+     * of which contains encrypted info about passed cards
+     * (this data is stored in data field of protobuf message
+     */
     private fun processEncryptedMessages(responses: List<GameMessageProto.GameStateMessage>){
+        if(currentPlayerID == -1){
+            return
+        }
         val cards = mutableListOf<Int>()
         for(msg in responses){
             val user = User(msg.user)
@@ -487,6 +507,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                         val card = logger.log.registerCardKey(userId, cardID, key)
                         //todo - mb check commitment here, aside from endgame
                         cards.add(card)
+                        playerCards.add(getCardById(card, DECK_SIZE))
                     }
                 }else{
                     for(i in 0..encrypts.size-1){
@@ -495,10 +516,11 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 }
             }
         }
-        val n = logger.log.countRevealedCards(playerOrder[currentPlayerID])
-        for(i in 0..cards.size - 1){
-            val pos = n - cards.size + i
-            gameGUI.transferPlayedCardToPlayer(currentPlayerID, receiverPlayerID, pos, cards[i])
+        for(i in (cards.size - 1) downTo 0 step 1){
+//            val pos = n - cards.size + i
+            gameGUI.transferPlayedCardToPlayer(getTablePlayerId(currentPlayerID),
+                                               getTablePlayerId(receiverPlayerID),
+                                               i, cards[i])
         }
     }
 

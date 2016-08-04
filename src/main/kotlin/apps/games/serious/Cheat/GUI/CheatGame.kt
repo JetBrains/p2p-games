@@ -139,7 +139,6 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
     /**
      * Pick a card from players cardspace and
      * return it's relative position
-     * //TODO - restrict cards. Only last turn cards should be selectable
      */
     fun pickPlayedCard(player: Int, restrinction : (Int) -> (Boolean) = {x -> true}): Int{
         var res: Int = -1
@@ -356,16 +355,18 @@ class CheatGame(val me: Int, var DECK_SIZE: Int = 32, val N: Int) : GameView() {
      * @param newCard - new card to be played
      */
     fun revealAndHidePlayedCard(player: Int, oldCardIndex: Int, newCard: Int){
-        tableScreen.revealCardInCardSpaceHand(player, oldCardIndex, getCardModelById(newCard))
-        tableScreen.actionManager.addAfterLastComplete(DelayedAction(0.15f, {
-            tableScreen.revealCardInCardSpaceHand(player, oldCardIndex, getCardModelById(-1))
-        }))
+        val action1 = tableScreen.revealCardInCardSpaceHand(player, oldCardIndex, getCardModelById(newCard))
+        while(!action1.isComplete()){
+            Thread.sleep(150)
+        }
+        val action2 = tableScreen.revealCardInCardSpaceHand(player, oldCardIndex, getCardModelById(-1))
+        while(!action2.isComplete()){
+            Thread.sleep(150)
+        }
     }
 
     fun transferPlayedCardToPlayer(fromPlayer: Int, toPlayer: Int, index: Int, newCard: Int){
-        if(newCard != -1){
-            tableScreen.revealCardInCardSpaceHand(fromPlayer, index, getCardModelById(newCard))
-        }
+        tableScreen.revealCardInCardSpaceHand(fromPlayer, index, getCardModelById(newCard))
         tableScreen.transferCardFromCardSpaceToPlayer(fromPlayer, toPlayer, index)
 
     }
