@@ -14,7 +14,7 @@ import java.util.concurrent.Future
  */
 
 abstract class Game<out T>(internal val chat: Chat, internal val group: Group, val gameID: String,
-        var gameManager: GameManagerClass = GameManager) {
+                           var gameManager: GameManagerClass = GameManager) {
     private var subGameCounter: Int = 0
     private var nestedGames: MutableList<GameResult<*>> = mutableListOf()
     val stopedPlaying = Group()
@@ -94,7 +94,7 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
     /**
      * Some games want to run
      */
-    fun skipSubGame(){
+    fun skipSubGame() {
         subGameCounter++
     }
 
@@ -144,7 +144,8 @@ abstract class Game<out T>(internal val chat: Chat, internal val group: Group, v
      * some games might want to free resources
      * or something
      */
-    open fun close(){ }
+    open fun close() {
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -1,17 +1,13 @@
 package apps.games.serious.Cheat
 
 import apps.chat.Chat
-import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.serious.Card
-import apps.games.serious.Cheat.GUI.CheatGame
 import apps.games.serious.CardGame
+import apps.games.serious.Cheat.GUI.CheatGame
 import apps.games.serious.Cheat.logger.CheatGameLogger
 import apps.games.serious.Pip
 import apps.games.serious.getCardById
-import apps.games.serious.preferans.Bet
-import apps.games.serious.preferans.GUI.PreferansGame
-import apps.games.serious.preferans.ShuffledDeck
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import crypto.RSA.RSAKeyManager
@@ -21,7 +17,6 @@ import entity.User
 import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.crypto.InvalidCipherTextException
 import proto.GameMessageProto
-import sun.misc.Queue
 import java.math.BigInteger
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -30,11 +25,11 @@ import java.util.concurrent.LinkedBlockingQueue
  */
 
 class Cheat(chat: Chat, group: Group, gameID: String) :
-                                            CardGame(chat, group, gameID, 36) {
+        CardGame(chat, group, gameID, 36) {
     override val name: String
         get() = "Cheat Game "
 
-    private enum class State{
+    private enum class State {
         INIT,
         VALIDATE_KEYS,
         PICK_DECK_SIZE,
@@ -75,37 +70,38 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     init {
         initGame()
     }
+
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        for(msg in responses){
+        for (msg in responses) {
             chat.showMessage("[${msg.user.name}] said ${msg.value}")
         }
         extraData.clear()
-        when(state){
+        when (state) {
 
             State.INIT -> {
-                for(msg in responses){
+                for (msg in responses) {
                     keyManager.registerUserPublicKey(User(msg.user), msg.value)
                 }
                 currentPlayerID = -1
                 state = State.VALIDATE_KEYS
             }
             State.VALIDATE_KEYS -> {
-                if(playerID == currentPlayerID){
-                    for(msg in responses){
+                if (playerID == currentPlayerID) {
+                    for (msg in responses) {
                         try {
                             val s = keyManager.decodeString(msg.value)
                             val handshake = s.split(" ").last()
-                            if(handshake != HANDSHAKE_PHRASE){
+                            if (handshake != HANDSHAKE_PHRASE) {
                                 throw GameExecutionException("Invalid RSA key")
                             }
-                        }catch (e: InvalidCipherTextException){
+                        } catch (e: InvalidCipherTextException) {
                             throw GameExecutionException("Malformed RSA key")
                         }
                     }
                 }
 
-                currentPlayerID ++
-                if(currentPlayerID == N){
+                currentPlayerID++
+                if (currentPlayerID == N) {
                     state = State.PICK_DECK_SIZE
                     chat.sendMessage("RSA is OK. Generating deck")
                     currentPlayerID = -1
@@ -121,14 +117,14 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 return vote.toString()
             }
             State.GENERATE_DECK -> {
-                for (msg in responses){
+                for (msg in responses) {
                     chat.showMessage("[${msg.user.name}] voted for ${msg.value} cardID deck")
                 }
                 val votes = responses.map { x -> x.value.toInt() }
-                DECK_SIZE = votes.maxBy { x -> votes.count { s -> s == x } } ?:
+                deckSize = votes.maxBy { x -> votes.count { s -> s == x } } ?:
                         throw GameExecutionException("Couldn't agree in deck size")
-                gameGUI.updateDeckSize(DECK_SIZE)
-                chat.sendMessage("We are playing $DECK_SIZE cardID deck")
+                gameGUI.updateDeckSize(deckSize)
+                chat.sendMessage("We are playing $deckSize cardID deck")
                 state = State.DECRYPT_HAND
                 return initiateHands()
             }
@@ -140,17 +136,17 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
             }
             State.INIT_ROUND -> {
                 val action = processGameResponses(responses)
-                if(action == Choice.ADD){
+                if (action == Choice.ADD) {
                     return makeMove()
-                }else{
+                } else {
                     state = State.REVEAL_CARD
                 }
 
             }
             State.REVEAL_CARD -> {
                 state = State.VERIFY_CARD
-                if(playerID == currentPlayerID){
-                    return  playQueue.last()[cardToReveal]
+                if (playerID == currentPlayerID) {
+                    return playQueue.last()[cardToReveal]
                 }
             }
             State.VERIFY_CARD -> {
@@ -160,19 +156,19 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
             }
             State.PASS_KEYS -> {
                 processEncryptedMessages(responses)
-                if(logger.log.stackFinished()){
+                if (logger.log.stackFinished()) {
                     currentPlayerID = getNextPlayer(receiverPlayerID)
                     receiverPlayerID = -1
-                    if(playQueue.isNotEmpty()){
+                    if (playQueue.isNotEmpty()) {
                         throw GameExecutionException("Not all cards were revealed")
                     }
                     updateWinners()
                     logger.log.nextStack()
                     val m = winners.count { x -> x }
-                    if(winners[playerID]){
+                    if (winners[playerID]) {
                         state = State.COMPARE_RESULTS
                         return WINNING_PHRASE
-                    }else if(m != 0){
+                    } else if (m != 0) {
                         state = State.COMPARE_RESULTS
                         return LOSING_PHRASE
                     } else {
@@ -182,10 +178,10 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                     return ""
                 }
                 currentPlayerID = getUserID(logger.log.nextPlayerToReveal())
-                if(playerID == currentPlayerID){
+                if (playerID == currentPlayerID) {
                     extraData.clear()
                     val enc = playQueue.removeAt(0)
-                    for(s in enc){
+                    for (s in enc) {
                         extraData.add(keyManager.encodeForUser(playerOrder[receiverPlayerID], s).toByteArray())
                     }
                 }
@@ -196,11 +192,11 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 return keyManager.getPrivateKey()
             }
             State.REVEAL_ALL_KEYS -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     keyManager.registerUserPrivateKey(user, msg.value)
                     val s = keyManager.decodeForUser(user, keyManager.encodeForUser(user, HANDSHAKE_PHRASE))
-                    if(s != HANDSHAKE_PHRASE){
+                    if (s != HANDSHAKE_PHRASE) {
                         throw GameExecutionException("[${user.name}] provided incorrect private key")
                     }
                 }
@@ -208,18 +204,18 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 return deck.encrypted.keys.joinToString(" ")
             }
             State.VERIFY_LOGS -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     val userId = getUserID(user)
-                    val keys = msg.value.split(" ").map{x -> BigInteger(x)}
-                    for(i in 0..DECK_SIZE-1){
+                    val keys = msg.value.split(" ").map { x -> BigInteger(x) }
+                    for (i in 0..deckSize - 1) {
                         logger.log.registerCardKey(userId, i, keys[i])
                     }
                 }
                 val f = logger.log.verifyRound(playerOrder,
-                                               {user: User, msg: String -> keyManager.decodeForUser(user, msg)},
-                                               winners.zip(playerOrder).map { x -> x.second to x.first }.toMap())
-                if(!f){
+                        { user: User, msg: String -> keyManager.decodeForUser(user, msg) },
+                        winners.zip(playerOrder).map { x -> x.second to x.first }.toMap())
+                if (!f) {
                     throw GameExecutionException("Someone cheated. After decrypting RSA something is not in place")
                 }
                 keyManager.reset()
@@ -232,7 +228,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Start GUI for the Preferans game
+     * Start GUI for the Cheat game
      */
     private fun initGame(): String {
         val config = LwjglApplicationConfiguration()
@@ -250,11 +246,11 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
 
 
     /**
-     * Let users pick desired DeckSize
+     * Let users pick desired deckSize
      */
-    private fun pickDeckSize(): Int{
+    private fun pickDeckSize(): Int {
         val deckSizeQueue = LinkedBlockingQueue<DeckSizes>(1)
-        val callback = {x: DeckSizes -> deckSizeQueue.offer(x)}
+        val callback = { x: DeckSizes -> deckSizeQueue.offer(x) }
         gameGUI.resetAllSizes()
         gameGUI.registerDeckSizeCallback(callback, *DeckSizes.values())
         gameGUI.showDecksizeOverlay()
@@ -271,12 +267,12 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     private fun initiateHands(): String {
         gameGUI.showHint("Shuffling Cards")
         updateDeck()
-        logger.newRound(DECK_SIZE, deck)
+        logger.newRound(deckSize, deck)
         val resultKeys = mutableListOf<BigInteger>()
-        for (i in 0..DECK_SIZE-1) {
+        for (i in 0..deckSize - 1) {
             val holder = i % N
             cardHolders[i] = holder
-            cardsCount[holder] ++
+            cardsCount[holder]++
             if (holder != playerID) {
                 resultKeys.add(deck.encrypted.keys[i])
             }
@@ -290,63 +286,63 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * by that user. I.E. If player holds cards
      * 1, 4, 7 in shuffled deck, keys - contains
      * key for every cardID, that is not in TALON,
-     * and are not possesed by that user
+     * and are not possessed by that user
      * Stores known cards in
      */
-    private fun decryptHand(responses: List<GameMessageProto.GameStateMessage>){
-        for(i in 0..DECK_SIZE-1){
+    private fun decryptHand(responses: List<GameMessageProto.GameStateMessage>) {
+        for (i in 0..deckSize - 1) {
             logger.log.registerCardKey(playerID, i, deck.encrypted.keys[i])
         }
-        for (msg in responses){
+        for (msg in responses) {
             val keys = msg.value.split(" ").map { x -> BigInteger(x) }
             val userID = getUserID(User(msg.user))
             val positions = cardHolders.filterValues { x -> x != userID }.keys.toList()
-            if(keys.size != positions.size){
+            if (keys.size != positions.size) {
                 throw GameExecutionException("Someone failed to provide his keys")
             }
-            for(i in 0..keys.size-1){
+            for (i in 0..keys.size - 1) {
                 val pos = logger.log.registerCardKey(userID, positions[i], keys[i])
-                if(pos != -1 && cardHolders[positions[i]] == playerID){
-                    playerCards.add(getCardById(pos, DECK_SIZE))
+                if (pos != -1 && cardHolders[positions[i]] == playerID) {
+                    playerCards.add(getCardById(pos, deckSize))
                 }
             }
         }
     }
 
     /**
-     * Deal decrypted cards to myself and unknown cards
+     * Deal decrypted cards to our self and unknown cards
      * to everyone else
      */
-    private fun dealHand(){
-        for(card in playerCards){
+    private fun dealHand() {
+        for (card in playerCards) {
             gameGUI.dealPlayer(getTablePlayerId(playerID), card)
         }
-        for(i in 0..DECK_SIZE-1){
-            if(cardHolders[i] != playerID){
+        for (i in 0..deckSize - 1) {
+            if (cardHolders[i] != playerID) {
                 gameGUI.dealPlayer(getTablePlayerId(cardHolders[i]!!), -1)
             }
         }
     }
 
     /**
-     * Process messages receive from last turn
+     * Process messages receive from last turn (in game phase)
      * update logger, choose next player to make his move
      *
      * @return player action(Choice)
      */
     private fun processGameResponses(responses: List<GameMessageProto.GameStateMessage>): Choice {
-        for(msg in responses){
+        for (msg in responses) {
             val user = User(msg.user)
             val userID = getUserID(user)
-            if(userID == currentPlayerID){
-                if(logger.log.isNewStack() && msg.value.isEmpty()){
+            if (userID == currentPlayerID) {
+                if (logger.log.isNewStack() && msg.value.isEmpty()) {
                     continue
                 }
                 val move = msg.value.split(" ")
                 val action: Choice = Choice.valueOf(move[0])
                 val prevPlayer = getPreviousPlayer(currentPlayerID)
 
-                when(action){
+                when (action) {
                     Choice.ADD -> {
                         processAddCardHashes(msg)
                         currentPlayerID = getNextPlayer()
@@ -369,29 +365,29 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * previous player decided to add cards
-     * @param msg - GameStateMessage describing addedcards
+     * if previous player decided to add cards - process his request
+     * @param msg - GameStateMessage describing added cards
      */
-    private fun processAddCardHashes(msg: GameMessageProto.GameStateMessage){
+    private fun processAddCardHashes(msg: GameMessageProto.GameStateMessage) {
         val move = msg.value.split(" ")
         val user = User(msg.user)
         val userID = getUserID(user)
-        if(move.size < 2 || move.size > 4){
+        if (move.size < 2 || move.size > 4) {
             throw GameExecutionException("Unexpectex move: ${msg.value}")
         }
-        val claim = if(move.size == 2) Pip.UNKNOWN else Pip.valueOf(move[2])
-        if(claim != Pip.UNKNOWN){
+        val claim = if (move.size == 2) Pip.UNKNOWN else Pip.valueOf(move[2])
+        if (claim != Pip.UNKNOWN) {
             gameGUI.showHint("All of these cards are ${claim.type}")
         }
         val count = BetCount.valueOf(move[1])
-        if(count.size > cardsCount[userID]){
+        if (count.size > cardsCount[userID]) {
             throw GameExecutionException("According to my logs, ${user.name} " +
-                                         "doesn't have ${count.size} cards")
+                    "doesn't have ${count.size} cards")
         }
         val hashes = msg.dataList.map { x -> String(x.toByteArray()) }
         logger.log.registerAddPlayHashes(user, count, claim, hashes)
-        if(playerID != currentPlayerID){
-            for(i in 0..count.size-1){
+        if (playerID != currentPlayerID) {
+            for (i in 0..count.size - 1) {
                 gameGUI.animateCardPlay(getTablePlayerId(userID))
             }
         }
@@ -405,20 +401,20 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * if necessary - pick cards and return their hashes
      * otherwise - update hint
      */
-    private fun makeMove(): String{
-        if(currentPlayerID == -1){
-            currentPlayerID ++
+    private fun makeMove(): String {
+        if (currentPlayerID == -1) {
+            currentPlayerID++
         }
-        if(playerID == currentPlayerID){
+        if (playerID == currentPlayerID) {
             gameGUI.showHint("Decide what will you do:")
             val choice = getPlayerChoise()
-            if(choice == Choice.ADD){
+            if (choice == Choice.ADD) {
                 val count = getAddCount()
                 val pip = getPip()
                 val pickedCards = mutableListOf<Int>()
-                for(i in 0..count.size-1){
+                for (i in 0..count.size - 1) {
                     val card = gameGUI.pickCard(*playerCards.toTypedArray())
-                    playerCards.remove(getCardById(card, DECK_SIZE))
+                    playerCards.remove(getCardById(card, deckSize))
                     pickedCards.add(card)
                 }
 
@@ -427,20 +423,20 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                         .map { x -> "$x ${deck.encrypted.keys[x]} ${randomString(SALT_SIZE)}" }
                 playQueue.add(stored)
                 extraData.clear()
-                for(cardEntry in stored){
+                for (cardEntry in stored) {
                     extraData.add(DigestUtils.sha256Hex(cardEntry.toByteArray()).toByteArray())
                 }
                 return "${choice.name} ${count.type} ${pip.type}"
-            }else{
+            } else {
                 val prevPlayer = getPreviousPlayer()
                 val totPlayed = logger.log.countUserCardOnStack(playerOrder[prevPlayer])
                 val lastPlayed = logger.log.getLastUserBetCountSize(playerOrder[prevPlayer])
-                val filter = {x: Int -> (lastPlayed == -1) || (totPlayed - x <= lastPlayed)}
+                val filter = { x: Int -> (lastPlayed == -1) || (totPlayed - x <= lastPlayed) }
                 val cardToVerify = gameGUI.pickPlayedCard(getTablePlayerId(prevPlayer), filter)
                 val res = cardToVerify - totPlayed + lastPlayed
                 return "${choice.name} $res"
             }
-        }else{
+        } else {
             gameGUI.showHint("Waiting for " +
                     "[${playerOrder[currentPlayerID].name}]" +
                     "to make his move")
@@ -451,15 +447,15 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     /**
      * Get player Choice from UI
      */
-    private fun getPlayerChoise(): Choice{
-        if(logger.log.isNewStack()){
+    private fun getPlayerChoise(): Choice {
+        if (logger.log.isNewStack()) {
             return Choice.ADD
         }
         val choiceQueue = LinkedBlockingQueue<Choice>(1)
-        val callback = {x: Choice -> choiceQueue.offer(x)}
+        val callback = { x: Choice -> choiceQueue.offer(x) }
         gameGUI.registerChoicesCallback(callback, *Choice.values())
         gameGUI.resetAllChoices()
-        if(cardsCount[playerID] == 0){
+        if (cardsCount[playerID] == 0) {
             gameGUI.disableChoices(Choice.ADD)
         }
         gameGUI.showChoicesOverlay()
@@ -472,9 +468,9 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     /**
      * Get number of cards that player will play this round
      */
-    private fun getAddCount(): BetCount{
+    private fun getAddCount(): BetCount {
         val betCountQueue = LinkedBlockingQueue<BetCount>(1)
-        val callback = {x: BetCount -> betCountQueue.offer(x)}
+        val callback = { x: BetCount -> betCountQueue.offer(x) }
         gameGUI.registerBetCountsCallback(callback, *BetCount.values())
         gameGUI.resetAllBetCounts()
         val toDisable = BetCount.values().filter { x -> x.size > cardsCount[playerID] }
@@ -489,11 +485,11 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * Get pip of cards that will be claimed this round
      */
     private fun getPip(): Pip {
-        if(!logger.log.isNewStack()){
+        if (!logger.log.isNewStack()) {
             return Pip.UNKNOWN
         }
         val pipQueue = LinkedBlockingQueue<Pip>(1)
-        val callback = {x: Pip -> pipQueue.offer(x)}
+        val callback = { x: Pip -> pipQueue.offer(x) }
         gameGUI.registerPipCallback(callback, *Pip.values())
         gameGUI.resetAllPips()
         gameGUI.showPipOverlay()
@@ -505,34 +501,34 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     /**
      * Reveal card sent by verifier.
      * Log it and check, that everything was consistent.
-     * Reveal card and hid it(animations)
-     * set cardReveiver to the id of player,
+     * Reveal card and hide it(GUI animations)
+     * set cardReceiver to the id of player,
      * who should receive all cards on the table
      */
-    private fun revealCard(responses: List<GameMessageProto.GameStateMessage>){
-        for(msg in responses){
+    private fun revealCard(responses: List<GameMessageProto.GameStateMessage>) {
+        for (msg in responses) {
             val user = User(msg.user)
             val userId = getUserID(user)
-            if(userId == currentPlayerID){
+            if (userId == currentPlayerID) {
                 logger.log.registerVerifyResponse(user, msg.value)
                 val parts = msg.value.split(" ")
                 val cardId = parts[0].toInt()
                 val cardKey = BigInteger(parts[1])
                 val card = logger.log.registerCardKey(userId, cardId, cardKey)
                 val guess = logger.log.checkPip(card)
-                if(playerID != currentPlayerID){
+                if (playerID != currentPlayerID) {
 
-                    if(playerCards.contains(getCardById(card, DECK_SIZE))){
+                    if (playerCards.contains(getCardById(card, deckSize))) {
                         throw GameExecutionException("I already hald the card, that was revealed")
                     }
                     val totPlayed = logger.log.countUserCardOnStack(playerOrder[userId])
                     val lastPlayed = logger.log.getLastUserBetCountSize(playerOrder[userId])
                     gameGUI.revealAndHidePlayedCard(getTablePlayerId(userId),
-                                             totPlayed-lastPlayed+cardToReveal, card)
+                            totPlayed - lastPlayed + cardToReveal, card)
                 }
-                if(guess){
+                if (guess) {
                     receiverPlayerID = currentPlayerID
-                }else{
+                } else {
                     receiverPlayerID = getNextPlayer()
                 }
             }
@@ -545,29 +541,29 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * of which contains encrypted info about passed cards
      * (this data is stored in data field of protobuf message
      */
-    private fun processEncryptedMessages(responses: List<GameMessageProto.GameStateMessage>){
-        if(currentPlayerID == -1){
+    private fun processEncryptedMessages(responses: List<GameMessageProto.GameStateMessage>) {
+        if (currentPlayerID == -1) {
             return
         }
         val cards = mutableListOf<Int>()
-        for(msg in responses){
+        for (msg in responses) {
             val user = User(msg.user)
             val userId = getUserID(user)
-            if(userId == currentPlayerID){
+            if (userId == currentPlayerID) {
                 val encrypts = msg.dataList.map { x -> String(x.toByteArray()) }
                 logger.log.regiserEncryptedMessage(user, encrypts)
-                if(playerID == receiverPlayerID){
-                    for(encrypted in encrypts){
+                if (playerID == receiverPlayerID) {
+                    for (encrypted in encrypts) {
                         val parts = keyManager.decodeString(encrypted).split(" ")
                         val cardID = parts[0].toInt()
                         val key = BigInteger(parts[1])
                         val card = logger.log.registerCardKey(userId, cardID, key)
                         //todo - mb check commitment here, aside from endgame
                         cards.add(card)
-                        playerCards.add(getCardById(card, DECK_SIZE))
+                        playerCards.add(getCardById(card, deckSize))
                     }
-                }else{
-                    for(i in 0..encrypts.size-1){
+                } else {
+                    for (i in 0..encrypts.size - 1) {
                         cards.add(-1)
                     }
                 }
@@ -575,11 +571,10 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         }
         cardsCount[currentPlayerID] -= cards.size
         cardsCount[receiverPlayerID] += cards.size
-        for(i in (cards.size - 1) downTo 0 step 1){
-//            val pos = n - cards.size + i
+        for (i in (cards.size - 1) downTo 0 step 1) {
             gameGUI.transferPlayedCardToPlayer(getTablePlayerId(currentPlayerID),
-                                               getTablePlayerId(receiverPlayerID),
-                                               i, cards[i])
+                    getTablePlayerId(receiverPlayerID),
+                    i, cards[i])
         }
     }
 
@@ -587,12 +582,12 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * If rount just ended - update list of winners
      * (check will be conducted afterwards)
      */
-    private fun updateWinners(){
-        if(!logger.log.stackFinished()){
+    private fun updateWinners() {
+        if (!logger.log.stackFinished()) {
             return
         }
-        for(i in 0..N-1){
-            if(cardsCount[i] == 0){
+        for (i in 0..N - 1) {
+            if (cardsCount[i] == 0) {
                 winners[i] = true
             }
         }
@@ -605,9 +600,9 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * @param n - starting player
      * @return id of next active player
      */
-    private fun getNextPlayer(n: Int = currentPlayerID): Int{
+    private fun getNextPlayer(n: Int = currentPlayerID): Int {
         var res = (n + 1) % N
-        while(winners[res]){
+        while (winners[res]) {
             res = (res + 1) % N
         }
         return res
@@ -619,14 +614,14 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * @param n - starting player
      * @return id of last active player
      */
-    private fun getPreviousPlayer(n: Int = currentPlayerID): Int{
+    private fun getPreviousPlayer(n: Int = currentPlayerID): Int {
         var res = n - 1
-        if(res < 0){
+        if (res < 0) {
             res += N
         }
-        while(winners[res]){
-            res --
-            if(res < 0){
+        while (winners[res]) {
+            res--
+            if (res < 0) {
                 res += N
             }
         }
@@ -638,12 +633,12 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * or LOSING_PHRASE. Verify that received messages match
      * our data about winners
      */
-    private fun compareWinningMessages(responses: List<GameMessageProto.GameStateMessage>){
-        for(msg in responses){
+    private fun compareWinningMessages(responses: List<GameMessageProto.GameStateMessage>) {
+        for (msg in responses) {
             val userID = getUserID(User(msg.user))
-            when(msg.value){
-                WINNING_PHRASE -> if(!winners[userID]) throw GameExecutionException("[${msg.user.name}] claims that he won, but according to my logs he didn't")
-                LOSING_PHRASE -> if(winners[userID]) throw GameExecutionException("[${msg.user.name}] claims that he lost, but according to my logs he didn't")
+            when (msg.value) {
+                WINNING_PHRASE -> if (!winners[userID]) throw GameExecutionException("[${msg.user.name}] claims that he won, but according to my logs he didn't")
+                LOSING_PHRASE -> if (winners[userID]) throw GameExecutionException("[${msg.user.name}] claims that he lost, but according to my logs he didn't")
                 else -> throw GameExecutionException("Unexpected phrase received")
             }
         }
@@ -657,14 +652,15 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         return keyManager.getPublicKey()
     }
 
-    override fun getResult() {}
+    override fun getResult() {
+    }
 
     override fun getData(): List<ByteArray> {
         return extraData
     }
 
     override fun getFinalMessage(): String {
-        val winners = winners.zip(playerOrder).filter { x -> x.first }.joinToString("] and [", "[", "]", transform = {x -> x.second.name})
+        val winners = winners.zip(playerOrder).filter { x -> x.first }.joinToString("] and [", "[", "]", transform = { x -> x.second.name })
         return "Everything appears to be correct and consistent. I agree that $winners won! Contratz!"
     }
 

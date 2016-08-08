@@ -144,7 +144,7 @@ class GameRunner<T>(val game: Game<T>, val maxRetires: Int = 5) : Callable<T> {
             try {
                 val computed = game.evaluate(responses)
                 sendResponse(computed, game.getData())
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
                 println(e.message)
                 throw e

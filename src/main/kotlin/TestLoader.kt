@@ -12,7 +12,7 @@ import java.net.Socket
 
 class Task : Runnable {
     override fun run() {
-        BasicConfigurator.configure();
+        BasicConfigurator.configure()
         val host: String
         if (DEBUG) {
             host = "127.0.0.1"
@@ -20,7 +20,7 @@ class Task : Runnable {
             try {
                 val s = Socket("google.com", 80)
                 host = s.localAddress.hostAddress
-                s.close();
+                s.close()
             } catch(ignored: Exception) {
                 host = InetAddress.getLocalHost().hostAddress
             }
@@ -46,7 +46,7 @@ class Task2 : Runnable {
             try {
                 val s = Socket("google.com", 80)
                 host = s.localAddress.hostAddress
-                s.close();
+                s.close()
             } catch(ignored: Exception) {
                 host = InetAddress.getLocalHost().hostAddress
             }

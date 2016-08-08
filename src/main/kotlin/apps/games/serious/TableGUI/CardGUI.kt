@@ -43,7 +43,7 @@ private fun convert(front: FloatArray, back: FloatArray): FloatArray {
 class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
     val CARD_WIDTH = 1f
     val CARD_HEIGHT = CARD_WIDTH * 277f / 200f
-    val radius = CARD_WIDTH / 2f
+    val radius = CARD_HEIGHT / 2f
     val verticies: FloatArray
     val indices: ShortArray = shortArrayOf(0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7)
     val transform = Matrix4()
@@ -69,7 +69,7 @@ class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
         transform.trn(position.x, position.y, z)
     }
 
-    fun reset(){
+    fun reset() {
         angle = 0f
         position.set(0f, 0f, 0f)
         rotation = 0f
@@ -136,7 +136,7 @@ class CardAction(delay: Float) : Action(delay) {
             finished = true
         }
         card.position.set(fromPosition).lerp(toPosition, alpha)
-        if(!doNotRotate){
+        if (!doNotRotate) {
             card.angle = fromAngle + alpha * (toAngle - fromAngle)
             card.rotation = fromRotation + alpha * (toRotation - fromRotation)
         }
@@ -155,7 +155,7 @@ class CardAction(delay: Float) : Action(delay) {
  */
 class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
     val cards: Array<Array<CardGUI>> = Array(Suit.values().size,
-                                             { i -> arrayOf<CardGUI>() })
+            { i -> arrayOf<CardGUI>() })
     val back = atlas.createSprite("back", backIndex)
 
     init {
@@ -178,7 +178,7 @@ class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
     fun getCardModel(suit: Suit, pip: Pip): CardGUI {
         if (suit == Suit.UNKNOWN || pip == Pip.UNKNOWN) {
             return CardGUI(Suit.UNKNOWN, Pip.UNKNOWN, back,
-                           atlas.createSprite("back", (backIndex + 1) % 4))
+                    atlas.createSprite("back", (backIndex + 1) % 4))
         }
         cards[suit.index][pip.index].isRevealed = true
         return cards[suit.index][pip.index]
@@ -188,10 +188,10 @@ class CardDeck(val atlas: TextureAtlas, val backIndex: Int) {
         return getCardModel(card.suit, card.pip)
     }
 
-    fun reset(){
-        for (suit in Suit.values()){
-            for(pip in Pip.values()){
-                if(suit != Suit.UNKNOWN && pip != Pip.UNKNOWN){
+    fun reset() {
+        for (suit in Suit.values()) {
+            for (pip in Pip.values()) {
+                if (suit != Suit.UNKNOWN && pip != Pip.UNKNOWN) {
                     getCardModel(suit, pip).reset()
                 }
             }

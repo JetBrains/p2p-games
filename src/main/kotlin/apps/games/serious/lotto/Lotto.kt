@@ -57,11 +57,13 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
      */
     @Synchronized override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         when (state) {
-            State.INIT -> { //Game just started. Generate initial ticket
+            State.INIT -> {
+                //Game just started. Generate initial ticket
                 state = State.GENERATE_TICKET
                 return ticket.getSHA256()
             }
-            State.GENERATE_TICKET -> { // Generate
+            State.GENERATE_TICKET -> {
+                // Generate
                 val hashes = responses.map { x -> x.value }
                 if (hashes.distinct().size != hashes.size) {
                     ticket = generateTicket()
@@ -79,7 +81,8 @@ class Lotto(chat: Chat, group: Group, gameID: String, val ticketSize: Int = 5, v
                 val result: BigInteger
                 try {
                     result = rngFuture.get()
-                } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
+                } catch(e: CancellationException) {
+                    // Task was cancelled - means that we need to stop. NOW!
                     state = State.END
                     return ""
                 } catch(e: ExecutionException) {

@@ -136,7 +136,7 @@ class ActionManager {
 
     fun getLastAction(): Action? {
         synchronized(actions) {
-            synchronized(pending){
+            synchronized(pending) {
                 if (pending.isNotEmpty()) {
                     return pending.last()
                 }
@@ -149,11 +149,11 @@ class ActionManager {
 
     }
 
-    fun clear(){
-        synchronized(actions){
+    fun clear() {
+        synchronized(actions) {
             actions.clear()
         }
-        synchronized(pending){
+        synchronized(pending) {
             pending.clear()
         }
     }

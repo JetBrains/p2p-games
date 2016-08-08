@@ -22,18 +22,18 @@ open class ConnectionManagerClass(client: InetSocketAddress, host: InetSocketAdd
     val services = mutableSetOf<Service<*>>()
 
     fun addService(event: GenericMessageProto.GenericMessage.Type,
-            service: Service<*>) {
+                   service: Service<*>) {
         dispatcher.register(event, service.getDispatcher())
         services.add(service)
     }
 
     fun sendAsync(addr: InetSocketAddress,
-            msg: GenericMessageProto.GenericMessage) {
+                  msg: GenericMessageProto.GenericMessage) {
         client.sendAsync(addr, msg)
     }
 
     fun request(addr: InetSocketAddress,
-            msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
+                msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
         return client.request(addr, msg)
     }
 

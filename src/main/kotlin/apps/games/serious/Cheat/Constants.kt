@@ -6,14 +6,13 @@ package apps.games.serious.Cheat
  */
 
 
-
-enum class DeckSizes(val type: String,val size: Int){
+enum class DeckSizes(val type: String, val size: Int) {
     DEBUG("DEBUG", 8),
     SMALL("36 CARD", 36),
     LARGE("52 CARD", 52)
 }
 
-enum class BetCount(val size: Int){
+enum class BetCount(val size: Int) {
     ONE(1),
     TWO(2),
     THREE(3),
@@ -22,7 +21,7 @@ enum class BetCount(val size: Int){
     val type = name
 }
 
-enum class Choice(val type: String){
+enum class Choice(val type: String) {
     ADD("ADD CARDS"),
     CHECK_TRUE("BELIEVE"),
     CHECK_FALSE("CHEAT")

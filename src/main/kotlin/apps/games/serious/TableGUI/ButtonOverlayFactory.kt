@@ -1,6 +1,5 @@
 package apps.games.serious.TableGUI
 
-import apps.games.serious.preferans.Bet
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
@@ -14,24 +13,25 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import entity.User
 
 /**
  * Created by user on 7/14/16.
  */
 
 
-abstract class Overlay{
+abstract class Overlay {
     var isVisible = false
     val stage: Stage
+
     init {
         stage = Stage()
     }
+
     private val baseX = 1024f
     private val baseY = 1024f
 
-    val scaleX = Gdx.graphics.width/baseX
-    val scaleY = Gdx.graphics.height/baseY
+    val scaleX = Gdx.graphics.width / baseX
+    val scaleY = Gdx.graphics.height / baseY
     open fun render(cam: Camera) {
         if (isVisible) {
             stage.camera.projection.set(cam.projection)
@@ -44,7 +44,7 @@ abstract class Overlay{
     }
 }
 
-abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
+abstract class ButtonOverlay<T : Enum<T>> : Overlay() {
     lateinit var skin: Skin
 
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
@@ -83,6 +83,7 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
         skin.add("default", textButtonStyle)
         stage.addActor(table)
     }
+
     /**
      * Create layout for bidding overlay
      */
@@ -134,16 +135,18 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
         val button = buttons[option] ?: return
         button.clearListeners()
         button.addListener(ListenerFactory.create(option, button, { x: T ->
-            if (isVisible){callback(x)}}))
+            if (isVisible) {
+                callback(x)
+            }
+        }))
 
     }
 
 
-
     companion object ListenerFactory {
-        fun <R, T: Enum<T>> create(option: T,
-                                   betButton: Button,
-                                   callback: (T) -> (R)): EventListener {
+        fun <R, T : Enum<T>> create(option: T,
+                                    betButton: Button,
+                                    callback: (T) -> (R)): EventListener {
             return object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
                     if (!betButton.isDisabled) {
@@ -158,10 +161,12 @@ abstract class ButtonOverlay<T: Enum<T>>: Overlay(){
 }
 
 class ButtonOverlayFactory {
-    companion object{
-        fun <T: Enum<T>>create(clazz: Class<T>, breaks: List<T> = listOf(),
-         skips: List<T> = listOf(), names: Map<T, String> = mapOf()): ButtonOverlay<T> {
-            return object : ButtonOverlay<T>(){
+    companion object {
+        fun <T : Enum<T>> create(clazz: Class<T>,
+                                 breaks: List<T> = listOf(),
+                                 skips: List<T> = listOf(),
+                                 names: Map<T, String> = mapOf()): ButtonOverlay<T> {
+            return object : ButtonOverlay<T>() {
                 override fun create() {
                     for (value in clazz.enumConstants) {
                         if (value in skips) {

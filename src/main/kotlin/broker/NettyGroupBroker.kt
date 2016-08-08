@@ -11,7 +11,7 @@ import proto.GenericMessageProto
  */
 class NettyGroupBroker(val connectionManager: ConnectionManagerClass = ConnectionManager) : GroupBroker {
     override fun broadcastAsync(group: Group,
-            msg: GenericMessageProto.GenericMessage) {
+                                msg: GenericMessageProto.GenericMessage) {
         synchronized(group.users) {
             for (user in group.users) {
                 sendAsync(user, msg)
@@ -21,7 +21,7 @@ class NettyGroupBroker(val connectionManager: ConnectionManagerClass = Connectio
 
 
     override fun sendAsync(user: User,
-            msg: GenericMessageProto.GenericMessage) {
+                           msg: GenericMessageProto.GenericMessage) {
         connectionManager.sendAsync(user.hostAddress, msg)
     }
 

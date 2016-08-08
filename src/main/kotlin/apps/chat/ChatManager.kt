@@ -91,8 +91,8 @@ object ChatManager {
      * create it if need.
      */
     @Synchronized fun joinChat(chatId: Int,
-            memberAddr: InetSocketAddress,
-            username: String): Chat {
+                               memberAddr: InetSocketAddress,
+                               username: String): Chat {
         //TODO - query factory
         val query = GenericMessageProto.GenericMessage.newBuilder()
                 .setType(GenericMessageProto.GenericMessage.Type.QUERY)

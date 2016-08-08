@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException
 
 
 class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec,
-        val deckSize: Int = 52, gameManager: GameManagerClass = GameManager) : Game<Deck>(
+                     val deckSize: Int = 52, gameManager: GameManagerClass = GameManager) : Game<Deck>(
         chat, group, gameID, gameManager = gameManager) {
     override val name: String
         get() = "Random Deck Generator"
@@ -65,7 +65,8 @@ class RandomDeckGame(chat: Chat, group: Group, gameID: String, val ECParams: ECP
 
                     try {
                         multiplier = rngFuture.get()
-                    } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
+                    } catch(e: CancellationException) {
+                        // Task was cancelled - means that we need to stop. NOW!
                         state = State.END
                         return ""
                     } catch(e: ExecutionException) {

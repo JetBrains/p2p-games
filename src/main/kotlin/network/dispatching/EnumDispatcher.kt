@@ -80,9 +80,9 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
      * occured.
      */
     fun <E : Enum<E>, T : GeneratedMessage> register(x: E,
-            listener: Dispatcher<T>) {
+                                                     listener: Dispatcher<T>) {
         if (!enumClass.isInstance(x)) {
-            throw IllegalArgumentException("type of provided event doesn't correspond to this Dispatcher handle type" )
+            throw IllegalArgumentException("type of provided event doesn't correspond to this Dispatcher handle type")
         }
         listeners[enumType.findValueByName(x.name)]!!.add(listener)
     }
@@ -94,7 +94,7 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
      * occured.
      */
     fun <E : Enum<E>, T : GeneratedMessage> register(x: E,
-            listener: (T) -> (GenericMessageProto.GenericMessage?)) {
+                                                     listener: (T) -> (GenericMessageProto.GenericMessage?)) {
         register(x, SimpleDispatcher(listener))
     }
 
@@ -138,7 +138,7 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : GeneratedMessage> getHandlers(eventType: Descriptors.EnumValueDescriptor,
-            eventValueType: Class<T>)
+                                                   eventValueType: Class<T>)
             : List<Dispatcher<T>> {
         val list = listeners[eventType]
         return list as List<Dispatcher<T>>

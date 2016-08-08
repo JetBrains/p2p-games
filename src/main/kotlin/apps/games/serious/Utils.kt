@@ -1,13 +1,10 @@
 package apps.games.serious
 
-import apps.games.GameExecutionException
 import apps.games.serious.TableGUI.CardGUI
-import apps.games.serious.Pip
-import apps.games.serious.Suit
-
 
 
 data class Card(val suit: Suit, val pip: Pip)
+
 private val MAX_DECK_SIZE = 54
 /**
  * Created by user on 7/18/16.d
@@ -23,7 +20,7 @@ private val MAX_DECK_SIZE = 54
  * @return Card - Suit and Pip
  */
 fun getCardById(cardID: Int, n: Int): Card {
-    if(n > MAX_DECK_SIZE){
+    if (n > MAX_DECK_SIZE) {
         throw IllegalArgumentException("Can not process deck with more that 52 cards")
     }
     val card: Card
@@ -33,7 +30,7 @@ fun getCardById(cardID: Int, n: Int): Card {
         //All count Pips, that are not UNKNOWN
         val totalPips = Pip.values().size - 1
         //All count Suits, that are not UNKNOWN
-        val totalSuits = Suit.values().size -1
+        val totalSuits = Suit.values().size - 1
         val nPips = n / totalSuits
         val gapSize = totalPips - nPips
         val suitId = cardID / nPips
@@ -56,10 +53,10 @@ fun getCardById(cardID: Int, n: Int): Card {
  * @param n - deck size
  */
 fun getIdByCard(card: Card, n: Int): Int {
-    if(n > MAX_DECK_SIZE){
+    if (n > MAX_DECK_SIZE) {
         throw IllegalArgumentException("Can not process deck with more that 52 cards")
     }
-    if(card.suit == Suit.UNKNOWN){
+    if (card.suit == Suit.UNKNOWN) {
         return -1
     }
     val suitID: Int = card.suit.index
@@ -67,23 +64,22 @@ fun getIdByCard(card: Card, n: Int): Int {
     //All count Pips, that are not UNKNOWN
     val totalPips = Pip.values().size - 1
     //All count Suits, that are not UNKNOWN
-    val totalSuits = Suit.values().size -1
+    val totalSuits = Suit.values().size - 1
     val nPips = n / totalSuits
     val gapSize = totalPips - nPips
 
-    if(pipID - gapSize >= Pip.TWO.index){
+    if (pipID - gapSize >= Pip.TWO.index) {
         pipID -= gapSize
     }
-    return nPips*suitID + pipID
+    return nPips * suitID + pipID
 }
-
 
 
 /**
  * Get cardGUI object and translate it
  * into card ID
  */
-fun getIdByCard(card: CardGUI, n: Int): Int{
+fun getIdByCard(card: CardGUI, n: Int): Int {
     return getIdByCard(Card(card.suit, card.pip), n)
 }
 
@@ -92,24 +88,24 @@ fun getIdByCard(card: CardGUI, n: Int): Int{
  * Get list of all Pips that appear in
  * n-card deck
  */
-fun getPipsInDeck(n: Int): List<Pip>{
+fun getPipsInDeck(n: Int): List<Pip> {
     //All count Pips, that are not UNKNOWN
     val totalPips = Pip.values().size - 1
     //All count Suits, that are not UNKNOWN
-    val totalSuits = Suit.values().size -1
+    val totalSuits = Suit.values().size - 1
     val nPips = n / totalSuits
     val gapSize = totalPips - nPips
 
     val res = mutableListOf<Pip>()
-    for(pip in Pip.values().sortedBy{x -> x.value}){
-        if(pip == Pip.UNKNOWN){
+    for (pip in Pip.values().sortedBy { x -> x.value }) {
+        if (pip == Pip.UNKNOWN) {
             continue
         }
-        if(pip == Pip.ACE){
+        if (pip == Pip.ACE) {
             res.add(pip)
             continue
         }
-        if(pip.index - Pip.TWO.index >= gapSize){
+        if (pip.index - Pip.TWO.index >= gapSize) {
             res.add(pip)
         }
     }
@@ -121,16 +117,18 @@ fun getPipsInDeck(n: Int): List<Pip>{
  * trump suit and enforcedSuit
  */
 fun maxWithTrump(cards: Collection<Card>, trump: Suit = Suit.UNKNOWN,
-                 enforcedSuit: Suit = Suit.UNKNOWN): Card?{
-    val trumpPlays = cards.filter {x -> x.suit == trump}
-    val maxValue: Int = Pip.values().maxBy { x -> x.value}!!.value + 1
+                 enforcedSuit: Suit = Suit.UNKNOWN): Card? {
+    val trumpPlays = cards.filter { x -> x.suit == trump }
+    val maxValue: Int = Pip.values().maxBy { x -> x.value }!!.value + 1
 
-    val maxTrump = trumpPlays.maxBy { x -> if(x.pip == Pip.ACE) maxValue else x.pip.value}
+    val maxTrump = trumpPlays.maxBy { x -> if (x.pip == Pip.ACE) maxValue else x.pip.value }
     if (maxTrump != null) {
         return maxTrump
     }
-    return cards.filter { x -> x.suit == enforcedSuit }.maxBy { v -> if(v.pip == Pip.ACE)
-                                                                maxValue else v.pip.value }
+    return cards.filter { x -> x.suit == enforcedSuit }.maxBy { v ->
+        if (v.pip == Pip.ACE)
+            maxValue else v.pip.value
+    }
 
 }
 

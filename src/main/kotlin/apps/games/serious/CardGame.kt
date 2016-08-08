@@ -9,8 +9,6 @@ import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
-import apps.games.serious.preferans.Preferans
-import apps.games.serious.preferans.ShuffledDeck
 import crypto.RSA.ECParams
 import entity.ChatMessage
 import entity.Group
@@ -25,9 +23,9 @@ import java.util.concurrent.ExecutionException
  */
 
 abstract class CardGame(chat: Chat, group: Group, gameID: String,
-                        var DECK_SIZE: Int,
+                        var deckSize: Int,
                         gameManager: GameManagerClass = GameManager
-                        ) : Game<Unit>(chat, group, gameID, gameManager){
+) : Game<Unit>(chat, group, gameID, gameManager) {
     //to sorted array to preserve order
     protected val playerOrder: MutableList<User> = group.users.sortedBy { x -> x.name }.toMutableList()
     protected var playerID = playerOrder.indexOf(chat.me())
@@ -74,11 +72,12 @@ abstract class CardGame(chat: Chat, group: Group, gameID: String,
      */
     private fun newDeck(): ShuffledDeck? {
         val deckFuture = runSubGame(
-                RandomDeckGame(chat, group.clone(), subGameID(), ECParams, DECK_SIZE))
+                RandomDeckGame(chat, group.clone(), subGameID(), ECParams, deckSize))
         val deck: Deck
         try {
             deck = deckFuture.get()
-        } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
+        } catch(e: CancellationException) {
+            // Task was cancelled - means that we need to stop. NOW!
             return null
         } catch(e: ExecutionException) {
             chat.showMessage(
@@ -93,7 +92,8 @@ abstract class CardGame(chat: Chat, group: Group, gameID: String,
         val shuffled: EncryptedDeck
         try {
             shuffled = shuffleFuture.get()
-        } catch(e: CancellationException) { // Task was cancelled - means that we need to stop. NOW!
+        } catch(e: CancellationException) {
+            // Task was cancelled - means that we need to stop. NOW!
             return null
         } catch(e: ExecutionException) {
             chat.showMessage(
@@ -107,8 +107,8 @@ abstract class CardGame(chat: Chat, group: Group, gameID: String,
     /**
      * Genereate a new deck and set deck to ackording value
      */
-    protected fun updateDeck(size: Int = DECK_SIZE){
-        DECK_SIZE = size
+    protected fun updateDeck(size: Int = deckSize) {
+        deckSize = size
         deck = newDeck() ?: throw GameExecutionException("Couldn't generate deck")
     }
 

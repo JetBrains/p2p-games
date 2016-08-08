@@ -1,8 +1,6 @@
 package apps.games.serious.TableGUI
 
-import apps.games.serious.preferans.GUI.PreferansGame
 import apps.games.serious.Pip
-
 import apps.games.serious.Suit
 import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.*
@@ -19,22 +17,23 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector3
+
 /**
  * Created by user on 7/1/16.
  */
 
 
-class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), Screen {
-    companion object DefaultSelector: CardSelector
+class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(), Screen {
+    companion object DefaultSelector : CardSelector
 
     private val atlas = TextureAtlas(Gdx.files.internal("cards/carddeck.atlas"))
     private val cam3d = PerspectiveCamera()
     private val camController = FirstPersonCameraController(cam3d)
     private val cam2d = OrthographicCamera()
-    private var zoomed : Boolean = false
+    private var zoomed: Boolean = false
     private var shouldMoveZoomedCam: Boolean = false
     private val cam2dZoom = OrthographicCamera()
-    private val zoomAspectRatio = 5f/3f
+    private val zoomAspectRatio = 5f / 3f
 
     private var is2dMode: Boolean = true
 
@@ -121,17 +120,17 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         font.draw(spriteBatch, hint, 100f, 100f)
         font.draw(spriteBatch, controlsHint, 700f, 1000f)
         spriteBatch.end()
-        synchronized(overlays){
-            for(overlay in overlays){
+        synchronized(overlays) {
+            for (overlay in overlays) {
                 overlay.render(getCam())
             }
         }
 
-        if(zoomed){
+        if (zoomed) {
             //TODO - no overlapping
-            val height = Gdx.graphics.height/4
+            val height = Gdx.graphics.height / 4
             Gdx.gl20.glViewport(0, Gdx.graphics.height - height,
-                                (height*zoomAspectRatio).toInt(),height)
+                    (height * zoomAspectRatio).toInt(), height)
             game.batch.begin(cam2dZoom)
             game.batch.render(cards, environment)
             game.batch.render(table.tableTop, environment)
@@ -158,7 +157,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
 
         actionManager.addAfterLastReady(
                 CardGUI.animate(card, handPos.x, handPos.y, handPos.z, 0f,
-                                DEAL_SPEED, angle))
+                        DEAL_SPEED, angle))
     }
 
     /**
@@ -184,7 +183,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         cards.add(card)
         actionManager.addAfterLastReady(
                 CardGUI.animate(card, handPos.x, handPos.y, handPos.z, 180f,
-                                DEAL_SPEED, angle))
+                        DEAL_SPEED, angle))
     }
 
     //TODO - mark cards dealt to self as revealed\
@@ -199,7 +198,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
                 //TODO - flawless transition
                 card.angle = 180f
                 val action = CardGUI.animate(card, card.position.x,
-                                             card.position.y, card.position.z, card.angle + 180f, 1f)
+                        card.position.y, card.position.z, card.angle + 180f, 1f)
                 actionManager.add(action)
                 cards.remove(oldCard)
                 //spawn cardID facing table
@@ -212,15 +211,15 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     /**
      * reveal playerID cardID and execute actions after it
      */
-    @Synchronized fun revealPlayerCard(playerID: Int, card: CardGUI){
+    @Synchronized fun revealPlayerCard(playerID: Int, card: CardGUI) {
         val hand = table.players[playerID].hand
         val oldCard = hand.replaceUnknownCard(card)
         if (oldCard != null) {
             //TODO - flawless transition
             card.angle = 180f
             val action = CardGUI.animate(card, card.position.x,
-                                         card.position.y, card.position.z,
-                                         card.angle + 180f, 1f, card.rotation)
+                    card.position.y, card.position.z,
+                    card.angle + 180f, 1f, card.rotation)
             actionManager.add(action)
 
             cards.remove(oldCard)
@@ -233,8 +232,8 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      * Replace specified card in player cardspace with new one
      */
     @Synchronized fun revealCardInCardSpaceHand(playerID: Int,
-                                                 oldCardIndex: Int,
-                                                 newCard: CardGUI): Action{
+                                                oldCardIndex: Int,
+                                                newCard: CardGUI): Action {
 
 
         val hand = table.players[playerID].cardSpaceHand
@@ -257,7 +256,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      */
     @Synchronized fun transferCardFromCardSpaceToPlayer(fromPlayer: Int,
                                                         toPlayer: Int,
-                                                        index: Int){
+                                                        index: Int) {
         val fromHand = table.players[fromPlayer].cardSpaceHand
         val toHand = table.players[toPlayer].hand
         val card = fromHand.cards[index]
@@ -267,30 +266,31 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     /**
      * Remove all cards, that are not in player hands from table
      */
-    @Synchronized fun clearTable(){
+    @Synchronized fun clearTable() {
         val toRemove = cards.filter { x -> table.getPlayerWithCard(x) == null }
         val action = DelayedAction(0.15f, {
-            synchronized(cards){
-                for(card in toRemove){
+            synchronized(cards) {
+                for (card in toRemove) {
                     cards.remove(card)
                 }
             }
         })
-        for(player in table.players){
+        for (player in table.players) {
             player.cardSpaceHand.clear()
         }
         actionManager.addAfterLastComplete(action)
     }
+
     /**
      * Return hand with given ID.
      * @param handID - id of hand to find
      * handID = -1 - means common hand
      */
-    fun getHandById(handID: Int): Hand?{
-        if(handID == -1){
+    fun getHandById(handID: Int): Hand? {
+        if (handID == -1) {
             return table.commonHand
         }
-        if(handID >= 0 && handID < table.playersCount){
+        if (handID >= 0 && handID < table.playersCount) {
             return table.players[handID].hand
         }
         return null
@@ -300,12 +300,12 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      * Move cardID from one hand to another
      */
     @Synchronized fun moveCard(card: CardGUI, from: Hand, to: Hand, flip:
-                               Boolean = false){
+    Boolean = false) {
         from.cards.remove(card)
         val pos = to.nextCardPosition()
         val toAngle: Float = card.angle + (if (flip) 180f else 0f)
         val action = CardGUI.animate(card, pos.x, pos.y, pos.z, toAngle, 1f,
-                                     to.getAngle())
+                to.getAngle())
         actionManager.addAfterLastComplete(action)
         to.cards.add(card)
     }
@@ -339,7 +339,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     /**
      * Add overlay
      */
-    @Synchronized fun addOverlay(overlay: Overlay){
+    @Synchronized fun addOverlay(overlay: Overlay) {
         overlays.add(0, overlay)
         updateInputProcessor()
     }
@@ -347,13 +347,13 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     /**
      * Remove overlay
      */
-    @Synchronized fun removeOverlay(overlay: Overlay){
+    @Synchronized fun removeOverlay(overlay: Overlay) {
         overlays.remove(overlay)
         updateInputProcessor()
     }
 
     override fun resize(width: Int, height: Int) {
-        for(overlay in overlays){
+        for (overlay in overlays) {
             overlay.resize(width, height)
         }
         cam3d.viewportWidth = width.toFloat()
@@ -365,7 +365,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         cam2d.lookAt(0f, 0f, 0f)
         if (width > height) {
             cam2d.viewportHeight = 21f
-            cam2d.viewportWidth = cam2d.viewportHeight * width.toFloat()/ height.toFloat()
+            cam2d.viewportWidth = cam2d.viewportHeight * width.toFloat() / height.toFloat()
         } else {
             cam2d.viewportWidth = 21f
             cam2d.viewportHeight = cam2d.viewportWidth * height.toFloat() / width.toFloat()
@@ -376,7 +376,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
 
         cam2dZoom.position.set(0f, 0f, 5f)
         cam2dZoom.lookAt(0f, 0f, 1f)
-        cam2dZoom.viewportWidth = 10f*zoomAspectRatio
+        cam2dZoom.viewportWidth = 10f * zoomAspectRatio
         cam2dZoom.viewportHeight = 10f
         cam2dZoom.zoom = 0.25f
 
@@ -387,18 +387,19 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      * @param User - holder of ther cardID
      */
     private var deltaZ = 0.01f
-    fun animateCardPlay(card: CardGUI){
+
+    fun animateCardPlay(card: CardGUI) {
         val player = table.getPlayerWithCard(card) ?: return
         animateHandCardHandPlay(player, card)
     }
 
-    fun animateUnknownCardPlay(playerID: Int){
+    fun animateUnknownCardPlay(playerID: Int) {
         val player = table.players[playerID]
         val card = player.hand.randomUnknownCard()
         animateHandCardHandPlay(player, card)
     }
 
-    private fun animateHandCardHandPlay(player: Player, card: CardGUI){
+    private fun animateHandCardHandPlay(player: Player, card: CardGUI) {
         player.hand.removeCard(card, actionManager)
         val pos = player.getCardspace()
         player.cardSpaceHand.cards.add(card)
@@ -409,15 +410,15 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     }
 
     override fun touchUp(screenX: Int,
-            screenY: Int,
-            pointer: Int,
-            button: Int): Boolean {
+                         screenY: Int,
+                         pointer: Int,
+                         button: Int): Boolean {
 
-        if(button == Input.Buttons.MIDDLE){
+        if (button == Input.Buttons.MIDDLE) {
             zoomed = false
             return true
         }
-        if(button == Input.Buttons.LEFT){
+        if (button == Input.Buttons.LEFT) {
             if (selecting != null) {
                 if (selecting == getObject(screenX, screenY)) {
                     setSelected(selecting!!)
@@ -434,17 +435,17 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     }
 
     override fun touchDragged(screenX: Int,
-                                       screenY: Int,
-                                       pointer: Int): Boolean {
-            if(zoomed && shouldMoveZoomedCam){
-                val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
-                        .toFloat(), 0f))
-                cam2dZoom.position.set(pos)
-                cam2dZoom.lookAt(pos.x, pos.y, 0f)
-                cam2dZoom.update()
-                return true
-            }
-            return false
+                              screenY: Int,
+                              pointer: Int): Boolean {
+        if (zoomed && shouldMoveZoomedCam) {
+            val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
+                    .toFloat(), 0f))
+            cam2dZoom.position.set(pos)
+            cam2dZoom.lookAt(pos.x, pos.y, 0f)
+            cam2dZoom.update()
+            return true
+        }
+        return false
     }
 
     override fun touchDown(screenX: Int,
@@ -453,7 +454,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
                            button: Int): Boolean {
         shouldMoveZoomedCam = (button != Input.Buttons.LEFT)
 
-        if(button == Input.Buttons.MIDDLE){
+        if (button == Input.Buttons.MIDDLE) {
             val pos = cam2d.unproject(Vector3(screenX.toFloat(), screenY
                     .toFloat(), 0f))
             cam2dZoom.position.set(pos)
@@ -480,7 +481,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      * Second click on cardID
      */
     private fun setSelected(selecting: CardGUI) {
-        if(!selector.canSelect(selecting)){
+        if (!selector.canSelect(selecting)) {
             return
         }
         selector.select(selecting)
@@ -489,7 +490,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         val pos = player.getCardspace()
         player.cardSpaceHand.cards.add(selecting)
         actionManager.add(CardGUI.animate(selecting, pos.x, pos.y, deltaZ, 0f,
-                                          1f, selecting.rotation))
+                1f, selecting.rotation))
         deltaZ += 0.001f
     }
 
@@ -537,22 +538,22 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      * Get predicate that returns true on cards from players hand
      */
     fun playerHandSelectionFunction(playerID: Int): (CardGUI) -> (Boolean) {
-        return {card: CardGUI -> table.players[playerID].hand.cards.contains(card)}
+        return { card: CardGUI -> table.players[playerID].hand.cards.contains(card) }
     }
 
     /**
      * Get predicate that returns true on cards from players cardSpace
      */
     fun playerCardSpaceSelectionFunction(playerID: Int): (CardGUI) -> (Boolean) {
-        return {card: CardGUI -> table.players[playerID].cardSpaceHand.cards.contains(card)}
+        return { card: CardGUI -> table.players[playerID].cardSpaceHand.cards.contains(card) }
     }
 
     /**
      * Given card find it's positoin in players hand
      */
-    fun getPositionInHand(playerID: Int, card: CardGUI): Int{
-        for(i in 0..table.players[playerID].hand.size-1){
-            if(card === table.players[playerID].hand.cards[i]){
+    fun getPositionInHand(playerID: Int, card: CardGUI): Int {
+        for (i in 0..table.players[playerID].hand.size - 1) {
+            if (card === table.players[playerID].hand.cards[i]) {
                 return i
             }
         }
@@ -562,9 +563,9 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
     /**
      * Given card find it's positoin in players cardplace hand
      */
-    fun getPositionInCardSpaceHand(playerID: Int, card: CardGUI): Int{
-        for(i in 0..table.players[playerID].cardSpaceHand.size-1){
-            if(card === table.players[playerID].cardSpaceHand.cards[i]){
+    fun getPositionInCardSpaceHand(playerID: Int, card: CardGUI): Int {
+        for (i in 0..table.players[playerID].cardSpaceHand.size - 1) {
+            if (card === table.players[playerID].cardSpaceHand.cards[i]) {
                 return i
             }
         }
@@ -576,23 +577,23 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
      * Update size of the deck(affects pleyer
      * hand sizes)
      */
-    fun updateDeckSize(deckSize: Int){
+    fun updateDeckSize(deckSize: Int) {
         table.updateHandSize((deckSize / maxPlayers) + 1)
     }
 
-    fun updateInputProcessor(){
-        synchronized(overlays){
+    fun updateInputProcessor() {
+        synchronized(overlays) {
             val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }
                     .toTypedArray())
             Gdx.input.inputProcessor = InputMultiplexer(overlayProcessor, this, camController)
         }
     }
 
-    @Synchronized fun setSelector(cardSelector: CardSelector){
+    @Synchronized fun setSelector(cardSelector: CardSelector) {
         selector = cardSelector
     }
 
-    @Synchronized fun resetSelector(){
+    @Synchronized fun resetSelector() {
         selector = DefaultSelector
     }
 
@@ -601,7 +602,7 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
             is2dMode = !is2dMode
             return true
         }
-        if(keycode == Input.Keys.SPACE){
+        if (keycode == Input.Keys.SPACE) {
             zoomed = !zoomed
             return true
         }
@@ -629,8 +630,8 @@ class TableScreen(val game: GameView,val maxPlayers: Int = 3) : InputAdapter(), 
         cards.dispose()
     }
 
-    fun clear(){
-        synchronized(actionManager){
+    fun clear() {
+        synchronized(actionManager) {
             actionManager.clear()
         }
         cards.clear()

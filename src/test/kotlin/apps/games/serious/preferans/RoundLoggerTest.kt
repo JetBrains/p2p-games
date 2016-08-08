@@ -1,10 +1,10 @@
 package apps.games.serious.preferans
 
 import apps.chat.Chat
-import apps.games.GameExecutionException
 import apps.games.GameManagerClass
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
+import apps.games.serious.ShuffledDeck
 import broker.NettyGroupBroker
 import crypto.random.randomInt
 import entity.Group

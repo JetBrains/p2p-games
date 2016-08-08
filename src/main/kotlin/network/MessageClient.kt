@@ -1,5 +1,6 @@
 package network
 
+import Settings
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.channel.nio.NioEventLoopGroup
@@ -9,12 +10,9 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder
 import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
-import io.netty.handler.ssl.SslContext
-import io.netty.handler.ssl.SslContextBuilder
 import proto.GenericMessageProto
 import java.net.InetSocketAddress
 import java.util.concurrent.LinkedBlockingQueue
-import javax.net.ssl.TrustManagerFactory
 
 /**
  * Created by Mark Geller on 6/21/16.
@@ -41,7 +39,7 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param msg - Protobuff message
      */
     fun sendAsync(host: InetSocketAddress,
-            msg: GenericMessageProto.GenericMessage) {
+                  msg: GenericMessageProto.GenericMessage) {
         var f = connections[host]
         if (f == null || !f.channel().isOpen) {
             f = bootstrap.connect(host, addr).await().sync() ?: return
@@ -57,7 +55,7 @@ class MessageClient(val addr: InetSocketAddress) {
      * @param msg - Protobuff message
      */
     fun request(host: InetSocketAddress,
-            msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
+                msg: GenericMessageProto.GenericMessage): GenericMessageProto.GenericMessage {
         var f = connections[host]
         if (f == null || !f.channel().isOpen) {
             f = bootstrap.connect(host, addr).await().sync() ?: throw Exception(
@@ -114,7 +112,7 @@ class MessageClientHandler : SimpleChannelInboundHandler<GenericMessageProto.Gen
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext?,
-            msg: GenericMessageProto.GenericMessage?) {
+                              msg: GenericMessageProto.GenericMessage?) {
         if (msg != null) {
             responses.add(msg)
         }

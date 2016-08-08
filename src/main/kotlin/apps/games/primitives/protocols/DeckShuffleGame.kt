@@ -84,7 +84,7 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
                 return DigestUtils.sha256Hex(lockKeys.joinToString(" "))
             }
             State.VALIDATE_KEYS -> {
-                for (msg in responses){
+                for (msg in responses) {
                     keyHashes[User(msg.user)] = msg.value
                 }
                 state = State.SHUFFLE

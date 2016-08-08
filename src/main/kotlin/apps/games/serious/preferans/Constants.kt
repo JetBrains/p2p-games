@@ -50,7 +50,7 @@ enum class Bet(var type: String, var value: Int, var trump: Suit,
 /**
  * Different outcomes of whisting in preferance
  */
-enum class Whists(val value: Int, val type: String){
+enum class Whists(val value: Int, val type: String) {
     UNKNOWN(0, "UNKNOWN"),
     PASS(1, "PASS"),
     WHIST_HALF(2, "HALF\nWHIST"),

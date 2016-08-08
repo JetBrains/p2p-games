@@ -100,7 +100,7 @@ open class Chat(val chatId: Int) : Runnable {
      * get Input from
      */
     open fun getUserInput(description: String,
-            condition: ((String) -> (Boolean))? = { x: String -> true }): String {
+                          condition: ((String) -> (Boolean))? = { x: String -> true }): String {
         if (condition == null) {
             throw UnsupportedOperationException(
                     "Invalid null condition provided")

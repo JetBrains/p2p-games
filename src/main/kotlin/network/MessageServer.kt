@@ -10,8 +10,6 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender
 import io.netty.handler.ssl.SslHandler
-import io.netty.util.concurrent.Future
-import io.netty.util.concurrent.GenericFutureListener
 import network.dispatching.Dispatcher
 import proto.GameMessageProto
 import proto.GenericMessageProto
@@ -27,7 +25,7 @@ class MessageServer(val addr: InetSocketAddress, val dispatcher: Dispatcher<Gene
     val bootstrap = ServerBootstrap()
 
     init {
-        val group = NioEventLoopGroup();
+        val group = NioEventLoopGroup()
         bootstrap.group(group).channel(NioServerSocketChannel::class.java).
                 childHandler(MessageServerChannelInitializer(dispatcher))
         bootstrap.option(ChannelOption.SO_REUSEADDR, true)
@@ -55,7 +53,7 @@ class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.Generi
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext?,
-            msg: GenericMessageProto.GenericMessage?) {
+                              msg: GenericMessageProto.GenericMessage?) {
         if (msg != null) {
             if (msg.hasGameMessage() && msg.gameMessage.type == GameMessageProto.GameMessage.Type.GAME_END_MESSAGE) {
                 println("Recieved End Game Message")

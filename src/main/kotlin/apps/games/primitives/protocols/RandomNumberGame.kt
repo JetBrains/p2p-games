@@ -36,19 +36,19 @@ import java.math.BigInteger
  */
 
 class RandomNumberGame(chat: Chat, group: Group,
-        gameID: String, minValue: BigInteger = BigInteger.valueOf(
+                       gameID: String, minValue: BigInteger = BigInteger.valueOf(
         Int.MIN_VALUE.toLong()),
-        maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong()),
-        gameManager: GameManagerClass = GameManager) : Game<BigInteger>(chat,
+                       maxValue: BigInteger = BigInteger.valueOf(Int.MAX_VALUE.toLong()),
+                       gameManager: GameManagerClass = GameManager) : Game<BigInteger>(chat,
         group, gameID, gameManager) {
     override val name: String
         get() = "Random Number Generator"
 
     constructor(chat: Chat, group: Group,
-            gameID: String,
-            minValue: Long,
-            maxValue: Long,
-            gameManager: GameManagerClass = GameManager) : this(chat, group,
+                gameID: String,
+                minValue: Long,
+                maxValue: Long,
+                gameManager: GameManagerClass = GameManager) : this(chat, group,
             gameID, BigInteger.valueOf(minValue),
             BigInteger.valueOf(maxValue), gameManager) {
     }

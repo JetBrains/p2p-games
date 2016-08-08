@@ -5,10 +5,8 @@ package apps.chat.GUI
  */
 
 import apps.chat.Chat
-import apps.games.Game
 import apps.games.GameFactory
 import apps.games.GameManager
-import apps.games.serious.preferans.Preferans
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -34,11 +32,11 @@ class ChatGUI(internal var chat: Chat) {
     var isClosed: Boolean = false
 
 
-
-    init{
+    init {
         gameList = JComboBox(gameOptions)
         gameList.selectedIndex = 2
     }
+
     fun display() {
         val mainPanel = JPanel()
         mainPanel.layout = BorderLayout()

@@ -1,9 +1,13 @@
 package apps.games.serious.preferans.GUI
 
-import apps.games.serious.*
+import Settings
+import apps.games.serious.Card
 import apps.games.serious.TableGUI.*
-import apps.games.serious.preferans.*
-import com.badlogic.gdx.Game
+import apps.games.serious.getCardById
+import apps.games.serious.getIdByCard
+import apps.games.serious.preferans.Bet
+import apps.games.serious.preferans.PreferansScoreCounter
+import apps.games.serious.preferans.Whists
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -14,7 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DECK_SIZE: Int = 32) : GameView() {
+class PreferansGame(val scoreCounter: PreferansScoreCounter, val me: Int, val deckSize: Int = 32) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var biddingOverlay: ButtonOverlay<Bet>
@@ -35,7 +39,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
                 "Strafe:                        Q, E \n" +
                 "Select cardID:                left mouse\n" +
                 "Play cardID:                   left mosue on selected cardID\n" +
-                "Zoom camara:            midde mouse button\n"+
+                "Zoom camara:            midde mouse button\n" +
                 "Toggle camera zoom: SPACE"
         tableScreen.controlsHint = s
         loaded = true
@@ -108,7 +112,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
             betMap[bet.second]?.add(bet.first)
         }
         for (bet in betMap.keys) {
-            val s = betMap[bet]!!.map { x -> x.name}.joinToString(" + \n")
+            val s = betMap[bet]!!.map { x -> x.name }.joinToString(" + \n")
             biddingOverlay.markOption(bet, s)
         }
     }
@@ -127,11 +131,10 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
             whistMap[whist.second]?.add(whist.first)
         }
         for (whist in whistMap.keys) {
-            val s = whistMap[whist]!!.map { x -> x.name}.joinToString(" + \n")
+            val s = whistMap[whist]!!.map { x -> x.name }.joinToString(" + \n")
             whistingOverlay.markOption(whist, s)
         }
     }
-
 
 
     /**
@@ -236,7 +239,8 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
      * Add callback listener for buttons
      * corresponding to whisting
      */
-    fun <R> registerWhistingCallback(callBack: (Whists) -> (R), vararg whists: Whists) {
+    fun <R> registerWhistingCallback(callBack: (Whists) -> (R),
+                                     vararg whists: Whists) {
         for (whist in whists) {
             whistingOverlay.addCallback(whist, callBack)
         }
@@ -263,12 +267,14 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
      * NB: This method wont work for selection
      * of UNKNOWN cardID.
      */
-    fun pickCard(vararg allowedCardIds: Card): Int{
+    fun pickCard(vararg allowedCardIds: Card): Int {
         val queue = LinkedBlockingQueue<CardGUI>(1)
-        val allowedCards = allowedCardIds.map { x -> tableScreen.deck
-                .getCardModel(x) }
+        val allowedCards = allowedCardIds.map { x ->
+            tableScreen.deck
+                    .getCardModel(x)
+        }
         tableScreen.setSelector(object : CardSelector {
-            override fun select(card: CardGUI){
+            override fun select(card: CardGUI) {
                 queue.add(card)
             }
 
@@ -279,8 +285,8 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
 
         val card = queue.take()
         tableScreen.resetSelector()
-        val res =  getIdByCard(card, DECK_SIZE)
-        if(res == -1){
+        val res = getIdByCard(card, deckSize)
+        if (res == -1) {
             return pickCard(*allowedCardIds)
         }
         return res
@@ -294,7 +300,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
      * @param to - id of player, to give cardID to
      * to = -1 - means common hand is used
      */
-    fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true){
+    fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true) {
         val card = getCardModelById(cardID)
         val fromHand = tableScreen.getHandById(from) ?: return
         val toHand = tableScreen.getHandById(to) ?: return
@@ -304,12 +310,12 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
     /**
      * animate cardID played by user
      */
-    fun playCard(cardID: Int){
+    fun playCard(cardID: Int) {
         val card = getCardModelById(cardID)
         tableScreen.animateCardPlay(card)
     }
 
-    fun revealPlayerCard(player: Int, cardID: Int){
+    fun revealPlayerCard(player: Int, cardID: Int) {
         val card = getCardModelById(cardID)
         tableScreen.revealPlayerCard(player, card)
     }
@@ -323,29 +329,29 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter,val me: Int, val DEC
      * renderable object
      */
     private fun getCardModelById(cardID: Int): CardGUI {
-        val card = getCardById(cardID, DECK_SIZE)
+        val card = getCardById(cardID, deckSize)
         return tableScreen.deck.getCardModel(card.suit, card.pip)
     }
 
 
-    private fun initButtonOverlays(){
-        val betBreaks  = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
-                                Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
+    private fun initButtonOverlays() {
+        val betBreaks = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
+                Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)
         val betSkips = listOf(Bet.UNKNOWN)
         val betNames = Bet.values().associate { x -> Pair(x, x.type) }
         biddingOverlay = ButtonOverlayFactory.create(Bet::class.java, betBreaks,
-                                                     betSkips, betNames)
+                betSkips, betNames)
         biddingOverlay.create()
 
         val whistBreaks = listOf(Whists.WHIST_HALF)
         val whistIgnore = listOf(Whists.UNKNOWN)
         val whistNames = Whists.values().associate { x -> Pair(x, x.type) }
         whistingOverlay = ButtonOverlayFactory.create(Whists::class.java,
-                                                      whistBreaks, whistIgnore, whistNames)
+                whistBreaks, whistIgnore, whistNames)
         whistingOverlay.create()
     }
 
-    fun initScoreOverlay(scoreCounter: PreferansScoreCounter, playerID: Int){
+    fun initScoreOverlay(scoreCounter: PreferansScoreCounter, playerID: Int) {
         scoreOverlay = ScoreOverlay(scoreCounter, playerID)
         tableScreen.addOverlay(scoreOverlay)
     }

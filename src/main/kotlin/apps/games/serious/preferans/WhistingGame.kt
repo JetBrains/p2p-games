@@ -4,10 +4,7 @@ import apps.chat.Chat
 import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameManagerClass
-import apps.games.serious.preferans.Bet
-import apps.games.serious.TableGUI.Player
 import apps.games.serious.preferans.GUI.PreferansGame
-import apps.games.serious.preferans.Whists
 import entity.Group
 import entity.User
 import proto.GameMessageProto
@@ -24,13 +21,13 @@ GameManagerClass, val gameGUI: PreferansGame,
     override val name: String
         get() = "Whisting game"
 
-    private enum class State{
+    private enum class State {
         INIT,
         BID,
         END
     }
 
-    private enum class Round{
+    private enum class Round {
         BID,
         REBID,
         OPEN_CARDS
@@ -41,7 +38,7 @@ GameManagerClass, val gameGUI: PreferansGame,
     private val playerID = playerOrder.indexOf(chat.me())
     private var currentPlayer = -1
     private val N = 2
-    private val whists = Array(N, {i -> Whists.UNKNOWN })
+    private val whists = Array(N, { i -> Whists.UNKNOWN })
     private val whistQueue = LinkedBlockingQueue<Whists>(1)
     private var result: Whists = Whists.UNKNOWN
     // round of negotiation
@@ -51,24 +48,24 @@ GameManagerClass, val gameGUI: PreferansGame,
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         //log everything to all-chat
-        for(msg in responses){
+        for (msg in responses) {
             chat.sendMessage(msg.value)
         }
-        when(state){
+        when (state) {
             State.INIT -> {
-                if(N != 2){
+                if (N != 2) {
                     throw GameExecutionException("In 3-man Preferans whisting" +
-                                                         " goes between 2 of " +
-                                                         "them")
+                            " goes between 2 of " +
+                            "them")
                 }
                 state = State.BID
                 gameGUI.showWhistingOverlay()
                 registerCallbacks()
             }
             State.BID -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val userId = getUserID(User(msg.user))
-                    if(userId == currentPlayer){
+                    if (userId == currentPlayer) {
                         whists[userId] = Whists.valueOf(msg.value)
                     }
                 }
@@ -79,14 +76,14 @@ GameManagerClass, val gameGUI: PreferansGame,
                 gameGUI.markWhists(*toDisplay)
 
                 translateState()
-                if(state == State.END){
+                if (state == State.END) {
                     gameGUI.hideWhistingOverlay()
                     return whists[playerID].name
                 }
                 gameGUI.disableAllWhists()
-                if(playerID == currentPlayer){
+                if (playerID == currentPlayer) {
                     //If this is the first bet in series
-                    when(round){
+                    when (round) {
                         Round.BID -> {
                             showBidRoundWhists()
                         }
@@ -95,16 +92,16 @@ GameManagerClass, val gameGUI: PreferansGame,
                             showRebidRoundWhists()
                             //if first player whisted - auto pass
                             //if he didn't - keep our half whist
-                            if(playerID == 1){
-                                if(whists[0] in realWhists){
+                            if (playerID == 1) {
+                                if (whists[0] in realWhists) {
                                     return Whists.PASS.name
-                                }else{
+                                } else {
                                     return Whists.WHIST_HALF.name
                                 }
                             }
                         }
                         Round.OPEN_CARDS -> {
-                            if(whists[playerID] == Whists.PASS){
+                            if (whists[playerID] == Whists.PASS) {
                                 return Whists.PASS.name
                             }
                             showOpenCardRoundWhists()
@@ -116,12 +113,12 @@ GameManagerClass, val gameGUI: PreferansGame,
                     gameGUI.markWhists(*toDisplay)
                     return whist.name
 
-                }else{
+                } else {
                     gameGUI.showHint("[${maxBet.type}] Waiting for other player to" +
-                                             " " +
-                                             "decide " +
-                                             "on " +
-                                             "whisting")
+                            " " +
+                            "decide " +
+                            "on " +
+                            "whisting")
                 }
             }
             State.END -> TODO()
@@ -134,39 +131,39 @@ GameManagerClass, val gameGUI: PreferansGame,
      * It it is over - perform transition to next
      * round according to rules of preferans
      */
-    private fun translateState(){
-        if(currentPlayer == N){
+    private fun translateState() {
+        if (currentPlayer == N) {
             currentPlayer = 0
 
-            when(round){
+            when (round) {
                 Round.BID -> {
                     //PASS -> PASS = PASS
-                    if(whists[0] == Whists.PASS && whists[1] == Whists.PASS){
+                    if (whists[0] == Whists.PASS && whists[1] == Whists.PASS) {
                         state = State.END
                     }
                     //WHIST -> WHIST = WHIST_BLIND
-                    if(whists[0] in realWhists && whists[1] in realWhists){
+                    if (whists[0] in realWhists && whists[1] in realWhists) {
                         whists[playerID] = Whists.WHIST_BLIND
                         state = State.END
                     }
                     //PASS -> HALF WHIST -> REBID
-                    if(whists[1] == Whists.WHIST_HALF){
+                    if (whists[1] == Whists.WHIST_HALF) {
                         round = Round.REBID
                     }
                     //PASS -> WHIST or WHIST -> PASS -> decide if
                     // open cards
-                    if(whists.contains(Whists.PASS) && whists
-                            .intersect(realWhists).isNotEmpty()){
+                    if (whists.contains(Whists.PASS) && whists
+                            .intersect(realWhists).isNotEmpty()) {
                         round = Round.OPEN_CARDS
                     }
                 }
                 Round.REBID -> {
                     //PASS -> HALF WHIST -> REBID(nothing changed)
-                    if(whists[1] == Whists.WHIST_HALF){
+                    if (whists[1] == Whists.WHIST_HALF) {
                         state = State.END
                     }
                     //WHIST -> PASS
-                    if(whists[0] in realWhists){
+                    if (whists[0] in realWhists) {
                         round = Round.OPEN_CARDS
                     }
                 }
@@ -181,18 +178,18 @@ GameManagerClass, val gameGUI: PreferansGame,
      * if it is first Whist bidding round -
      * everyone can pass or whist.
      */
-    fun showBidRoundWhists(){
+    fun showBidRoundWhists() {
 
         //Everyone can pass or whist in first round
         gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST(Both " +
-                                 "whist are equal)")
+                "whist are equal)")
         gameGUI.enableWhists(Whists.PASS, Whists.WHIST_BLIND,
-                             Whists.WHIST_OPEN)
+                Whists.WHIST_OPEN)
         //if first player passed - second can go half whist
-        if(playerID == 1 && whists[0] == Whists.PASS && maxBet.value <= Bet.MIZER.value){
+        if (playerID == 1 && whists[0] == Whists.PASS && maxBet.value <= Bet.MIZER.value) {
             gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST or " +
-                                     "HALF WHIST(Both " +
-                                     "whist are equal)")
+                    "HALF WHIST(Both " +
+                    "whist are equal)")
             gameGUI.enableWhists(Whists.WHIST_HALF)
         }
     }
@@ -201,14 +198,14 @@ GameManagerClass, val gameGUI: PreferansGame,
      * If second player Half-Whisted - firs player can upgrade his
      * pass to whist
      */
-    fun showRebidRoundWhists(){
+    fun showRebidRoundWhists() {
         //first player can pass or whist
-        if(playerID == 0){
+        if (playerID == 0) {
             gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST(Both " +
-                                     "whist are equal)")
+                    "whist are equal)")
             gameGUI.enableWhists(Whists.PASS,
-                                 Whists.WHIST_OPEN,
-                                 Whists.WHIST_BLIND)
+                    Whists.WHIST_OPEN,
+                    Whists.WHIST_BLIND)
         }
     }
 
@@ -217,10 +214,10 @@ GameManagerClass, val gameGUI: PreferansGame,
      * can choose whether to disclose his cards,
      * or not
      */
-    fun showOpenCardRoundWhists(){
-        if(whists[playerID] in realWhists){
+    fun showOpenCardRoundWhists() {
+        if (whists[playerID] in realWhists) {
             gameGUI.showHint("[${maxBet.type}] You can choose what WHIST " +
-                                     "to play")
+                    "to play")
             gameGUI.enableWhists(*realWhists.toTypedArray())
         }
     }
@@ -244,7 +241,7 @@ GameManagerClass, val gameGUI: PreferansGame,
         return playerOrder.indexOf(user)
     }
 
-    companion object{
+    companion object {
         /**
          * check if given array of whists coulb be aquired from this game
          * @param whists - array of whisting outcomes in the same order as
@@ -253,19 +250,19 @@ GameManagerClass, val gameGUI: PreferansGame,
          */
         fun verifyWhists(whists: Array<Whists>): Whists {
             var possible: Boolean = true
-            if(whists.size != 2){
+            if (whists.size != 2) {
                 possible = false
             }
             possible = possible &&
                     ((whists[0] == Whists.PASS && whists[1] in realWhists) ||
-                     (whists[0] == Whists.PASS && whists[1] == Whists.PASS) ||
-                     (whists[0] == Whists.PASS && whists[1] == Whists.WHIST_HALF)) ||
+                            (whists[0] == Whists.PASS && whists[1] == Whists.PASS) ||
+                            (whists[0] == Whists.PASS && whists[1] == Whists.WHIST_HALF)) ||
                     (whists[0] in realWhists && whists[1] == Whists.PASS) ||
                     (whists[0] == Whists.WHIST_BLIND && whists[1] == Whists.WHIST_BLIND)
-            if(!possible){
+            if (!possible) {
                 return Whists.UNKNOWN
             }
-            return whists.maxBy { x -> x.value }?: return Whists.UNKNOWN
+            return whists.maxBy { x -> x.value } ?: return Whists.UNKNOWN
         }
     }
 }

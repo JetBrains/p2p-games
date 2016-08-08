@@ -60,7 +60,7 @@ class Ticket(val ticketSize: Int) {
          * @param maxValue - Maximum value of number in ticket
          */
         fun randomTicket(ticketSize: Int,
-                maxValue: Int): apps.games.serious.lotto.Ticket {
+                         maxValue: Int): apps.games.serious.lotto.Ticket {
             val res = apps.games.serious.lotto.Ticket(ticketSize)
             while (res.numbers.size < ticketSize) {
                 res.numbers.add(crypto.random.randomInt(maxValue))
@@ -77,8 +77,8 @@ class Ticket(val ticketSize: Int) {
          * is inconsistent with other restrictions
          */
         fun buildTicket(ticketSize: Int,
-                maxValue: Int,
-                values: List<Int>): apps.games.serious.lotto.Ticket {
+                        maxValue: Int,
+                        values: List<Int>): apps.games.serious.lotto.Ticket {
             val res = apps.games.serious.lotto.Ticket(ticketSize)
             for (value in values) {
                 if (value > maxValue) {
@@ -103,8 +103,8 @@ class Ticket(val ticketSize: Int) {
          * is inconsistent with other restrictions
          */
         fun from(ticketSize: Int,
-                maxValue: Int,
-                s: String): apps.games.serious.lotto.Ticket {
+                 maxValue: Int,
+                 s: String): apps.games.serious.lotto.Ticket {
             if (!(apps.games.serious.lotto.Ticket.Factory.getValidator(
                     ticketSize, maxValue))(s)) {
                 throw GameInputException("String $s is not a valid ticket")
@@ -122,7 +122,7 @@ class Ticket(val ticketSize: Int) {
          * @return (String)->(Boolean) - validator function
          */
         fun getValidator(ticketSize: Int,
-                maxValue: Int): (String) -> (Boolean) {
+                         maxValue: Int): (String) -> (Boolean) {
             fun checker(s: String): Boolean {
                 val split: List<String> = s.split(" ")
                 if (split.size != ticketSize) {

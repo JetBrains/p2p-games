@@ -15,6 +15,6 @@ import io.netty.handler.ssl.util.SelfSignedCertificate
 
 object SslContextFactory {
     private val ssc = SelfSignedCertificate()
-    val serverContext: SslContext = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+    val serverContext: SslContext = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build()
     val clientContext: SslContext = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build()
 }

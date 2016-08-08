@@ -1,11 +1,8 @@
 package apps.games.serious.Cheat.logger
 
-import org.apache.commons.codec.digest.DigestUtils
-import java.math.BigInteger
-
 
 import apps.games.GameExecutionException
-import apps.games.serious.preferans.ShuffledDeck
+import apps.games.serious.ShuffledDeck
 
 
 /**
@@ -13,10 +10,7 @@ import apps.games.serious.preferans.ShuffledDeck
  */
 
 
-
-
-
-class CheatGameLogger(val N: Int){
+class CheatGameLogger(val N: Int) {
     private val pastLogs = mutableListOf<RoundLogger>()
     private var currentLogger: RoundLogger? = null
     val log: RoundLogger
@@ -27,17 +21,17 @@ class CheatGameLogger(val N: Int){
             return currentLogger as RoundLogger
         }
 
-    fun newRound(DECK_SIZE: Int, shuffledDeck: ShuffledDeck){
-        if(currentLogger != null){
+    fun newRound(deckSize: Int, shuffledDeck: ShuffledDeck) {
+        if (currentLogger != null) {
             pastLogs.add(currentLogger!!.clone())
         }
-        currentLogger = RoundLogger(N, DECK_SIZE, shuffledDeck)
+        currentLogger = RoundLogger(N, deckSize, shuffledDeck)
     }
 
     /**
      * format complete game log
      */
-    fun formatLog(): String{
+    fun formatLog(): String {
         return pastLogs.map { x -> x.formatLog() }.joinToString("=================")
     }
 

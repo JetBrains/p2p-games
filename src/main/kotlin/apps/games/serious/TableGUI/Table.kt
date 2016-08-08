@@ -1,7 +1,6 @@
 package apps.games.serious.TableGUI
 
 import apps.games.GameExecutionException
-import apps.games.serious.Card
 import apps.games.serious.Pip
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g3d.Model
@@ -59,16 +58,16 @@ class Table(val playersCount: Int, var handSize: Int) : Disposable {
     /**
      * Update max Hand Size
      */
-    fun updateHandSize(n: Int){
+    fun updateHandSize(n: Int) {
         handSize = Math.min(n, 13) // Hard to see what is going on if more than 13
-        for(player in players){
+        for (player in players) {
             player.hand.MAX_HAND_SIZE = handSize
         }
     }
 
-    fun getPlayerWithCard(card: CardGUI): Player?{
-        for(player in players){
-            if(player.hand.cards.contains(card)){
+    fun getPlayerWithCard(card: CardGUI): Player? {
+        for (player in players) {
+            if (player.hand.cards.contains(card)) {
                 return player
             }
         }
@@ -79,9 +78,9 @@ class Table(val playersCount: Int, var handSize: Int) : Disposable {
         return players[0]
     }
 
-    fun clear(){
+    fun clear() {
         commonHand.clear()
-        for(player in players){
+        for (player in players) {
             player.hand.clear()
         }
     }
@@ -168,7 +167,8 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
      *
      * @return old card to be removed
      */
-    @Synchronized fun replaceCardByIndex(index: Int, newCard: CardGUI): CardGUI{
+    @Synchronized fun replaceCardByIndex(index: Int,
+                                         newCard: CardGUI): CardGUI {
         val res = cards[index]
         cards[index] = newCard
         newCard.position.set(res.position)
@@ -179,11 +179,11 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
     /**
      * get random unknown card from players hand
      */
-    fun randomUnknownCard(): CardGUI{
+    fun randomUnknownCard(): CardGUI {
         val idx = randomInt(size)
-        for(i in 0..size-1){
-            if(cards[idx+i].pip == Pip.UNKNOWN){
-                return cards[idx+i]
+        for (i in 0..size - 1) {
+            if (cards[idx + i].pip == Pip.UNKNOWN) {
+                return cards[idx + i]
             }
         }
         throw GameExecutionException("Player has no unknown cards")
@@ -215,8 +215,8 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
     /**
      * clear hand info for reusage
      */
-    @Synchronized fun clear(){
-        for(card in cards){
+    @Synchronized fun clear() {
+        for (card in cards) {
             card.reset()
         }
         cards.clear()
@@ -225,25 +225,25 @@ class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vec
     /**
      * remove cardID from hand.
      */
-    @Synchronized fun removeCard(card: CardGUI, actionManager: ActionManager){
+    @Synchronized fun removeCard(card: CardGUI, actionManager: ActionManager) {
         var index: Int = -1
-        for(i in 0..size-1){
-            if(cards[i] === card){
+        for (i in 0..size - 1) {
+            if (cards[i] === card) {
                 index = i
                 break
             }
         }
-        if(index == -1){
+        if (index == -1) {
             index = cards.indexOf(card)
-            if(index == -1){
+            if (index == -1) {
                 return
             }
         }
-        for(i in index+1..size-1){
-            val pos = getCardPositionById(i-1)
+        for (i in index + 1..size - 1) {
+            val pos = getCardPositionById(i - 1)
             actionManager.add(
                     CardGUI.animate(cards[i], pos.x, pos.y, pos.z, cards[i]
-                    .angle, 2f, cards[i].rotation))
+                            .angle, 2f, cards[i].rotation))
         }
         cards.removeAt(index)
     }

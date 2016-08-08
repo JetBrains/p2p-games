@@ -3,8 +3,6 @@ package apps.games
 import Settings
 import apps.chat.Chat
 import apps.chat.ChatManager
-import apps.games.serious.Cheat.Cheat
-import apps.games.serious.preferans.Preferans
 import crypto.random.randomString
 import entity.Group
 import entity.User
@@ -133,8 +131,8 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
      * has ended for us. So we acknowledge everyone about it
      */
     fun sendEndGame(gameID: String,
-            reason: String,
-            verifier: String?): GenericMessageProto.GenericMessage? {
+                    reason: String,
+                    verifier: String?): GenericMessageProto.GenericMessage? {
         val game: Game<*>? = games[gameID]
         if (game != null) {
             val endMessage = GameMessageProto.GameEndMessage
@@ -181,8 +179,8 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
 
 
     fun requestUpdate(receiver: User,
-            game: Game<*>,
-            timestamp: Int): GenericMessageProto.GenericMessage? {
+                      game: Game<*>,
+                      timestamp: Int): GenericMessageProto.GenericMessage? {
         val statusQuery = QueryProto.GameStatusQuery
                 .newBuilder()
                 .setGameID(game.gameID)

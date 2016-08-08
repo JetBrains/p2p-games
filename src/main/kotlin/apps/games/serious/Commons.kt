@@ -1,5 +1,8 @@
 package apps.games.serious
 
+import apps.games.primitives.Deck
+import apps.games.primitives.EncryptedDeck
+
 /**
  * Created by user on 8/2/16.
  */
@@ -36,3 +39,5 @@ enum class Pip(val value: Int) {
     val index = value - 1
     val type = name
 }
+
+data class ShuffledDeck(val originalDeck: Deck, val encrypted: EncryptedDeck)

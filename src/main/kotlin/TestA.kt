@@ -11,15 +11,15 @@ import java.net.Socket
  */
 
 fun main(args: Array<String>) {
-    BasicConfigurator.configure();
+    BasicConfigurator.configure()
     val host: String
 
     if (DEBUG) {
         host = "127.0.0.1"
     } else {
         try {
-            val s = Socket("google.com", 80);
-            host = s.localAddress.hostAddress;
+            val s = Socket("google.com", 80)
+            host = s.localAddress.hostAddress
             s.close()
         } catch(ignored: Exception) {
             host = InetAddress.getLocalHost().hostAddress
