@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException
  * INIT - all players agree on deck(generate (Size) common
  * random numbers using RandomNumberGame
  *
- * VALIDATE - compare deck hashes to ensure everyone has
+ * VALIDATE_ROLES - compare deck hashes to ensure everyone has
  * the same deck
  *
  * END - end of the protocol

@@ -29,7 +29,7 @@ import java.math.BigInteger
  * other players and computes their sum - that is common random
  * number
  *
- * VALIDATE - all players verify, that everyone have the same
+ * VALIDATE_ROLES - all players verify, that everyone have the same
  * result
  *
  * END - end the protocol

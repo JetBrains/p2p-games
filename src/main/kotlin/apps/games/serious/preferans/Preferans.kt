@@ -116,7 +116,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
             }
             State.ROUND_INIT -> {
                 state = State.DECRYPT_HAND
-                return initRound(responses)
+                return initRound()
             }
             State.DECRYPT_HAND -> {
                 state = State.BIDDING
@@ -438,7 +438,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
      * create and shuffle deck. compute who holds which cardID
      * return keys for cards that I don't hold
      */
-    private fun initRound(responses: List<GameMessageProto.GameStateMessage>): String {
+    private fun initRound(): String {
         //shift order
         val first = playerOrder.removeAt(0)
         playerOrder.add(first)

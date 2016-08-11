@@ -6,7 +6,7 @@ import apps.games.primitives.Deck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
 import broker.NettyGroupBroker
-import crypto.random.randomPermutuation
+import crypto.random.randomPermutation
 import entity.Group
 import entity.User
 import network.ConnectionManagerClass
@@ -72,9 +72,6 @@ class ShuffleTest{
             doReturn(NettyGroupBroker(connectionManagers[i])).`when`(chats[i]).groupBroker
             doReturn(groups[i]).`when`(chats[i]).group
         }
-
-
-
     }
 
     /**
@@ -93,11 +90,11 @@ class ShuffleTest{
         val futureShuffledDecks = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userShuffleDeckGames[i])})
         for(i in 0..MAX_USERS-1){
             val shuffledDeck = futureShuffledDecks[i].get()
-            for(j in randomPermutuation(MAX_USERS)){
-                assertEquals(0, intersectDeckds(shuffledDeck.deck, originalDeck))
+            for(j in randomPermutation(MAX_USERS)){
+                assertEquals(0, intersectDecks(shuffledDeck.deck, originalDeck))
                 shuffledDeck.deck.decryptSeparate(futureShuffledDecks[j].get().keys)
             }
-            assertEquals(shuffledDeck.deck.size, intersectDeckds(shuffledDeck.deck, originalDeck))
+            assertEquals(shuffledDeck.deck.size, intersectDecks(shuffledDeck.deck, originalDeck))
         }
     }
 
@@ -114,7 +111,7 @@ class ShuffleTest{
         }
     }
 
-    private fun intersectDeckds(deck1: Deck, deck2: Deck): Int{
+    private fun intersectDecks(deck1: Deck, deck2: Deck): Int{
         return deck1.cards.intersect(deck2.cards.toList()).size
     }
 

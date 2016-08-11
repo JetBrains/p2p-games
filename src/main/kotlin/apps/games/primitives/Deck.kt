@@ -4,6 +4,7 @@ import crypto.random.shuffleArray
 import entity.User
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.math.ec.ECPoint
+import org.bouncycastle.pqc.math.linearalgebra.Permutation
 import java.math.BigInteger
 import java.util.*
 
@@ -26,10 +27,29 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
 
     /**
      * Shuffle this deck with
-     * random permutuation
+     * random permutation
      */
     fun shuffle() {
         shuffleArray(cards)
+    }
+
+    /**
+     * Shuffle this deck
+     * with given permutation
+     *
+     * @param permutation - List of indiciers in permutuation. TODO - move to bouncycastle permutations
+     */
+    fun shuffle(permutation: List<Int>){
+        if(size != permutation.size){
+            throw IllegalArgumentException("Permutation size doesn't match deck size")
+        }
+        val res = mutableListOf<ECPoint>()
+        for(x in permutation){
+            res.add(cards[x])
+        }
+        for (i in 0..size-1){
+            cards[i] = res[i]
+        }
     }
 
     /**

@@ -66,7 +66,7 @@ fun randomECPoint(curveSpec: ECParameterSpec): ECPoint {
  * Create a random permutuation of [0..n-1]
  * @param n - max value(not included)
  */
-fun randomPermutuation(n: Int): List<Int> {
+fun randomPermutation(n: Int): List<Int> {
     val list = (0..n - 1).toList()
     Collections.shuffle(list)
     return list

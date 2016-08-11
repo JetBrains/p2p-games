@@ -25,10 +25,10 @@ import java.math.BigInteger
  *
  * INIT - all players ensure, everyone has the same deck
  *
- * SHUFFLE, LOCK - create shuffle deck using algorithms from
+ * GENERATE_IV, LOCK - create shuffle deck using algorithms from
  * http://www.clee.kr/thesis.pdf
  *
- * VALIDATE - ensure everyone got the same result
+ * VALIDATE_ROLES - ensure everyone got the same result
  *
  * END - finish the game
  */
@@ -108,7 +108,7 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
                     deck.shuffle()
                     deck.encrypt(shuffleKey)
                 }
-                if (step > N) {
+                if (step >= N) {
                     step = -1
                     state = State.LOCK
                 }

@@ -34,7 +34,7 @@ class ChatGUI(internal var chat: Chat) {
 
     init {
         gameList = JComboBox(gameOptions)
-        gameList.selectedIndex = 2
+        gameList.selectedIndex = 3
     }
 
     fun display() {
