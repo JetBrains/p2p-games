@@ -7,6 +7,7 @@ import apps.games.GameManager
 import apps.games.GameManagerClass
 import apps.games.primitives.Deck
 import apps.games.primitives.protocols.RandomDeckGame
+import apps.games.serious.mafia.Roles.Role
 import crypto.random.randomBigInt
 import crypto.random.randomPermutation
 import entity.ChatMessage
@@ -16,6 +17,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.jce.spec.ECParameterSpec
 import proto.GameMessageProto
 import java.math.BigInteger
+import java.util.*
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 
@@ -23,7 +25,7 @@ import java.util.concurrent.ExecutionException
  * Created by user on 8/9/16.
  */
 class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec,
-                         val roleCounts: List<Int>, gameManager: GameManagerClass = GameManager) : Game<RoleDeck>(
+                         val roleCounts: List<Int>, gameManager: GameManagerClass = GameManager) : Game<Pair<RoleDeck, RoleGenerationVerifier>>(
         chat, group, gameID, gameManager = gameManager) {
     override val name: String
         get() = "Role Generation Game"
@@ -306,8 +308,9 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
         return state == State.END
     }
 
-    override fun getResult(): RoleDeck {
-        return RoleDeck(originalRoles, roles, X, V, R, commonR, rolesLockKeys, VLockKeys, rolesLockKeyHashes, VLockKeyHashes)
+    override fun getResult(): Pair<RoleDeck, RoleGenerationVerifier> {
+        val deck = RoleDeck(originalRoles, roles, X, V, R, commonR, rolesLockKeys, VLockKeys, rolesLockKeyHashes, VLockKeyHashes)
+        return Pair(deck, RoleGenerationVerifier(deck))
     }
 }
 
@@ -324,7 +327,13 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
  * @property VkeyHashes - hashes of other user V keys (sort of commitment)
  */
 data class RoleDeck(val originalRoles: Deck, val shuffledRoles: Deck,
-                    val X: List<BigInteger>, val V: Deck,
+                    val X: Collection<BigInteger>, val V: Deck,
                     val ownR: Collection<BigInteger>, val commonR: Collection<BigInteger>,
                     val roleKeys: Collection<BigInteger>, val VKeys: Collection<BigInteger>,
-                    val roleKeyHashes: MutableMap<User, String>, val VkeyHashes: MutableMap<User, String>)
+                    val roleKeyHashes: MutableMap<User, String>, val VkeyHashes: MutableMap<User, String>): Cloneable{
+    override public fun clone(): RoleDeck {
+        return RoleDeck(originalRoles.clone(), shuffledRoles.clone(), ArrayList(X),
+                        V.clone(), ArrayList(ownR), ArrayList(commonR), ArrayList(roleKeys),
+                        ArrayList(VKeys), HashMap(roleKeyHashes), HashMap(VkeyHashes))
+    }
+}

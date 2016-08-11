@@ -14,6 +14,12 @@ import java.util.*
 
 
 class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
+    constructor(other: Deck) : this(other.ECParams, other.size) {
+        for(i in 0..size){
+            cards[i] = other.cards[i].multiply(BigInteger.ONE)
+        }
+    }
+
     val cards = Array<ECPoint>(size, { i -> ECParams.g })
 
     /**

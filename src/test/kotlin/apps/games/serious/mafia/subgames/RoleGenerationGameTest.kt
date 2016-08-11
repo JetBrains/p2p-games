@@ -17,13 +17,14 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.mockito.Mockito
+import java.math.BigInteger
 import java.net.InetSocketAddress
 import java.util.*
 
 /**
  * Created by user on 8/11/16.
  */
-val MAX_USERS = 5
+val MAX_USERS = 9
 
 class RoleGenerationGameTest{
     lateinit var chats: Array<Chat>
@@ -82,7 +83,8 @@ class RoleGenerationGameTest{
         val rolesCount = IntArray(MAX_USERS - m + 1, {i -> if (i == 0) m else 1}).toList()
         val userRolesDeckGames = Array(MAX_USERS, { i -> RoleGenerationGame(chats[i], groups[i], "RoleDeck", ECParams, rolesCount, gameManagers[i]) })
         val futureRoleDecks = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userRolesDeckGames[i])})
-        val roleDecks = Array(MAX_USERS, {i -> futureRoleDecks[i].get()})
+        val roleDecks = Array(MAX_USERS, {i -> futureRoleDecks[i].get().first})
+        val verifiers = Array(MAX_USERS, {i -> futureRoleDecks[i].get().second})
         for(roleDeck in roleDecks){
             for(otherDeck in roleDecks){
                 roleDeck.shuffledRoles.decryptSeparate(otherDeck.roleKeys)
@@ -96,15 +98,29 @@ class RoleGenerationGameTest{
         }
         for(i in 0..MAX_USERS-1){
             for(j in 0..MAX_USERS-1){
-                val R1 = Array(MAX_USERS, {t -> roleDecks[i].V.cards[i].multiply(roleDecks[i].commonR.elementAt(t))})
-                val R2 = Array(MAX_USERS, {t -> roleDecks[j].V.cards[j].multiply(roleDecks[j].commonR.elementAt(t))})
+                val R1 = Array(MAX_USERS, {t -> roleDecks[i].V.cards[i].multiply(roleDecks[i].commonR.elementAt(t).modInverse(ECParams.n))})
+                val R2 = Array(MAX_USERS, {t -> roleDecks[j].V.cards[j].multiply(roleDecks[j].commonR.elementAt(t).modInverse(ECParams.n))})
                 if((roles[i] < m && roles[j] < m) || i == j){
                     assertTrue(R1.intersect(R2.toList()).isNotEmpty())
+                    println("${roles[i]} ${roles[j]}")
+                    println(R1.intersect(R2.toList()).size)
                 }else{
                     assertTrue(R1.intersect(R2.toList()).isEmpty())
                 }
             }
         }
-
+        val roleKeys = mutableMapOf<User, Collection<BigInteger>>()
+        val VKeys = mutableMapOf<User, Collection<BigInteger>>()
+        val Rs = mutableMapOf<User, Collection<BigInteger>>()
+        val Xs = mutableMapOf<User, Collection<BigInteger>>()
+        for(i in 0..MAX_USERS-1){
+            roleKeys[users[i]]  = roleDecks[i].roleKeys
+            VKeys[users[i]] = roleDecks[i].VKeys
+            Rs[users[i]] = roleDecks[i].ownR
+            Xs[users[i]] = roleDecks[i].X
+        }
+        for(verifier in verifiers){
+            assertTrue(verifier.verify(roleKeys, VKeys, Rs, Xs))
+        }
     }
 }
