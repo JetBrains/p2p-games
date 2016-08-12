@@ -584,7 +584,7 @@ public final class QueryProto {
             private final int index;
             private final int value;
 
-            private Type(int index, int value) {
+            Type(int index, int value) {
                 this.index = index;
                 this.value = value;
             }
@@ -876,6 +876,21 @@ public final class QueryProto {
             /**
              * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
              */
+            public Builder setChatMemberQuery(
+                    proto.QueryProto.ChatMemberQuery.Builder builderForValue) {
+                if (chatMemberQueryBuilder_ == null) {
+                    chatMemberQuery_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    chatMemberQueryBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000002;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
+             */
             public Builder setChatMemberQuery(proto.QueryProto.ChatMemberQuery value) {
                 if (chatMemberQueryBuilder_ == null) {
                     if (value == null) {
@@ -885,21 +900,6 @@ public final class QueryProto {
                     onChanged();
                 } else {
                     chatMemberQueryBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.ChatMemberQuery chatMemberQuery = 2;</code>
-             */
-            public Builder setChatMemberQuery(
-                    proto.QueryProto.ChatMemberQuery.Builder builderForValue) {
-                if (chatMemberQueryBuilder_ == null) {
-                    chatMemberQuery_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    chatMemberQueryBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000002;
                 return this;
@@ -997,6 +997,21 @@ public final class QueryProto {
             /**
              * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
              */
+            public Builder setGameStatusQuery(
+                    proto.QueryProto.GameStatusQuery.Builder builderForValue) {
+                if (gameStatusQueryBuilder_ == null) {
+                    gameStatusQuery_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    gameStatusQueryBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000004;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
+             */
             public Builder setGameStatusQuery(proto.QueryProto.GameStatusQuery value) {
                 if (gameStatusQueryBuilder_ == null) {
                     if (value == null) {
@@ -1006,21 +1021,6 @@ public final class QueryProto {
                     onChanged();
                 } else {
                     gameStatusQueryBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000004;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.GameStatusQuery gameStatusQuery = 3;</code>
-             */
-            public Builder setGameStatusQuery(
-                    proto.QueryProto.GameStatusQuery.Builder builderForValue) {
-                if (gameStatusQueryBuilder_ == null) {
-                    gameStatusQuery_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    gameStatusQueryBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000004;
                 return this;
@@ -1464,11 +1464,7 @@ public final class QueryProto {
             }
 
             public final boolean isInitialized() {
-                if (!hasChatID()) {
-
-                    return false;
-                }
-                return true;
+                return hasChatID();
             }
 
             public Builder mergeFrom(
@@ -2049,11 +2045,7 @@ public final class QueryProto {
 
                     return false;
                 }
-                if (!getUser().isInitialized()) {
-
-                    return false;
-                }
-                return true;
+                return getUser().isInitialized();
             }
 
             public Builder mergeFrom(
@@ -2175,6 +2167,21 @@ public final class QueryProto {
             /**
              * <code>required .proto.User user = 2;</code>
              */
+            public Builder setUser(
+                    proto.EntitiesProto.User.Builder builderForValue) {
+                if (userBuilder_ == null) {
+                    user_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    userBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000002;
+                return this;
+            }
+
+            /**
+             * <code>required .proto.User user = 2;</code>
+             */
             public Builder setUser(proto.EntitiesProto.User value) {
                 if (userBuilder_ == null) {
                     if (value == null) {
@@ -2184,21 +2191,6 @@ public final class QueryProto {
                     onChanged();
                 } else {
                     userBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            /**
-             * <code>required .proto.User user = 2;</code>
-             */
-            public Builder setUser(
-                    proto.EntitiesProto.User.Builder builderForValue) {
-                if (userBuilder_ == null) {
-                    user_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    userBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000002;
                 return this;

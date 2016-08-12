@@ -922,7 +922,7 @@ public final class GameMessageProto {
             private final int index;
             private final int value;
 
-            private Type(int index, int value) {
+            Type(int index, int value) {
                 this.index = index;
                 this.value = value;
             }
@@ -1266,6 +1266,21 @@ public final class GameMessageProto {
             /**
              * <code>optional .proto.GameInitMessage gameInitMessage = 2;</code>
              */
+            public Builder setGameInitMessage(
+                    proto.GameMessageProto.GameInitMessage.Builder builderForValue) {
+                if (gameInitMessageBuilder_ == null) {
+                    gameInitMessage_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    gameInitMessageBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000002;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.GameInitMessage gameInitMessage = 2;</code>
+             */
             public Builder setGameInitMessage(proto.GameMessageProto.GameInitMessage value) {
                 if (gameInitMessageBuilder_ == null) {
                     if (value == null) {
@@ -1275,21 +1290,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     gameInitMessageBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.GameInitMessage gameInitMessage = 2;</code>
-             */
-            public Builder setGameInitMessage(
-                    proto.GameMessageProto.GameInitMessage.Builder builderForValue) {
-                if (gameInitMessageBuilder_ == null) {
-                    gameInitMessage_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    gameInitMessageBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000002;
                 return this;
@@ -1387,6 +1387,21 @@ public final class GameMessageProto {
             /**
              * <code>optional .proto.GameStateMessage gameStateMessage = 3;</code>
              */
+            public Builder setGameStateMessage(
+                    proto.GameMessageProto.GameStateMessage.Builder builderForValue) {
+                if (gameStateMessageBuilder_ == null) {
+                    gameStateMessage_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    gameStateMessageBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000004;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.GameStateMessage gameStateMessage = 3;</code>
+             */
             public Builder setGameStateMessage(proto.GameMessageProto.GameStateMessage value) {
                 if (gameStateMessageBuilder_ == null) {
                     if (value == null) {
@@ -1396,21 +1411,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     gameStateMessageBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000004;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.GameStateMessage gameStateMessage = 3;</code>
-             */
-            public Builder setGameStateMessage(
-                    proto.GameMessageProto.GameStateMessage.Builder builderForValue) {
-                if (gameStateMessageBuilder_ == null) {
-                    gameStateMessage_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    gameStateMessageBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000004;
                 return this;
@@ -1508,6 +1508,21 @@ public final class GameMessageProto {
             /**
              * <code>optional .proto.GameEndMessage gameEndMessage = 4;</code>
              */
+            public Builder setGameEndMessage(
+                    proto.GameMessageProto.GameEndMessage.Builder builderForValue) {
+                if (gameEndMessageBuilder_ == null) {
+                    gameEndMessage_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    gameEndMessageBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000008;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.GameEndMessage gameEndMessage = 4;</code>
+             */
             public Builder setGameEndMessage(proto.GameMessageProto.GameEndMessage value) {
                 if (gameEndMessageBuilder_ == null) {
                     if (value == null) {
@@ -1517,21 +1532,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     gameEndMessageBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000008;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.GameEndMessage gameEndMessage = 4;</code>
-             */
-            public Builder setGameEndMessage(
-                    proto.GameMessageProto.GameEndMessage.Builder builderForValue) {
-                if (gameEndMessageBuilder_ == null) {
-                    gameEndMessage_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    gameEndMessageBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000008;
                 return this;
@@ -1629,6 +1629,21 @@ public final class GameMessageProto {
             /**
              * <code>optional .proto.GameErrorMessage gameErrorMessage = 5;</code>
              */
+            public Builder setGameErrorMessage(
+                    proto.GameMessageProto.GameErrorMessage.Builder builderForValue) {
+                if (gameErrorMessageBuilder_ == null) {
+                    gameErrorMessage_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    gameErrorMessageBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000010;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.GameErrorMessage gameErrorMessage = 5;</code>
+             */
             public Builder setGameErrorMessage(proto.GameMessageProto.GameErrorMessage value) {
                 if (gameErrorMessageBuilder_ == null) {
                     if (value == null) {
@@ -1638,21 +1653,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     gameErrorMessageBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000010;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.GameErrorMessage gameErrorMessage = 5;</code>
-             */
-            public Builder setGameErrorMessage(
-                    proto.GameMessageProto.GameErrorMessage.Builder builderForValue) {
-                if (gameErrorMessageBuilder_ == null) {
-                    gameErrorMessage_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    gameErrorMessageBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000010;
                 return this;
@@ -2414,11 +2414,7 @@ public final class GameMessageProto {
 
                     return false;
                 }
-                if (!getParticipants().isInitialized()) {
-
-                    return false;
-                }
-                return true;
+                return getParticipants().isInitialized();
             }
 
             public Builder mergeFrom(
@@ -2460,6 +2456,21 @@ public final class GameMessageProto {
             /**
              * <code>required .proto.User user = 1;</code>
              */
+            public Builder setUser(
+                    proto.EntitiesProto.User.Builder builderForValue) {
+                if (userBuilder_ == null) {
+                    user_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    userBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000001;
+                return this;
+            }
+
+            /**
+             * <code>required .proto.User user = 1;</code>
+             */
             public Builder setUser(proto.EntitiesProto.User value) {
                 if (userBuilder_ == null) {
                     if (value == null) {
@@ -2469,21 +2480,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     userBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000001;
-                return this;
-            }
-
-            /**
-             * <code>required .proto.User user = 1;</code>
-             */
-            public Builder setUser(
-                    proto.EntitiesProto.User.Builder builderForValue) {
-                if (userBuilder_ == null) {
-                    user_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    userBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000001;
                 return this;
@@ -2775,6 +2771,21 @@ public final class GameMessageProto {
             /**
              * <code>required .proto.Group participants = 5;</code>
              */
+            public Builder setParticipants(
+                    proto.EntitiesProto.Group.Builder builderForValue) {
+                if (participantsBuilder_ == null) {
+                    participants_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    participantsBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000010;
+                return this;
+            }
+
+            /**
+             * <code>required .proto.Group participants = 5;</code>
+             */
             public Builder setParticipants(proto.EntitiesProto.Group value) {
                 if (participantsBuilder_ == null) {
                     if (value == null) {
@@ -2784,21 +2795,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     participantsBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000010;
-                return this;
-            }
-
-            /**
-             * <code>required .proto.Group participants = 5;</code>
-             */
-            public Builder setParticipants(
-                    proto.EntitiesProto.Group.Builder builderForValue) {
-                if (participantsBuilder_ == null) {
-                    participants_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    participantsBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000010;
                 return this;
@@ -3537,11 +3533,7 @@ public final class GameMessageProto {
 
                     return false;
                 }
-                if (!getUser().isInitialized()) {
-
-                    return false;
-                }
-                return true;
+                return getUser().isInitialized();
             }
 
             public Builder mergeFrom(
@@ -3583,6 +3575,21 @@ public final class GameMessageProto {
             /**
              * <code>required .proto.User user = 1;</code>
              */
+            public Builder setUser(
+                    proto.EntitiesProto.User.Builder builderForValue) {
+                if (userBuilder_ == null) {
+                    user_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    userBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000001;
+                return this;
+            }
+
+            /**
+             * <code>required .proto.User user = 1;</code>
+             */
             public Builder setUser(proto.EntitiesProto.User value) {
                 if (userBuilder_ == null) {
                     if (value == null) {
@@ -3592,21 +3599,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     userBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000001;
-                return this;
-            }
-
-            /**
-             * <code>required .proto.User user = 1;</code>
-             */
-            public Builder setUser(
-                    proto.EntitiesProto.User.Builder builderForValue) {
-                if (userBuilder_ == null) {
-                    user_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    userBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000001;
                 return this;
@@ -4574,11 +4566,7 @@ public final class GameMessageProto {
 
                     return false;
                 }
-                if (!getUser().isInitialized()) {
-
-                    return false;
-                }
-                return true;
+                return getUser().isInitialized();
             }
 
             public Builder mergeFrom(
@@ -4620,6 +4608,21 @@ public final class GameMessageProto {
             /**
              * <code>required .proto.User user = 1;</code>
              */
+            public Builder setUser(
+                    proto.EntitiesProto.User.Builder builderForValue) {
+                if (userBuilder_ == null) {
+                    user_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    userBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000001;
+                return this;
+            }
+
+            /**
+             * <code>required .proto.User user = 1;</code>
+             */
             public Builder setUser(proto.EntitiesProto.User value) {
                 if (userBuilder_ == null) {
                     if (value == null) {
@@ -4629,21 +4632,6 @@ public final class GameMessageProto {
                     onChanged();
                 } else {
                     userBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000001;
-                return this;
-            }
-
-            /**
-             * <code>required .proto.User user = 1;</code>
-             */
-            public Builder setUser(
-                    proto.EntitiesProto.User.Builder builderForValue) {
-                if (userBuilder_ == null) {
-                    user_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    userBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000001;
                 return this;

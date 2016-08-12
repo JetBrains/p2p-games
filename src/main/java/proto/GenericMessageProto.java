@@ -773,7 +773,7 @@ public final class GenericMessageProto {
             private final int index;
             private final int value;
 
-            private Type(int index, int value) {
+            Type(int index, int value) {
                 this.index = index;
                 this.value = value;
             }
@@ -1152,6 +1152,21 @@ public final class GenericMessageProto {
             /**
              * <code>optional .proto.ChatMessage chatMessage = 2;</code>
              */
+            public Builder setChatMessage(
+                    proto.ChatMessageProto.ChatMessage.Builder builderForValue) {
+                if (chatMessageBuilder_ == null) {
+                    chatMessage_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    chatMessageBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000002;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.ChatMessage chatMessage = 2;</code>
+             */
             public Builder setChatMessage(proto.ChatMessageProto.ChatMessage value) {
                 if (chatMessageBuilder_ == null) {
                     if (value == null) {
@@ -1161,21 +1176,6 @@ public final class GenericMessageProto {
                     onChanged();
                 } else {
                     chatMessageBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000002;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.ChatMessage chatMessage = 2;</code>
-             */
-            public Builder setChatMessage(
-                    proto.ChatMessageProto.ChatMessage.Builder builderForValue) {
-                if (chatMessageBuilder_ == null) {
-                    chatMessage_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    chatMessageBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000002;
                 return this;
@@ -1273,6 +1273,21 @@ public final class GenericMessageProto {
             /**
              * <code>optional .proto.Query query = 3;</code>
              */
+            public Builder setQuery(
+                    proto.QueryProto.Query.Builder builderForValue) {
+                if (queryBuilder_ == null) {
+                    query_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    queryBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000004;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.Query query = 3;</code>
+             */
             public Builder setQuery(proto.QueryProto.Query value) {
                 if (queryBuilder_ == null) {
                     if (value == null) {
@@ -1282,21 +1297,6 @@ public final class GenericMessageProto {
                     onChanged();
                 } else {
                     queryBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000004;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.Query query = 3;</code>
-             */
-            public Builder setQuery(
-                    proto.QueryProto.Query.Builder builderForValue) {
-                if (queryBuilder_ == null) {
-                    query_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    queryBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000004;
                 return this;
@@ -1394,6 +1394,21 @@ public final class GenericMessageProto {
             /**
              * <code>optional .proto.ResponseGroup response_group = 4;</code>
              */
+            public Builder setResponseGroup(
+                    proto.GenericMessageProto.ResponseGroup.Builder builderForValue) {
+                if (responseGroupBuilder_ == null) {
+                    responseGroup_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    responseGroupBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000008;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.ResponseGroup response_group = 4;</code>
+             */
             public Builder setResponseGroup(proto.GenericMessageProto.ResponseGroup value) {
                 if (responseGroupBuilder_ == null) {
                     if (value == null) {
@@ -1403,21 +1418,6 @@ public final class GenericMessageProto {
                     onChanged();
                 } else {
                     responseGroupBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000008;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.ResponseGroup response_group = 4;</code>
-             */
-            public Builder setResponseGroup(
-                    proto.GenericMessageProto.ResponseGroup.Builder builderForValue) {
-                if (responseGroupBuilder_ == null) {
-                    responseGroup_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    responseGroupBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000008;
                 return this;
@@ -1515,6 +1515,21 @@ public final class GenericMessageProto {
             /**
              * <code>optional .proto.Group group = 5;</code>
              */
+            public Builder setGroup(
+                    proto.EntitiesProto.Group.Builder builderForValue) {
+                if (groupBuilder_ == null) {
+                    group_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    groupBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000010;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.Group group = 5;</code>
+             */
             public Builder setGroup(proto.EntitiesProto.Group value) {
                 if (groupBuilder_ == null) {
                     if (value == null) {
@@ -1524,21 +1539,6 @@ public final class GenericMessageProto {
                     onChanged();
                 } else {
                     groupBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000010;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.Group group = 5;</code>
-             */
-            public Builder setGroup(
-                    proto.EntitiesProto.Group.Builder builderForValue) {
-                if (groupBuilder_ == null) {
-                    group_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    groupBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000010;
                 return this;
@@ -1636,6 +1636,21 @@ public final class GenericMessageProto {
             /**
              * <code>optional .proto.GameMessage gameMessage = 6;</code>
              */
+            public Builder setGameMessage(
+                    proto.GameMessageProto.GameMessage.Builder builderForValue) {
+                if (gameMessageBuilder_ == null) {
+                    gameMessage_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    gameMessageBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000020;
+                return this;
+            }
+
+            /**
+             * <code>optional .proto.GameMessage gameMessage = 6;</code>
+             */
             public Builder setGameMessage(proto.GameMessageProto.GameMessage value) {
                 if (gameMessageBuilder_ == null) {
                     if (value == null) {
@@ -1645,21 +1660,6 @@ public final class GenericMessageProto {
                     onChanged();
                 } else {
                     gameMessageBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000020;
-                return this;
-            }
-
-            /**
-             * <code>optional .proto.GameMessage gameMessage = 6;</code>
-             */
-            public Builder setGameMessage(
-                    proto.GameMessageProto.GameMessage.Builder builderForValue) {
-                if (gameMessageBuilder_ == null) {
-                    gameMessage_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    gameMessageBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000020;
                 return this;

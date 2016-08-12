@@ -619,11 +619,7 @@ public final class ChatMessageProto {
 
                     return false;
                 }
-                if (!getUser().isInitialized()) {
-
-                    return false;
-                }
-                return true;
+                return getUser().isInitialized();
             }
 
             public Builder mergeFrom(
@@ -665,6 +661,21 @@ public final class ChatMessageProto {
             /**
              * <code>required .proto.User user = 1;</code>
              */
+            public Builder setUser(
+                    proto.EntitiesProto.User.Builder builderForValue) {
+                if (userBuilder_ == null) {
+                    user_ = builderForValue.build();
+                    onChanged();
+                } else {
+                    userBuilder_.setMessage(builderForValue.build());
+                }
+                bitField0_ |= 0x00000001;
+                return this;
+            }
+
+            /**
+             * <code>required .proto.User user = 1;</code>
+             */
             public Builder setUser(proto.EntitiesProto.User value) {
                 if (userBuilder_ == null) {
                     if (value == null) {
@@ -674,21 +685,6 @@ public final class ChatMessageProto {
                     onChanged();
                 } else {
                     userBuilder_.setMessage(value);
-                }
-                bitField0_ |= 0x00000001;
-                return this;
-            }
-
-            /**
-             * <code>required .proto.User user = 1;</code>
-             */
-            public Builder setUser(
-                    proto.EntitiesProto.User.Builder builderForValue) {
-                if (userBuilder_ == null) {
-                    user_ = builderForValue.build();
-                    onChanged();
-                } else {
-                    userBuilder_.setMessage(builderForValue.build());
                 }
                 bitField0_ |= 0x00000001;
                 return this;

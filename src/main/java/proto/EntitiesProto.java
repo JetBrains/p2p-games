@@ -659,11 +659,7 @@ public final class EntitiesProto {
 
                     return false;
                 }
-                if (!hasPort()) {
-
-                    return false;
-                }
-                return true;
+                return hasPort();
             }
 
             public Builder mergeFrom(
