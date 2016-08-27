@@ -59,6 +59,21 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
     }
 
     /**
+     * Shuffle this deck in blocks
+     * with given permutation
+     *
+     * @param permutation - List of indiciers in permutuation.
+     * @param blockSize - size of shuffle block
+     */
+    fun shuffle(permutation: List<Int>, blockSize: Int){
+        val tmp = cards.toList()
+        val shuffled = crypto.random.shuffle(tmp, permutation, blockSize)
+        for(i in 0..shuffled.size-1){
+            cards[i] = shuffled[i]
+        }
+    }
+
+    /**
      * Encrypt all cards with specified key
      * @param key
      */
@@ -86,7 +101,7 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
      * @param keys - Collection of keys
      * to encrypt cards
      */
-    fun enctyptSeparate(keys: Collection<BigInteger>) {
+    fun encryptSeparate(keys: Collection<BigInteger>) {
         if (keys.size < size) {
             throw IndexOutOfBoundsException(
                     "Insufficient number of keys provided")

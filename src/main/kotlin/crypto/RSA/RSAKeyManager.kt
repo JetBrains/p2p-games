@@ -1,5 +1,6 @@
 package crypto.RSA
 
+import apps.games.GameExecutionException
 import crypto.random.secureRandom
 import entity.User
 import org.bouncycastle.crypto.AsymmetricBlockCipher
@@ -23,7 +24,9 @@ val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
 
 class RSAKeyManager {
     private val userEncodeEngines = mutableMapOf<User, AsymmetricBlockCipher>()
+    private val userPublicKeys = mutableMapOf<User, String>()
     private val userDecodeEngines = mutableMapOf<User, AsymmetricBlockCipher>()
+    private val userPrivateKeys = mutableMapOf<User, String>()
     private val KEY_LENGTH = 1024
     val engine = PKCS1Encoding(RSAEngine())
     private lateinit var keyPair: KeyPair
@@ -59,10 +62,17 @@ class RSAKeyManager {
      * @param publicKey - public key of given user
      */
     fun registerUserPublicKey(user: User, publicKey: String) {
+        if(user in userPublicKeys){
+            if(userPublicKeys[user] != publicKey){
+                throw GameExecutionException("Changing keys for user is not allowed")
+            }
+            return
+        }
         val b64decoder = BASE64Decoder()
         val keyParam = PublicKeyFactory.createKey(b64decoder.decodeBuffer(publicKey))
         val cypher: AsymmetricBlockCipher = PKCS1Encoding(RSAEngine())
         cypher.init(true, keyParam)
+        userPublicKeys[user] = publicKey
         userEncodeEngines[user] = cypher
     }
 
@@ -73,6 +83,12 @@ class RSAKeyManager {
      * @param privateKey - private key of given user
      */
     fun registerUserPrivateKey(user: User, privateKey: String) {
+        if(user in userPrivateKeys){
+            if(userPrivateKeys[user] != privateKey){
+                throw GameExecutionException("Changing keys for user is not allowed")
+            }
+            return
+        }
         val b64decoder = BASE64Decoder()
         val keyParam = PrivateKeyFactory.createKey(b64decoder.decodeBuffer(privateKey))
         val cypher: AsymmetricBlockCipher = PKCS1Encoding(RSAEngine())
@@ -138,11 +154,11 @@ class RSAKeyManager {
         return res.toString()
     }
 
-    fun toHexString(array: ByteArray): String {
+    private fun toHexString(array: ByteArray): String {
         return DatatypeConverter.printHexBinary(array)
     }
 
-    fun toByteArray(s: String): ByteArray {
+    private fun toByteArray(s: String): ByteArray {
         return DatatypeConverter.parseHexBinary(s)
     }
 
@@ -153,9 +169,11 @@ class RSAKeyManager {
         val keyGen = KeyPairGenerator.getInstance("RSA", "BC")
         keyGen.initialize(KEY_LENGTH, secureRandom)
         keyPair = keyGen.genKeyPair()
-        //TODO - there SHOULD be better convertion
         engine.init(false, PrivateKeyFactory.createKey(keyPair.private.encoded))
         userEncodeEngines.clear()
+        userDecodeEngines.clear()
+        userPrivateKeys.clear()
+        userPublicKeys.clear()
     }
 
 }

@@ -129,7 +129,7 @@ class DeckShuffleGame(chat: Chat, group: Group, gameID: String, val ECParams: EC
                 step++
                 if (step == id) {
                     deck.decrypt(shuffleKey)
-                    deck.enctyptSeparate(lockKeys)
+                    deck.encryptSeparate(lockKeys)
                 }
                 if (step > N) {
                     state = State.VALIDATE

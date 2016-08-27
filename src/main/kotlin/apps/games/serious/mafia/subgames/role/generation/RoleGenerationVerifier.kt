@@ -1,4 +1,4 @@
-package apps.games.serious.mafia.subgames
+package apps.games.serious.mafia.subgames.role.generation
 
 import apps.games.primitives.Deck
 import entity.User
@@ -15,7 +15,7 @@ class RoleGenerationVerifier(originalRoleDeck: RoleDeck){
         roleDeck = originalRoleDeck.clone()
     }
     fun verify(roleKeys: Map<User, Collection<BigInteger>>, VKeys: Map<User, Collection<BigInteger>>,
-               Rs : Map<User, Collection<BigInteger>>,
+               Rkeys : Map<User, Collection<BigInteger>>,
                Xs: Map<User, Collection<BigInteger>>): Boolean{
         if(!registerRoleKeys(roleKeys)){
             return false
@@ -23,7 +23,7 @@ class RoleGenerationVerifier(originalRoleDeck: RoleDeck){
         if(!registerVKeys(VKeys)){
             return false
         }
-        if(!checkR(Rs)){
+        if(!checkRkeys(Rkeys)){
             return false
         }
         if(!checkX(Xs)){
@@ -75,18 +75,18 @@ class RoleGenerationVerifier(originalRoleDeck: RoleDeck){
      *
      * @param Rs - maps user to his original R
      */
-    private fun checkR(Rs : Map<User, Collection<BigInteger>>): Boolean{
-        val testR = Array(roleDeck.ownR.size, {i -> BigInteger.ONE})
-        for((k, v) in Rs){
-            if(v.size != testR.size){
+    private fun checkRkeys(Rkeys : Map<User, Collection<BigInteger>>): Boolean{
+        for((user, keyset) in Rkeys){
+            val h = DigestUtils.sha256Hex(keyset.joinToString(" "))
+            if(roleDeck.RKeyHashes[user] != h){
                 return false
             }
-            for(i in 0..v.size-1){
-                testR[i] *= v.elementAt(i)
-                testR[i] %= roleDeck.V.ECParams.n
+            for(i in 0..roleDeck.encryptedR.size-1){
+                roleDeck.encryptedR[i] *= keyset.elementAt(i).modInverse(roleDeck.V.ECParams.n)
+                roleDeck.encryptedR[i] %= roleDeck.V.ECParams.n
             }
         }
-        return testR.toList() == roleDeck.commonR
+        return true
     }
 
     /**
@@ -98,6 +98,7 @@ class RoleGenerationVerifier(originalRoleDeck: RoleDeck){
             val role = roleDeck.shuffledRoles.cards[i]
             val pos = roleDeck.originalRoles.cards.indexOf(role)
             testDeck.cards[pos] = roleDeck.V.cards[i]
+            testDeck.decryptCardWithKey(pos, roleDeck.encryptedR[i])
         }
         for((k, v) in Xs){
             if(v.size != testDeck.size){
@@ -105,7 +106,6 @@ class RoleGenerationVerifier(originalRoleDeck: RoleDeck){
             }
             testDeck.decryptSeparate(v)
         }
-        testDeck.decryptSeparate(roleDeck.commonR)
         return testDeck.cards.all { x -> x == testDeck.ECParams.g }
     }
 

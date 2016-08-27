@@ -44,7 +44,7 @@ abstract class Overlay {
     }
 }
 
-abstract class ButtonOverlay<T : Enum<T>> : Overlay() {
+abstract class ButtonOverlay<T> : Overlay() {
     lateinit var skin: Skin
 
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
@@ -116,7 +116,6 @@ abstract class ButtonOverlay<T : Enum<T>> : Overlay() {
         button.isDisabled = false
     }
 
-    //TODO - override in biddingOverlay, to show bet type
     /**
      * Enable button corresponding to given Option
      * and set button text to original value
@@ -124,7 +123,7 @@ abstract class ButtonOverlay<T : Enum<T>> : Overlay() {
     open fun resetOption(option: T) {
         val button = buttons[option] ?: return
         button.isChecked = false
-        button.setText(option.name)
+        button.setText(option.toString())
         button.isDisabled = false
     }
 
@@ -144,7 +143,7 @@ abstract class ButtonOverlay<T : Enum<T>> : Overlay() {
 
 
     companion object ListenerFactory {
-        fun <R, T : Enum<T>> create(option: T,
+        fun <R, T> create(option: T,
                                     betButton: Button,
                                     callback: (T) -> (R)): EventListener {
             return object : ClickListener() {
@@ -163,8 +162,8 @@ abstract class ButtonOverlay<T : Enum<T>> : Overlay() {
 class ButtonOverlayFactory {
     companion object {
         fun <T : Enum<T>> create(clazz: Class<T>,
-                                 breaks: List<T> = listOf(),
-                                 skips: List<T> = listOf(),
+                                 breaks: Collection<T> = listOf(),
+                                 skips: Collection<T> = listOf(),
                                  names: Map<T, String> = mapOf()): ButtonOverlay<T> {
             return object : ButtonOverlay<T>() {
                 override fun create() {
@@ -190,6 +189,24 @@ class ButtonOverlayFactory {
                     button.setText(name)
                     button.isDisabled = false
 
+                }
+            }
+        }
+
+        fun <T> create(values: Collection<T>,
+                       breaks: Collection<T>,
+                       names: Map<T, String>): ButtonOverlay<T> {
+            return object : ButtonOverlay<T>() {
+                override fun create() {
+                    for(value in values){
+                        val name = names[value]
+                        val button = TextButton(name, textButtonStyle)
+                        buttons[value] = button
+                        table.add(button).pad(10f)
+                        if (value in breaks) {
+                            table.row()
+                        }
+                    }
                 }
             }
         }

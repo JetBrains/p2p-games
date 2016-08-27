@@ -1,8 +1,8 @@
 package apps.games
 
 import apps.chat.Chat
-import apps.games.serious.mafia.subgames.RoleDeck
-import apps.games.serious.mafia.subgames.RoleGenerationVerifier
+import apps.games.serious.mafia.subgames.role.generation.RoleDeck
+import apps.games.serious.mafia.subgames.role.generation.RoleGenerationVerifier
 import entity.ChatMessage
 import entity.Group
 import entity.User
@@ -15,7 +15,7 @@ import java.util.concurrent.Future
  * @param group - group of active game participants(can ve cahnged during game)
  */
 
-abstract class Game<out T>(internal val chat: Chat, internal val group: Group, val gameID: String,
+abstract class Game<out T>(val chat: Chat, internal val group: Group, val gameID: String,
                            var gameManager: GameManagerClass = GameManager) {
     private var subGameCounter: Int = 0
     private var nestedGames: MutableList<GameResult<*>> = mutableListOf()
