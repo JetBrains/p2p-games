@@ -91,7 +91,7 @@ class RoleDistributionGameTest{
         val roleDecks = Array(MAX_USERS, {i -> futureRoleDecks[i].get().first})
         val roleDistributionGames = Array(MAX_USERS, { i -> RoleDistributionGame(chats[i], groups[i], "RoleDistribution", ECParams, roleDecks[i], gameManagers[i]) })
         val futureRoles = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(roleDistributionGames[i])})
-        val roles = Array(MAX_USERS, {i -> futureRoles[i].get()})
+        val roles = Array(MAX_USERS, {i -> futureRoles[i].get().first})
         val entriesCount = roles.associate { x -> x.role to roles.count { t -> t.role == x.role } }
         assertEquals(rolesCount, entriesCount)
     }
@@ -116,7 +116,7 @@ class RoleDistributionGameTest{
         val roleDecks = Array(MAX_USERS, {i -> futureRoleDecks[i].get().first})
         val roleDistributionGames = Array(MAX_USERS, { i -> RoleDistributionGame(chats[i], groups[i], "RoleDistribution", ECParams, roleDecks[i], gameManagers[i]) })
         val futureRoles = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(roleDistributionGames[i])})
-        val roles = Array(MAX_USERS, {i -> futureRoles[i].get()})
+        val roles = Array(MAX_USERS, {i -> futureRoles[i].get().first})
         for(role in roles){
             if(role.role == Role.INNOCENT){
                 assertEquals(1, role.getComrades().size)

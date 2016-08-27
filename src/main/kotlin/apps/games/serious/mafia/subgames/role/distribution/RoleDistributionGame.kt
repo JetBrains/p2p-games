@@ -20,7 +20,7 @@ import java.math.BigInteger
 
 class RoleDistributionGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec,
                            val roleDeck: RoleDeck, gameManager: GameManagerClass = GameManager) :
-                            Game<PlayerRole>(chat, group, gameID, gameManager = gameManager) {
+                            Game<Pair<PlayerRole, RoleDistributionHelper>>(chat, group, gameID, gameManager = gameManager) {
 
     override val name: String
         get() = "Role Distribution Game"
@@ -81,7 +81,7 @@ class RoleDistributionGame(chat: Chat, group: Group, gameID: String, val ECParam
                 keyHelper.registerVKey(chat.me(), playerID, roleDeck.VKeys.elementAt(playerID))
                 keyHelper.registerRKey(chat.me(), playerID, roleDeck.Rkeys.elementAt(playerID))
 
-                role = keyHelper.getRole(playerID).createPLayerRole()
+                role = keyHelper.getRole(playerID).playerRole
                 role.registerIV(keyHelper.getDecryptedVCard(playerID).normalize())
                 state = State.VERIFY_COMRADES
                 return role.encryptForComrades(salt + " " + HANDSHAKE_PHRASE)
@@ -117,7 +117,7 @@ class RoleDistributionGame(chat: Chat, group: Group, gameID: String, val ECParam
         return state == State.END
     }
 
-    override fun getResult(): PlayerRole {
-        return role
+    override fun getResult(): Pair<PlayerRole, RoleDistributionHelper> {
+        return role to keyHelper
     }
 }

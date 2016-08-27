@@ -9,6 +9,7 @@ import apps.games.serious.mafia.roles.PlayerRole
 import apps.games.serious.mafia.roles.Role
 import apps.games.serious.mafia.subgames.role.distribution.RoleDistributionGame
 import apps.games.serious.mafia.subgames.role.distribution.RoleDistributionHelper
+import apps.games.serious.mafia.subgames.role.generation.RoleDeck
 import apps.games.serious.mafia.subgames.role.generation.RoleGenerationGame
 import apps.games.serious.mafia.subgames.role.generation.RoleGenerationVerifier
 import apps.games.serious.mafia.subgames.role.secret.SecretDeck
@@ -26,6 +27,7 @@ import org.bouncycastle.crypto.InvalidCipherTextException
 import proto.GameMessageProto
 import java.math.BigInteger
 import java.util.concurrent.CancellationException
+import java.util.concurrent.LinkedBlockingQueue
 
 
 /**
@@ -40,29 +42,42 @@ class Mafia(chat: Chat, group: Group, gameID: String) : CardGame(chat, group, ga
         INIT,
         VALIDATE_KEYS,
         INIT_ID,
+        DAY_PHASE_PICK,
+        DAY_PHASE_VERIFY,
+        DAY_PHASE_REVEAL,
+        DAY_PHASE_KILL,
         LOOP,
         END,
     }
 
     private lateinit var gameGUI: MafiaGame
     private lateinit var application: LwjglApplication
+    private val logger = MafiaLogger()
 
     private var state: State = State.INIT
     private val keyManager = RSAKeyManager()
     private val HANDSHAKE_PHRASE = "HANDSHAKE" // who would've thought
     private lateinit var role: PlayerRole
+    private lateinit var roleDeck: RoleDeck
     private lateinit var secretDeck: SecretDeck
     private lateinit var roleGenerationVerifier: RoleGenerationVerifier
     private lateinit var secretSharingVerivier: SecretSharingVerifier
+    private lateinit var roleDistributionHelper: RoleDistributionHelper
     private val ids: Array<BigInteger>
+    private val alive = mutableSetOf(*group.users.toTypedArray())
+    private val dead = mutableSetOf<User>()
 
     private val N: Int
-    private val M: Int
+    private val M: Int //total mafia
+    private var mafiaLeft: Int
+    private lateinit var toKill: User
+
     init {
         N = group.users.size
         ids = Array(N, {i -> BigInteger.ZERO})
         //if(N < 3) throw GameExecutionException("mafia is only viable with 4+ players")
         M = Math.sqrt(N * 1.0).toInt()
+        mafiaLeft = M
         initGame()
     }
 
@@ -110,7 +125,7 @@ class Mafia(chat: Chat, group: Group, gameID: String) : CardGame(chat, group, ga
             State.INIT_ID -> {
                 for(msg in responses){
                     val user = User(msg.user)
-                    val userID = playerOrder.indexOf(user)
+                    val userID = getUserID(user)
                     ids[userID] = BigInteger(msg.value)
                 }
                 for(i in 0..N-1){
@@ -120,8 +135,68 @@ class Mafia(chat: Chat, group: Group, gameID: String) : CardGame(chat, group, ga
                         }
                     }
                 }
-                state = State.LOOP
-
+                initRoles()
+                shareSecrets()
+                state = State.DAY_PHASE_PICK
+            }
+            State.DAY_PHASE_PICK -> {
+                state = State.DAY_PHASE_VERIFY
+                if(chat.me() in alive){
+                    val pick = pickUser()
+                    return getUserID(pick).toString()
+                }
+            }
+            State.DAY_PHASE_VERIFY -> {
+                val voices = mutableMapOf<User, Int>()
+                for(msg in responses){
+                    val user = User(msg.user)
+                    if(user in dead){
+                        continue
+                    }
+                    toKill = playerOrder[msg.value.toInt()]
+                    logger.registerDayVote(user, toKill)
+                    if(toKill !in alive){
+                        throw GameExecutionException("What is dead may never die")
+                    }
+                    if(toKill !in voices){
+                        voices[toKill] = 0
+                    }
+                    voices[toKill] = voices[toKill]!! + 1
+                }
+                val deadUser = voices.maxBy { x -> x.value }?.key ?: throw GameExecutionException("Something wrong in this town")
+                val draw = voices.filter { x -> x.value == voices[deadUser] }.size > 1
+                if(draw){
+                    state = State.DAY_PHASE_PICK
+                    logger.resetDay()
+                } else{
+                    state = State.DAY_PHASE_REVEAL
+                }
+                return getUserID(deadUser).toString()
+            }
+            State.DAY_PHASE_REVEAL -> {
+                val distinctResults = responses.distinctBy { x -> x.value }.size
+                if(distinctResults > 1){
+                    throw GameExecutionException("Something went wrong during day phase")
+                }
+                state = State.DAY_PHASE_KILL
+                toKill = playerOrder[responses[0].value.toInt()]
+                if(toKill == chat.me()){ // if we were killed
+                    return roleDeck.roleKeys.elementAt(playerID).toString()
+                }
+            }
+            State.DAY_PHASE_KILL -> {
+                for(msg in responses){
+                    val user = User(msg.user)
+                    val userID = getUserID(user)
+                    if(user == toKill){
+                        roleDistributionHelper.registerRoleKey(user, userID, BigInteger(msg.value))
+                        val role = if(user == chat.me()) role.role else roleDistributionHelper.getRole(userID)
+                        killUser(user, role)
+                        break
+                    }
+                }
+                logger.nextDay()
+                state = State.DAY_PHASE_PICK
             }
             State.LOOP -> {
                 Thread.sleep(2000)
@@ -135,17 +210,17 @@ class Mafia(chat: Chat, group: Group, gameID: String) : CardGame(chat, group, ga
      * Start GUI for the Cheat game
      */
     private fun initGame(): String {
+        Role.reset()
         val config = LwjglApplicationConfiguration()
         config.width = 1024
         config.height = 1024
         config.forceExit = false
         config.title = "Cheat Game[${chat.username}]"
-        gameGUI = MafiaGame(group)
+        gameGUI = MafiaGame(group, logger)
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
-        initRoles()
         return ""
     }
 
@@ -167,23 +242,74 @@ class Mafia(chat: Chat, group: Group, gameID: String) : CardGame(chat, group, ga
         try {
             val roleGenerationFuture = runSubGame(roleGenerationGame)
             roleGenerationVerifier = roleGenerationFuture.get().second
-            val roleFuture = runSubGame(RoleDistributionGame(chat, group, subGameID(), ECParams, roleGenerationFuture.get().first, gameManager))
-            role = roleFuture.get()
+            roleDeck = roleGenerationFuture.get().first
+            val roleFuture = runSubGame(RoleDistributionGame(chat, group, subGameID(), ECParams, roleDeck, gameManager))
+            role = roleFuture.get().first
+            roleDistributionHelper = roleFuture.get().second
         }catch (e: CancellationException){
             return
         }catch (e: Exception){
-            throw GameExecutionException(e.message ?: "Something went wrong in subgame")
+            throw GameExecutionException(e.message ?: "Something went wrong in role generation/distribution")
         }
+        for(user in role.getComrades()){
+            logger.registerUserRole(user, role.role)
+        }
+        gameGUI.setRole(role.role)
+        for(i in 0..N-1){
+            if(playerOrder[i] in role.getComrades()){
+                gameGUI.dealPlayer(getTablePlayerId(i), role.role, logger.getUserRolePosition(playerOrder[i]))
+            }else{
+                gameGUI.dealPlayer(getTablePlayerId(i), Role.UNKNOWN)
+            }
+        }
+
     }
 
+    /**
+     * create share secrets via SecretSharing game
+     */
     private fun shareSecrets(){
         try {
             val secretFuture = runSubGame(SecretSharingGame(chat, group, subGameID(), ECParams, role, ids[playerID], gameManager))
             secretDeck = secretFuture.get().first
             secretSharingVerivier = secretFuture.get().second
         } catch (e: CancellationException){
-
+            return
+        } catch (e: Exception){
+            throw GameExecutionException(e.message ?: "Something went wrong in secret sharing")
         }
+    }
+
+    /**
+     * Let users pick desired deckSize
+     */
+    private fun pickUser(): User {
+        val userPickQueue = LinkedBlockingQueue<User>(1)
+        val callback = { x: User -> userPickQueue.offer(x) }
+        gameGUI.resetAllUserPicks()
+        gameGUI.registerUserPickCallback(callback, playerOrder)
+        gameGUI.disableUserPicks(dead)
+        gameGUI.showUserPickOverlay()
+        gameGUI.showHint("Pick user to kill (DAY PHASE)")
+        val res = userPickQueue.take()
+        gameGUI.hideUserPickOverlay()
+        return res
+    }
+
+    /**
+     * given user and his role - register him as dead
+     */
+    private fun killUser(user: User, role: Role){
+        alive.remove(user)
+        dead.add(user)
+        chat.showMessage("Killed [${user.name}] whose role was [${role.name}]")
+        if(role == Role.MAFIA){
+            mafiaLeft --
+        }
+        if(role != this.role.role){
+            gameGUI.revealPlayerRole(getTablePlayerId(getUserID(user)), role, logger.getUserRolePosition(user))
+        }
+        gameGUI.animateRolePlay(role, logger.getUserRolePosition(user))
     }
 
     override fun getInitialMessage(): String {

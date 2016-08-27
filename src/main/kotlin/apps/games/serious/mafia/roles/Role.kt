@@ -1,5 +1,6 @@
 package apps.games.serious.mafia.roles
 
+import apps.games.serious.Card
 import apps.games.serious.Pip
 import apps.games.serious.Suit
 import crypto.AES.AESEncryptor
@@ -17,8 +18,8 @@ abstract class PlayerRole{
     abstract val role: Role
 
     private lateinit var IV: ECPoint
-    private val encryptor = AESEncryptor()
-    private val comrades = mutableSetOf<User>()
+    private var encryptor = AESEncryptor()
+    private var comrades = mutableSetOf<User>()
 
     /**
      * If role is represented with multiple
@@ -59,26 +60,49 @@ abstract class PlayerRole{
         return encryptor.decrypt(msg)
     }
 
+    /**
+     * Get index of given user among commrades
+     */
+    fun getPlayerIndex(user: User): Int{
+        return comrades.sortedBy { x -> x.name }.indexOf(user)
+    }
+
     fun registerIV(IV: ECPoint){
         this.IV = IV
         encryptor.init(IV.getEncoded(false))
     }
+
+    /**
+     * clear role for later reuser
+     */
+    @Synchronized fun reset(){
+        encryptor = AESEncryptor()
+        comrades = mutableSetOf<User>()
+    }
 }
 
-enum class Role(val id: Int, val pip: Pip, val suit: Suit){
-    UNKNOWN(-1, Pip.UNKNOWN, Suit.UNKNOWN),
-    MAFIA(1, Pip.ACE, Suit.SPADES),
-    DOCTOR(2, Pip.QUEEN, Suit.HEARTS),
-    DETECTIVE(3, Pip.ACE, Suit.DIAMONDS),
-    INNOCENT(4, Pip.SIX, Suit.CLUBS);
+enum class Role(val id: Int, val playerRole: PlayerRole){
+    UNKNOWN(-1, UnknownRole()),
+    MAFIA(1, MafiaRole()),
+    DOCTOR(2, DoctorRole()),
+    DETECTIVE(3, DetectiveRole()),
+    INNOCENT(4, InnocentRole());
 
-    fun createPLayerRole(): PlayerRole{
+    fun getCard(index: Int): Card {
         return when(this){
-            Role.UNKNOWN -> UnknownRole()
-            Role.MAFIA -> MafiaRole()
-            Role.DOCTOR -> DoctorRole()
-            Role.DETECTIVE -> DetectiveRole()
-            Role.INNOCENT -> InnocentRole()
+            Role.UNKNOWN -> Card(Suit.UNKNOWN, Pip.UNKNOWN)
+            Role.MAFIA -> Card(Suit.SPADES, Pip.values()[Pip.KING.value - index])
+            Role.DOCTOR -> Card(Suit.HEARTS, Pip.values()[Pip.QUEEN.value - index])
+            Role.DETECTIVE -> Card(Suit.DIAMONDS, Pip.values()[Pip.KING.value - index])
+            Role.INNOCENT -> Card(Suit.CLUBS, Pip.values()[Pip.TEN.value - index])
+        }
+    }
+
+    companion object{
+        fun reset(){
+            for(role in Role.values()){
+                role.playerRole.reset()
+            }
         }
     }
 }

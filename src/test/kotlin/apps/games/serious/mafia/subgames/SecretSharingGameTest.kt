@@ -94,7 +94,7 @@ class SecretSharingGameTest {
         val roleDecks = Array(MAX_USERS, {i -> futureRoleDecks[i].get().first})
         val roleDistributionGames = Array(MAX_USERS, { i -> RoleDistributionGame(chats[i], groups[i], "RoleDistribution", ECParams, roleDecks[i], gameManagers[i]) })
         val futureRoles = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(roleDistributionGames[i])})
-        val roles = Array(MAX_USERS, {i -> futureRoles[i].get()})
+        val roles = Array(MAX_USERS, {i -> futureRoles[i].get().first})
         val ids = Array(MAX_USERS, {i -> randomBigInt(ECParams.n)})
         val secretSharingGames = Array(MAX_USERS, {i -> SecretSharingGame(chats[i], groups[i], "SecretSharingGame", ECParams, roles[i], ids[i], gameManagers[i])})
         val futuresSecrets = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(secretSharingGames[i])})

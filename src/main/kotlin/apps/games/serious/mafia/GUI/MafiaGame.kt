@@ -4,7 +4,9 @@ import apps.games.serious.Card
 import apps.games.serious.TableGUI.*
 import apps.games.serious.getCardById
 import apps.games.serious.getIdByCard
+import apps.games.serious.mafia.MafiaLogger
 import apps.games.serious.mafia.roles.PlayerRole
+import apps.games.serious.mafia.roles.Role
 import apps.games.serious.preferans.Bet
 import apps.games.serious.preferans.GUI.ScoreOverlay
 import apps.games.serious.preferans.PreferansScoreCounter
@@ -19,17 +21,18 @@ import entity.User
 /**
  * Created by user on 6/30/16.
  */
-class MafiaGame(val group: Group) : GameView() {
+class MafiaGame(val group: Group, val logger: MafiaLogger) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var userOverlay: ButtonOverlay<User>
-
+    lateinit var logOverlay: LogOverlay
+    private var role: String = ""
     var loaded = false
     override fun create() {
         batch = ModelBatch()
         font = BitmapFont()
         font.data.scale(2f)
-        tableScreen = TableScreen(this)
+        tableScreen = TableScreen(this, group.users.size)
         initOverlays()
         setScreen(tableScreen)
 
@@ -53,6 +56,9 @@ class MafiaGame(val group: Group) : GameView() {
         val names = users.associate { x -> x to x.name }
         userOverlay = ButtonOverlayFactory.create(users, breaks, names)
         userOverlay.create()
+
+        logOverlay = LogOverlay(logger)
+        tableScreen.addOverlay(logOverlay)
     }
 
     /**
@@ -83,6 +89,87 @@ class MafiaGame(val group: Group) : GameView() {
         }
     }
 
+    /**
+     * Disable buttons for scpecified users
+     * @param users - users, whom u can not pick
+     */
+    fun disableUserPicks(users: Collection<User>) {
+        for (user in users){
+            userOverlay.disableOption(user)
+        }
+    }
+
+    /**
+     * Mark all User Pick buttons as enabled
+     */
+    fun resetAllUserPicks() {
+        for (user in group.users) {
+            userOverlay.resetOption(user)
+        }
+    }
+
+    /**
+     * Set role to be shown in hint
+     */
+    fun setRole(role: Role){
+        this.role = role.name
+    }
+
+    /**
+     * Display hint for current step
+     */
+    fun showHint(hint: String) {
+        synchronized(tableScreen.hint) {
+            tableScreen.hint = "(You are [$role]) $hint"
+        }
+    }
+
+    /**
+     * Give a player with specified ID
+     * a cardID taht corresponds to given role
+     */
+    fun dealPlayer(player: Int, role: Role, index: Int = 0) {
+        tableScreen.dealPlayer(player, getCardModelByRole(role, index))
+    }
+
+    /**
+     * In Mafia each role has it's own card
+     * This function Role and transforms it into
+     * renderable card object
+     */
+    private fun getCardModelByRole(role: Role, index: Int): CardGUI {
+        val card = role.getCard(index)
+        return tableScreen.deck.getCardModel(card.suit, card.pip)
+    }
+
+    /**
+     * reveal player role
+     *
+     * @param player - whose card to reveal
+     * @param role - role to reveal
+     */
+    fun revealPlayerRole(player: Int, role: Role, index: Int = 0) {
+        val card = getCardModelByRole(role, index)
+        tableScreen.revealPlayerCard(player, card)
+    }
+
+    /**
+     * if role already revealed - animate play
+     * of corresponding card (that means player death)
+     *
+     * @param role - role of killed player
+     */
+    fun animateRolePlay(role: Role, index: Int = 0){
+        val card = getCardModelByRole(role, index)
+        val action = tableScreen.animateCardPlay(card)
+        if(action != null){
+            while (!action.isComplete()){
+                Thread.sleep(100)
+            }
+        }
+    }
+
+
     override fun render() {
         super.render()
     }
@@ -104,7 +191,7 @@ fun main(args: Array<String>) {
     config.height = 1024
     config.forceExit = false
     val group = Group(mutableSetOf(User(Settings.hostAddress, "sfsefse"), User(Settings.hostAddress, "ASD")))
-    val gameGUI = MafiaGame(group)
+    val gameGUI = MafiaGame(group, MafiaLogger())
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
     gameGUI.showUserPickOverlay()

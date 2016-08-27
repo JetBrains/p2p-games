@@ -208,6 +208,14 @@ class ButtonOverlayFactory {
                         }
                     }
                 }
+
+                override fun resetOption(option: T) {
+                    val button = buttons[option] ?: return
+                    button.isChecked = false
+                    val name = names[option]
+                    button.setText(name)
+                    button.isDisabled = false
+                }
             }
         }
     }

@@ -388,25 +388,32 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
      */
     private var deltaZ = 0.01f
 
-    fun animateCardPlay(card: CardGUI) {
-        val player = table.getPlayerWithCard(card) ?: return
-        animateHandCardHandPlay(player, card)
+    /**
+     * Animate card play
+     *
+     * @param card - CardGUI of card to play
+     * @return - card play action
+     */
+    fun animateCardPlay(card: CardGUI): Action? {
+        val player = table.getPlayerWithCard(card) ?: return null
+        return animateHandCardPlay(player, card)
     }
 
     fun animateUnknownCardPlay(playerID: Int) {
         val player = table.players[playerID]
         val card = player.hand.randomUnknownCard()
-        animateHandCardHandPlay(player, card)
+        animateHandCardPlay(player, card)
     }
 
-    private fun animateHandCardHandPlay(player: Player, card: CardGUI) {
+    private fun animateHandCardPlay(player: Player, card: CardGUI): Action {
         player.hand.removeCard(card, actionManager)
         val pos = player.getCardspace()
         player.cardSpaceHand.cards.add(card)
-        actionManager.addAfterLastComplete(
-                CardGUI.animate(card, pos.x, pos.y, deltaZ, card.angle, 1f,
-                        card.rotation, doNotRotate = true))
+        val action = CardGUI.animate(card, pos.x, pos.y, deltaZ, card.angle, 1f,
+                card.rotation, doNotRotate = true)
+        actionManager.addAfterLastComplete(action)
         deltaZ += 0.001f
+        return action
     }
 
     override fun touchUp(screenX: Int,
