@@ -75,7 +75,7 @@ abstract class PlayerRole{
     /**
      * clear role for later reuser
      */
-    @Synchronized fun reset(){
+    @Synchronized open fun reset(){
         encryptor = AESEncryptor()
         comrades = mutableSetOf<User>()
     }

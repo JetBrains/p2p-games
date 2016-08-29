@@ -11,9 +11,12 @@ import apps.games.serious.preferans.Bet
 import apps.games.serious.preferans.GUI.ScoreOverlay
 import apps.games.serious.preferans.PreferansScoreCounter
 import apps.games.serious.preferans.Whists
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import entity.Group
 import entity.User
@@ -194,6 +197,7 @@ fun main(args: Array<String>) {
     val gameGUI = MafiaGame(group, MafiaLogger())
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
+
     gameGUI.showUserPickOverlay()
     gameGUI.registerUserPickCallback({x -> gameGUI.hideUserPickOverlay()}, group.users)
     println("6 \u2660")

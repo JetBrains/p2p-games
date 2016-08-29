@@ -3,18 +3,26 @@ package crypto.RSA
 import apps.games.GameExecutionException
 import crypto.random.secureRandom
 import entity.User
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey
+import org.bouncycastle.asn1.pkcs.RSAPublicKey
 import org.bouncycastle.crypto.AsymmetricBlockCipher
 import org.bouncycastle.crypto.encodings.PKCS1Encoding
 import org.bouncycastle.crypto.engines.RSAEngine
+import org.bouncycastle.crypto.params.RSAKeyParameters
 import org.bouncycastle.crypto.util.PrivateKeyFactory
 import org.bouncycastle.crypto.util.PublicKeyFactory
+import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.provider.JCERSAPublicKey
 import sun.misc.BASE64Decoder
 import sun.misc.BASE64Encoder
+import java.math.BigInteger
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.Security
+import java.security.spec.RSAPublicKeySpec
 import javax.xml.bind.DatatypeConverter
 
 /**
@@ -22,12 +30,11 @@ import javax.xml.bind.DatatypeConverter
  */
 val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
 
-class RSAKeyManager {
+class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     private val userEncodeEngines = mutableMapOf<User, AsymmetricBlockCipher>()
     private val userPublicKeys = mutableMapOf<User, String>()
     private val userDecodeEngines = mutableMapOf<User, AsymmetricBlockCipher>()
     private val userPrivateKeys = mutableMapOf<User, String>()
-    private val KEY_LENGTH = 1024
     val engine = PKCS1Encoding(RSAEngine())
     private lateinit var keyPair: KeyPair
 
@@ -42,6 +49,20 @@ class RSAKeyManager {
     fun getPublicKey(): String {
         val b64encoder = BASE64Encoder()
         return b64encoder.encode(keyPair.public.encoded)
+    }
+
+    /**
+     * get public exponent
+     */
+    fun getExponent(): BigInteger{
+        return (keyPair.public as BCRSAPublicKey).publicExponent
+    }
+
+    /**
+     * get public modulus value
+     */
+    fun getModulus(): BigInteger{
+        return (keyPair.public as BCRSAPublicKey).modulus
     }
 
     /**
@@ -96,22 +117,53 @@ class RSAKeyManager {
         userDecodeEngines[user] = cypher
     }
 
+    /**
+     * Encode message with given public RSA parameters
+     */
+    fun encodeWithParams(mod: BigInteger, exp: BigInteger, msg: String): String{
+        val cypher: AsymmetricBlockCipher = PKCS1Encoding(RSAEngine())
+        cypher.init(true, RSAKeyParameters(false, mod, exp))
+        return encodeWithEngine(cypher, msg)
+    }
+
+    /**
+     * Encode message with given public RSA parameters
+     */
+    fun encodeWithParams(mod: BigInteger, exp: BigInteger, msg: ByteArray): String{
+        val cypher: AsymmetricBlockCipher = PKCS1Encoding(RSAEngine())
+        cypher.init(true, RSAKeyParameters(false, mod, exp))
+        return encodeWithEngine(cypher, msg)
+    }
+
 
     /**
      * encode message with users public key
      */
     fun encodeForUser(user: User, msg: String): String {
-
         val e = userEncodeEngines[user] ?: throw NoSuchUserException("No engine for user ${user.name}")
-        var len = e.inputBlockSize
+        return encodeWithEngine(e, msg)
+    }
+
+    /**
+     * encode message with given RSA engine
+     */
+    private fun encodeWithEngine(engine: AsymmetricBlockCipher, msg: String): String{
+        return encodeWithEngine(engine, msg.toByteArray())
+    }
+
+    /**
+     * encode message with given RSA engine
+     */
+    private fun encodeWithEngine(engine: AsymmetricBlockCipher, bytes: ByteArray): String{
+        var len = engine.inputBlockSize
         val res = StringBuilder()
-        val bytes = msg.toByteArray()
         for (i in 0..bytes.size - 1 step len) {
             len = Math.min(len, bytes.size - i)
-            res.append(toHexString(e.processBlock(bytes, i, len)))
+            res.append(toHexString(engine.processBlock(bytes, i, len)))
         }
         return res.toString()
     }
+
 
 
     /**
@@ -120,7 +172,14 @@ class RSAKeyManager {
      * @throws InvalidCipherTextException  - if message has incorrect format
      */
     fun decodeString(msg: String): String {
-        return decodeStringWithEngine(msg, engine)
+        return decodeStringWithEngine(engine, msg)
+    }
+
+    /**
+     * decode message of bytes
+     */
+    fun decodeBytes(msg: String): ByteArray{
+        return decodeBytesWithEngine(engine, msg)
     }
 
     /**
@@ -130,20 +189,19 @@ class RSAKeyManager {
      */
     fun decodeForUser(user: User, msg: String): String {
         val engine = userDecodeEngines[user] ?: throw IllegalArgumentException("No private key known for ser ${user.name}")
-        return decodeStringWithEngine(msg, engine)
+        return decodeStringWithEngine(engine, msg)
     }
 
 
     /**
-     * Given string message try to decode it with give block cypher
+     * Given string message try to decode it with given block cypher
      *
      * @param msg - string representing encoded message
      * @param engine - decoding cypher
      *
      * @return - decoded string
      */
-    private fun decodeStringWithEngine(msg: String,
-                                       engine: AsymmetricBlockCipher): String {
+    private fun decodeStringWithEngine(engine: AsymmetricBlockCipher, msg: String): String {
         var len = engine.inputBlockSize
         val res = StringBuilder()
         val bytes = toByteArray(msg)
@@ -154,6 +212,25 @@ class RSAKeyManager {
         return res.toString()
     }
 
+    /**
+     * Given bytes of message try to decode it with given block cypher
+     *
+     * @param msg - string representing encoded message
+     * @param engine - decoding cypher
+     *
+     * @return - decoded string
+     */
+    private fun decodeBytesWithEngine(engine: AsymmetricBlockCipher, msg: String): ByteArray{
+        var len = engine.inputBlockSize
+        val res = mutableListOf<Byte>()
+        val bytes = toByteArray(msg)
+        for (i in 0..bytes.size - 1 step len) {
+            len = Math.min(len, bytes.size - i)
+            res.addAll(engine.processBlock(bytes, i, len).toList())
+        }
+        return res.toByteArray()
+    }
+
     private fun toHexString(array: ByteArray): String {
         return DatatypeConverter.printHexBinary(array)
     }
@@ -161,6 +238,7 @@ class RSAKeyManager {
     private fun toByteArray(s: String): ByteArray {
         return DatatypeConverter.parseHexBinary(s)
     }
+
 
     /**
      * reset private/public keys as well as list of known enginies

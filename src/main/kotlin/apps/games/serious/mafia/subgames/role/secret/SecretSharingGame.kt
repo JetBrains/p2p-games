@@ -158,7 +158,7 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
      * and exchange it via extradata
      */
     private fun createSecret(){
-        val secretValue = if(role.role == Role.MAFIA) id * BigInteger.valueOf(2) else id
+        val secretValue = if (role.role == Role.MAFIA) id * BigInteger.valueOf(2) else id
         val secret: List<ECPoint> = crypto.random.split(secretValue, N).map { x -> ECParams.g.multiply(x * FLock) }
         extraData.addAll(secret.map { x -> x.getEncoded(false) })
         extraData.add(ECParams.g.multiply(id * FLock).getEncoded(false))

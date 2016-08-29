@@ -24,7 +24,7 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
     val bfont = BitmapFont()
     val texture = Texture(Gdx.files.internal("mafia/log.png"))
-    val scoreField = Image(texture)
+    val background = Image(texture)
     //normal labels
     private val dayLabel : Label
     private val nightLabel : Label
@@ -52,7 +52,7 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
         skin.add("default", bfont)
         val style = Label.LabelStyle(bfont, Color.BLACK)
         skin.add("default", style)
-        scoreField.scaleBy(0.6f)
+        background.scaleBy(0.6f)
         dayLabel = Label("", skin)
         nightLabel = Label("",   skin)
         dayLabel.setWrap(true)
@@ -84,8 +84,8 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
         nightLabel.setText(logger.getNightLog(currentDayOffset))
         dayLabel.pack()
         nightLabel.pack()
-        dayLabel.setPosition(300f * scaleX, 760f * scaleY - dayLabel.height)
-        nightLabel.setPosition(600f * scaleX, 760f * scaleY - nightLabel.height)
+        dayLabel.setPosition(220f * scaleX, 760f * scaleY - dayLabel.height)
+        nightLabel.setPosition(580f * scaleX, 760f * scaleY - nightLabel.height)
     }
 
 

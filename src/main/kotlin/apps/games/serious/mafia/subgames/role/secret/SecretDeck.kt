@@ -3,6 +3,7 @@ package apps.games.serious.mafia.subgames.role.secret
 import apps.games.GameExecutionException
 import apps.games.primitives.Deck
 import com.sun.org.apache.xpath.internal.operations.Bool
+import crypto.RSA.ECParams
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.math.ec.ECPoint
@@ -31,6 +32,15 @@ data class SecretDeck(val secrets: Deck, val ids: Deck,
             throw GameExecutionException("Secret for unknown user requested")
         }
         return secrets.cards[ids.cards.indexOf(id)]
+    }
+
+    /**
+     * Get secret part for encoded user id
+     *
+     * @param id - id, encrypted with detective k
+     */
+    fun getSecretForId(id: BigInteger): ECPoint{
+        return getSecretForId(ECParams.g.multiply(id))
     }
 }
 
