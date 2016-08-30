@@ -35,14 +35,13 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
     private val SALT_LENGTH = 128
 
     private enum class State{
-        SEND_KEYS,
         INIT,
         SPLIT,
         SUM,
         END
     }
 
-    private var state: State = State.SEND_KEYS
+    private var state: State = State.INIT
     private var sum: BigInteger = BigInteger.ZERO
     private val verifier = SMSVerifier()
     private val parts = crypto.random.split(n, N)
@@ -52,10 +51,6 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
             chat.showMessage(msg.value)
         }
         when(state){
-            State.SEND_KEYS -> {
-                state = State.INIT
-                return keyManager.getPublicKey()
-            }
             State.INIT -> {
                 for (msg in responses) {
                     keyManager.registerUserPublicKey(User(msg.user), msg.value)
@@ -107,6 +102,9 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
         return ""
     }
 
+    override fun getInitialMessage(): String {
+        return keyManager.getPublicKey()
+    }
 
     override fun isFinished(): Boolean {
         return state == State.END

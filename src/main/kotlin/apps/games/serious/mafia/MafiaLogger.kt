@@ -26,7 +26,7 @@ class MafiaLogger {
     private val nightLogs = mutableListOf<NightEvent>()
     private val detectiveLogs = mutableListOf<DetectiveEvent>()
 
-    private val doctorLogsSMS = mutableListOf<SMSfAResult>()
+    private val doctorChoicesSMS = mutableListOf<SMSfAResult>()
     private val detectiveChoicesSMS = mutableListOf<SMSfAResult>()
     private val calendar = Calendar.getInstance()
     private val fmt: DateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
@@ -86,7 +86,31 @@ class MafiaLogger {
      * for doctor picking his target
      */
     fun registerDoctorFirstPhase(smsfa: SMSfAResult){
-        doctorLogsSMS.add(smsfa)
+        doctorChoicesSMS.add(smsfa)
+    }
+
+    /**
+     * get random input for last detective choice
+     */
+    fun getDoctorNoisedInput(): String{
+        return doctorChoicesSMS.last().salt + " " + doctorChoicesSMS.last().R.toString()
+    }
+
+    /**
+     * validate R values for last round. If something
+     * is not correct - return false
+     *
+     * @return true - if hashes ar OK, false otherwise
+     */
+    fun verifyLastDoctorRHashes(hashes: Map<User, String>): Boolean{
+        return hashes == doctorChoicesSMS.last().RHashes
+    }
+
+    /**
+     * get sum for last doctor choice
+     */
+    fun getDoctorSum(): BigInteger{
+        return doctorChoicesSMS.last().sum
     }
 
     /**
@@ -161,7 +185,7 @@ class MafiaLogger {
         builder.append(formatDateWithOffset(offset) + "\n")
         val values = dayLogs.filter { x -> x.day == day - offset }
         if(values.isEmpty()){
-            builder.append("THAT DAY NOTHING HAPPENED")
+            builder.append("That day nothing happened")
         }else{
             val killed = values.maxBy { x -> values.count { y -> y.target == x.target } }?.target ?:
                     throw GameExecutionException("Someone was supposed to be killed on day ${day - offset}")
@@ -196,7 +220,7 @@ class MafiaLogger {
             builder.append("[${actor.name}] chose [${target.name}] as his target\n")
         }
         if(builder.isEmpty()){
-            builder.append("THAT NIGHT NOTHING HAPPENED")
+            builder.append("That night nothing happened")
         }
         builder.insert(0, formatDateWithOffset(offset) + "\n")
         return builder.toString()

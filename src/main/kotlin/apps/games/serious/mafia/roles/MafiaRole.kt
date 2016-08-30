@@ -6,4 +6,9 @@ package apps.games.serious.mafia.roles
 class MafiaRole : PlayerRole() {
     override val role: Role
         get() = Role.MAFIA
+
+    companion object{
+        val MESSAGE_INPUT_TIMEOUT: Long = 30
+        val TARGET_CHOICE_TIMEOUT: Long = 30
+    }
 }

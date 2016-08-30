@@ -221,7 +221,7 @@ class ButtonOverlayFactory {
     }
 }
 
-class OverlayVisibilityAction(val overlay: ButtonOverlay<*>, val show: Boolean,
+class OverlayVisibilityAction(val overlay: Overlay, val show: Boolean,
                               delay: Float = 0.10f) : Action(delay) {
     internal var finished = false
     override fun execute(delta: Float) {

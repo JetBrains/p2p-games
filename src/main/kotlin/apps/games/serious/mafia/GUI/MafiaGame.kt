@@ -24,11 +24,13 @@ import entity.User
 /**
  * Created by user on 6/30/16.
  */
-class MafiaGame(val group: Group, val logger: MafiaLogger) : GameView() {
+class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: Int) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var userOverlay: ButtonOverlay<User>
     lateinit var logOverlay: LogOverlay
+    lateinit var mafiaInputOverlay: MafiaInputOverlay
+    lateinit var mafiaMessagesOverlay: MafiaMessagesOverlay
     private var role: String = ""
     var loaded = false
     override fun create() {
@@ -62,6 +64,9 @@ class MafiaGame(val group: Group, val logger: MafiaLogger) : GameView() {
 
         logOverlay = LogOverlay(logger)
         tableScreen.addOverlay(logOverlay)
+
+        mafiaInputOverlay = MafiaInputOverlay(maxTextLength)
+        mafiaMessagesOverlay = MafiaMessagesOverlay()
     }
 
     /**
@@ -74,12 +79,63 @@ class MafiaGame(val group: Group, val logger: MafiaLogger) : GameView() {
     }
 
     /**
+     * Show overlay with mafia input dialog
+     */
+    fun showMafiaInputOverlay(){
+        mafiaInputOverlay.newMessage()
+        tableScreen.addOverlay(mafiaInputOverlay)
+        tableScreen.actionManager.addAfterLastComplete(
+                OverlayVisibilityAction(mafiaInputOverlay, true))
+    }
+
+    /**
+     * Show overlay to display mafia messages
+     */
+    fun showMafiaMessagesOverlay(){
+        tableScreen.addOverlay(mafiaMessagesOverlay)
+        tableScreen.actionManager.addAfterLastComplete(
+                OverlayVisibilityAction(mafiaMessagesOverlay, true))
+    }
+
+    /**
      * Hide User selection overlay after all other actions are complete
      */
     fun hideUserPickOverlay() {
         tableScreen.removeOverlay(userOverlay)
         tableScreen.actionManager.addAfterLastComplete(
                 OverlayVisibilityAction(userOverlay, false))
+    }
+
+    /**
+     * Hide mafia input dialog
+     */
+    fun hideMafiaInputOverlay() {
+        tableScreen.removeOverlay(mafiaInputOverlay)
+        tableScreen.actionManager.addAfterLastComplete(
+                OverlayVisibilityAction(mafiaInputOverlay, false))
+    }
+
+    /**
+     * register mafia messages to corresponding overlay
+     */
+    fun registerMafiaMessages(messages: Map<User, String>){
+        mafiaMessagesOverlay.registerUserMessages(messages)
+    }
+
+    /**
+     * Hide mafia messages overlay
+     */
+    fun hideMafiaMessagesOverlay() {
+        tableScreen.removeOverlay(mafiaMessagesOverlay)
+        tableScreen.actionManager.addAfterLastComplete(
+                OverlayVisibilityAction(mafiaMessagesOverlay, false))
+    }
+
+    /**
+     * register callback to be executed after last
+     */
+    fun <T> registerMafiaEOICallback(callback: (String) -> (T)){
+        mafiaInputOverlay.registerCallback(callback)
     }
 
     /**
@@ -194,11 +250,23 @@ fun main(args: Array<String>) {
     config.height = 1024
     config.forceExit = false
     val group = Group(mutableSetOf(User(Settings.hostAddress, "sfsefse"), User(Settings.hostAddress, "ASD")))
-    val gameGUI = MafiaGame(group, MafiaLogger())
+    val gameGUI = MafiaGame(group, MafiaLogger(), 140)
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
 
-    gameGUI.showUserPickOverlay()
-    gameGUI.registerUserPickCallback({x -> gameGUI.hideUserPickOverlay()}, group.users)
-    println("6 \u2660")
+    //MAFIA INPUT
+//    gameGUI.registerMafiaEOICallback { s ->
+//        println(s)
+//        gameGUI.hideMafiaInputOverlay()
+//        gameGUI.showMafiaInputOverlay()
+//    }
+//    gameGUI.showMafiaInputOverlay()
+
+    //SHOW MESSAGES
+    gameGUI.registerMafiaMessages(mutableMapOf(User(Settings.hostAddress, "alice") to "sslfgjsilef", User(Settings.hostAddress, "bob") to "skefhskfhesuef",
+            User(Settings.hostAddress, "charlie") to "slkefgjsoiefjolsieujfpoaisejftoiaejfoiasgoairhjg la lairghla aloigh aliua rgladuik ghldaui rg", User(Settings.hostAddress, "Dave") to "skefhskfhesuef",
+            User(Settings.hostAddress, "Eve") to "sslfgjsilef"))
+    //gameGUI.showMafiaMessagesOverlay()
+
+
 }

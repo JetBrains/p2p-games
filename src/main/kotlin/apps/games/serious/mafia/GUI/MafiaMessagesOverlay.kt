@@ -8,30 +8,29 @@ import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.utils.Align
+import entity.User
 
 /**
  * Created by user on 8/27/16.
  */
 
-class LogOverlay(val logger: MafiaLogger): Overlay(){
+class MafiaMessagesOverlay(): Overlay(){
     lateinit var skin: Skin
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
-    val bfont = BitmapFont()
     val texture = Texture(Gdx.files.internal("mafia/log.png"))
     val background = Image(texture)
     //normal labels
-    private val dayLabel : Label
-    private val nightLabel : Label
-    private var currentDayOffset : Int = 0
-
+    private val leftLabel : Label
+    private val rightLabel : Label
+    private var offset: Int = 0
+    private var messages: List<String> = mutableListOf()
 
     init {
 
@@ -64,27 +63,30 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
         val style = Label.LabelStyle(bfont, Color.BLACK)
         skin.add("default", style)
         background.scaleBy(0.6f)
-        dayLabel = Label("", skin)
-        nightLabel = Label("",   skin)
-        dayLabel.setWrap(true)
-        nightLabel.setWrap(true)
-        dayLabel.setAlignment(Align.topLeft)
-        nightLabel.setAlignment(Align.topLeft)
-        table.add(dayLabel).width(300f * scaleX).height(600*scaleY).padRight(60 * scaleX).align(Align.top)
-        table.add(nightLabel).width(300f * scaleX).height(600*scaleY).align(Align.top)
+        leftLabel = Label("", skin)
+        rightLabel = Label("",   skin)
+        leftLabel.setWrap(true)
+        rightLabel.setWrap(true)
+        leftLabel.setAlignment(Align.topLeft)
+        rightLabel.setAlignment(Align.topLeft)
+        table.add(leftLabel).width(300f * scaleX).height(600*scaleY).padRight(60f * scaleX).align(Align.top)
+        table.add(rightLabel).width(300f * scaleX).height(600*scaleY).align(Align.top)
         stage.addListener(object : InputListener() {
-                        override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
+            override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
                 when(keycode){
                     Input.Keys.TAB -> {
                         isVisible = !isVisible
                         return true
                     }
                     Input.Keys.LEFT -> {
-                        currentDayOffset ++
+                        if(offset > 0){
+                            offset--
+
+                        }
                         return true
                     }
                     Input.Keys.RIGHT -> {
-                        currentDayOffset --
+                        offset++
                         return true
                     }
                     else -> return false
@@ -93,9 +95,18 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
         })
     }
 
+    /**
+     * register user messages to be displayed
+     *
+     * @param map User to his message
+     */
+    fun registerUserMessages(messages: Map<User, String>){
+        this.messages = messages.flatMap { x -> listOf(("${x.key.name} says: \n\n" + x.value).capitalize()) }
+    }
+
     fun updateLabels(){
-        dayLabel.setText(logger.getDayLog(currentDayOffset))
-        nightLabel.setText(logger.getNightLog(currentDayOffset))
+        leftLabel.setText(messages.getOrNull(2*offset))
+        rightLabel.setText(messages.getOrNull(2*offset + 1))
     }
 
 
