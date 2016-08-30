@@ -85,7 +85,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     fun registerUserPublicKey(user: User, publicKey: String) {
         if(user in userPublicKeys){
             if(userPublicKeys[user] != publicKey){
-                throw GameExecutionException("Changing keys for user is not allowed")
+                throw GameExecutionException("Changing keys for user is not allowed: ${userPublicKeys[user]} \n $publicKey")
             }
             return
         }

@@ -56,7 +56,7 @@ class DetectiveRole : PlayerRole() {
     /**
      * get public key for role transmition
      */
-    fun getPulicExponent(): BigInteger{
+    fun getPublicExponent(): BigInteger{
         return keyManager.getExponent()
     }
 
@@ -69,7 +69,7 @@ class DetectiveRole : PlayerRole() {
 
     /**
      * decode secret part (EC point) encoded with parameters
-     * obtained from [getPulicExponent] and [getModulus]
+     * obtained from [getPublicExponent] and [getModulus]
      */
     fun decodeSecretPart(msg: String): ECPoint{
         try {

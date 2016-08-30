@@ -57,6 +57,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
         DETECTIVE_CHANNEL,
         DETECTIVE_CHOICE,
         DETECTIVE_CHOICE_REVEAL,
+        DETECTIVE_FINALIZE,
         MAFIA_COMMUNICATE,
         LOOP,
         END,
@@ -159,7 +160,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 }
                 initRoles()
                 shareSecrets()
-                // state = State.DAY_PHASE_PICK
+                //state = State.DAY_PHASE_PICK
                 //DEBUG
                 state = State.DETECTIVE_CHANNEL
             }
@@ -230,7 +231,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 state = State.DETECTIVE_CHANNEL
             }
             State.DETECTIVE_CHANNEL -> {
-                if(dead.filter{x -> userRoles[x] == Role.DOCTOR}.isNotEmpty()){
+                if(dead.filter{x -> userRoles[x] == Role.DETECTIVE}.isNotEmpty()){
                     state = State.MAFIA_COMMUNICATE
                     return ""
                 }
@@ -257,12 +258,15 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                     throw GameExecutionException("Someone cheated with his SMSfA value inputes")
                 }
                 val targetID = (logger.getDetectiveSum() - noise)
-                state = State.MAFIA_COMMUNICATE
+                state = State.DETECTIVE_FINALIZE
                 return keyManager.encodeWithParams(detextiveMod, detextiveExp, secretDeck.getSecretForId(targetID).getEncoded(false))
 
             }
-            State.MAFIA_COMMUNICATE -> {
+            State.DETECTIVE_FINALIZE -> {
                 finalizeDetectiveChoice(responses)
+                state = State.MAFIA_COMMUNICATE
+            }
+            State.MAFIA_COMMUNICATE -> {
                 state = State.DAY_PHASE_PICK
                 logger.nextDay()
                 //TODO
@@ -444,17 +448,18 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
 
         if(role is DetectiveRole){
             mod = (role as DetectiveRole).getModulus()
-            exp = (role as DetectiveRole).getPulicExponent()
+            exp = (role as DetectiveRole).getPublicExponent()
         }else{
             mod = BigInteger.ZERO
             exp = BigInteger.ZERO
         }
         val maxValue = BigInteger.valueOf(2).pow(DetectiveRole.KEY_LENGTH)
-        val modFuture = gameManager.initSubGame(SecureMultipartySumForAnonymizationGame(chat, group, subGameID(), keyManager, mod, maxValue, gameManager))
-        val expFuture = gameManager.initSubGame(SecureMultipartySumForAnonymizationGame(chat, group, subGameID(), keyManager, exp, maxValue, gameManager))
+
         //No checks for this stage is required at this pont: if something is wrong -detective decryption will fail
         //so we can only store data about sum
+        val modFuture = gameManager.initSubGame(SecureMultipartySumForAnonymizationGame(chat, group, subGameID(), keyManager, mod, maxValue, gameManager))
         detectiveModSMS = modFuture.get()
+        val expFuture = gameManager.initSubGame(SecureMultipartySumForAnonymizationGame(chat, group, subGameID(), keyManager, exp, maxValue, gameManager))
         detectiveExpSMS = expFuture.get()
     }
 

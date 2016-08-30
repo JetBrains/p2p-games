@@ -90,7 +90,7 @@ abstract class Game<out T>(val chat: Chat, internal val group: Group, val gameID
      */
     fun subGameID(): String {
         subGameCounter++
-        return gameID + subGameCounter.toInt()
+        return gameID + subGameCounter.toInt() + 'N'
     }
 
     /**
