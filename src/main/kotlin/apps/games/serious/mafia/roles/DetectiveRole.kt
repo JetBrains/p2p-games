@@ -80,6 +80,15 @@ class DetectiveRole : PlayerRole() {
     }
 
     /**
+     * given real distribution of roles check,
+     * that all results obtained from out checks were
+     * correct
+     */
+    fun verifyChecks(roles: Map<User, Role>): Boolean{
+        return targets.all { x -> x.value == (roles[x.key] == Role.MAFIA) }
+    }
+
+    /**
      * reset evrything in parrent +
      * create new RSA key pair
      */

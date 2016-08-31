@@ -44,10 +44,10 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
         val s = "Switch 2D/3D:            C\n" +
                 "Move:                         WASD \n" +
                 "Strafe:                        Q, E \n" +
-                "Select cardID:                left mouse\n" +
-                "Play cardID:                   left mosue on selected cardID\n" +
                 "Zoom camara:            midde mouse button\n" +
-                "Toggle camera zoom: SPACE"
+                "Toggle camera zoom:        SPACE\n" +
+                "Show/hide logs:                  TAB\n" +
+                "Show/hide mafia logs:        ESC\n"
         tableScreen.controlsHint = s
         loaded = true
     }
@@ -266,7 +266,7 @@ fun main(args: Array<String>) {
     gameGUI.registerMafiaMessages(mutableMapOf(User(Settings.hostAddress, "alice") to "sslfgjsilef", User(Settings.hostAddress, "bob") to "skefhskfhesuef",
             User(Settings.hostAddress, "charlie") to "slkefgjsoiefjolsieujfpoaisejftoiaejfoiasgoairhjg la lairghla aloigh aliua rgladuik ghldaui rg", User(Settings.hostAddress, "Dave") to "skefhskfhesuef",
             User(Settings.hostAddress, "Eve") to "sslfgjsilef"))
-    //gameGUI.showMafiaMessagesOverlay()
+    gameGUI.showMafiaMessagesOverlay()
 
 
 }

@@ -74,7 +74,7 @@ class MafiaMessagesOverlay(): Overlay(){
         stage.addListener(object : InputListener() {
             override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
                 when(keycode){
-                    Input.Keys.TAB -> {
+                    Input.Keys.ESCAPE -> {
                         isVisible = !isVisible
                         return true
                     }

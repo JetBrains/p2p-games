@@ -69,8 +69,10 @@ class SecretSharingVerifier(val users: Collection<User>, val secrets: Deck){
         if(SKeys[user]!![position] != BigInteger.ZERO && SKeys[user]!![position] != key){
             throw GameExecutionException("Another key is already registered for that combination of user and position")
         }
-        SKeys[user]!![position] = key
-        secrets.decryptCardWithKey(position, key)
+        if(SKeys[user]!![position] == BigInteger.ZERO){
+            SKeys[user]!![position] = key
+            secrets.decryptCardWithKey(position, key)
+        }
     }
 
     fun cardIsDecrypted(pos: Int): Boolean{
@@ -78,7 +80,7 @@ class SecretSharingVerifier(val users: Collection<User>, val secrets: Deck){
     }
 
     /**
-     * Verify key hashes //todo
+     * Verify key hashes
      */
     fun verifySKeys(SKeyHashes: Map<User, String>): Boolean{
         if (!(0..N*N-1).all { x -> cardIsDecrypted(x) }){

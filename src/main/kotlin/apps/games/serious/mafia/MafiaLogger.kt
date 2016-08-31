@@ -3,6 +3,7 @@ package apps.games.serious.mafia
 import apps.games.GameExecutionException
 import apps.games.serious.mafia.roles.Role
 import apps.games.serious.mafia.subgames.sum.SMSfAResult
+import crypto.RSA.RSAKeyManager
 import entity.User
 import java.math.BigInteger
 import java.text.DateFormat
@@ -28,6 +29,7 @@ class MafiaLogger {
 
     private val doctorChoicesSMS = mutableListOf<SMSfAResult>()
     private val detectiveChoicesSMS = mutableListOf<SMSfAResult>()
+    private val mafiaChoicesSMS = mutableListOf<SMSfAResult>()
     private val calendar = Calendar.getInstance()
     private val fmt: DateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
     init {
@@ -122,6 +124,31 @@ class MafiaLogger {
     }
 
     /**
+     * register SMSfAResult - result of mafia
+     * picking their target
+     */
+    fun registerMafiaChoiceSMS(smsfa: SMSfAResult){
+        mafiaChoicesSMS.add(smsfa)
+    }
+
+    /**
+     * validate R values for last pick. If something
+     * is not correct - return false
+     *
+     * @return true - if hashes ar OK, false otherwise
+     */
+    fun verifyLastMafiaRHashes(hashes: Map<User, String>): Boolean{
+        return hashes == mafiaChoicesSMS.last().RHashes
+    }
+
+    /**
+     * get random input for last mafia choice
+     */
+    fun getMafiaNoisedInput(): String{
+        return mafiaChoicesSMS.last().salt + " " + mafiaChoicesSMS.last().R.toString()
+    }
+
+    /**
      * get random input for last detective choice
      */
     fun getDetectiveNoisedInput(): String{
@@ -133,6 +160,13 @@ class MafiaLogger {
      */
     fun getDetectiveSum(): BigInteger{
         return detectiveChoicesSMS.last().sum
+    }
+
+    /**
+     * get sum for last mafia choice
+     */
+    fun getMafiaSum(): BigInteger{
+        return mafiaChoicesSMS.last().sum
     }
 
     /**
@@ -189,9 +223,9 @@ class MafiaLogger {
         }else{
             val killed = values.maxBy { x -> values.count { y -> y.target == x.target } }?.target ?:
                     throw GameExecutionException("Someone was supposed to be killed on day ${day - offset}")
-            builder.append("[${killed.name}] was killed with following votes: \n\n")
+            builder.append("${killed.name.capitalize()} was killed with following votes: \n\n")
             for((voter, target) in values){
-                builder.append("[${voter.name}] voted against [${target.name}]\n")
+                builder.append("${voter.name.capitalize()} voted against ${target.name.capitalize()}\n")
             }
         }
         return builder.toString()
@@ -207,17 +241,25 @@ class MafiaLogger {
 
         val values = nightLogs.filter { x -> x.day == day - offset }
         val detectivePlay = detectiveLogs.firstOrNull { x -> x.day == day - offset }
-        //TODO
+        val died = getLastMafiaTarget()
+        val survived = getLastDoctorTarget()
+        if (died != null && survived != null) {
+            if(survived == died){
+                builder.append("No one died this night\n")
+            }else{
+                builder.append("${died.name.capitalize()} was killed this night\n")
+            }
+        }
 
         if (detectivePlay != null) {
-            builder.append("You as a detective checked [${detectivePlay.target.name}] \n and he is ")
+            builder.append("You as a detective checked ${detectivePlay.target.name.capitalize()} \n and he is ")
             if (!detectivePlay.isMafia){
                 builder.append(" NOT ")
             }
             builder.append("Mafia \n\n\n")
         }
         for((actor, target) in values){
-            builder.append("[${actor.name}] chose [${target.name}] as his target\n")
+            builder.append("[${actor.name.toLowerCase().capitalize()}] targeted ${target.name.capitalize()}\n")
         }
         if(builder.isEmpty()){
             builder.append("That night nothing happened")
@@ -238,4 +280,28 @@ class MafiaLogger {
         calendar.add(Calendar.DAY_OF_YEAR, offset)
         return res
     }
+
+    /**
+     * get last person, that was targeted by mafia
+     */
+    fun getLastMafiaTarget(): User?{
+        return nightLogs.filter { x -> x.actor == Role.MAFIA }.firstOrNull()?.target
+    }
+
+    /**
+     * get last person, that was healed by doctor
+     */
+    fun getLastDoctorTarget(): User?{
+        return nightLogs.filter { x -> x.actor == Role.DOCTOR }.firstOrNull()?.target
+    }
+
+    /**
+     * verify all SMSfAResults
+     */
+    fun verify(keyManager: RSAKeyManager): Boolean{
+        return doctorChoicesSMS.all { x -> x.SMSVerifier.verifySums(keyManager) } &&
+                detectiveChoicesSMS.all { x -> x.SMSVerifier.verifySums(keyManager) } &&
+                mafiaChoicesSMS.all { x -> x.SMSVerifier.verifySums(keyManager) }
+    }
+
 }

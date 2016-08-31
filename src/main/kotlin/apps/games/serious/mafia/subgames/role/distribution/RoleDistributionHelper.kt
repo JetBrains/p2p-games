@@ -44,8 +44,10 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
         if(roleKeys[user]!![position] != BigInteger.ZERO && roleKeys[user]!![position] != key){
             throw GameExecutionException("Another key is already registered for that combination of user and position")
         }
-        roleKeys[user]!![position] = key
-        roleDeck.shuffledRoles.decryptCardWithKey(position, key)
+        if(roleKeys[user]!![position] == BigInteger.ZERO){
+            roleKeys[user]!![position] = key
+            roleDeck.shuffledRoles.decryptCardWithKey(position, key)
+        }
     }
 
     /**
