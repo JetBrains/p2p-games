@@ -5,7 +5,6 @@ import apps.chat.ChatManager
 import apps.games.GameManager
 import org.apache.commons.cli.*
 import org.apache.log4j.BasicConfigurator
-import org.lwjgl.Sys
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -44,27 +43,27 @@ fun main(args: Array<String>) {
     var clientPort: Int = 1231
     var serverPort: Int = 1232
     var username: String = "Alice"
-    try{
+    try {
         cmd = parser.parse(options, args)
-        if(cmd.hasOption("c")){
+        if (cmd.hasOption("c")) {
             clientPort = cmd.getOptionValue("c").toInt()
         }
 
-        if(cmd.hasOption("s")){
+        if (cmd.hasOption("s")) {
             serverPort = cmd.getOptionValue("s").toInt()
         }
 
-        if(cmd.hasOption("u")){
+        if (cmd.hasOption("u")) {
             username = cmd.getOptionValue("u")
         }
-        if(cmd.hasOption("help")){
+        if (cmd.hasOption("help")) {
             System.out.println("Available parameters: \n" +
-                                "-c=PORT -- specify client port to be at PORT\n" +
-                                "-s=PORT -- specify server port to be at PORT\n" +
-                                "-u=NAME -- set default username")
+                    "-c=PORT -- specify client port to be at PORT\n" +
+                    "-s=PORT -- specify server port to be at PORT\n" +
+                    "-u=NAME -- set default username")
             System.exit(0)
         }
-    } catch (e: ParseException){
+    } catch (e: ParseException) {
         System.err.print("Invalid options")
         System.exit(0)
     }

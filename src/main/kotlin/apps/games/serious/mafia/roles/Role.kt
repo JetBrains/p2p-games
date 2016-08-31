@@ -11,7 +11,7 @@ import org.bouncycastle.math.ec.ECPoint
  * Created by user on 8/10/16.
  */
 
-abstract class PlayerRole{
+abstract class PlayerRole {
     /**
      * Role of player
      */
@@ -27,7 +27,7 @@ abstract class PlayerRole{
      *
      * @return list of known comrades include self
      */
-    open fun getComrades(): Set<User>{
+    open fun getComrades(): Set<User> {
         return comrades
     }
 
@@ -38,14 +38,14 @@ abstract class PlayerRole{
      * @param msg - message to encrypt
      * @return String - encrypted message
      */
-    fun encryptForComrades(msg: String): String{
+    fun encryptForComrades(msg: String): String {
         return encryptor.encrypt(msg)
     }
 
     /**
      * add user to the list of known comrades
      */
-    fun registerComrade(user: User){
+    fun registerComrade(user: User) {
         comrades.add(user)
     }
 
@@ -56,18 +56,18 @@ abstract class PlayerRole{
      * @param msg - message to decrypt
      * @return String - decrypted message
      */
-    fun decryptForComrades(msg: String): String{
+    fun decryptForComrades(msg: String): String {
         return encryptor.decrypt(msg)
     }
 
     /**
      * Get index of given user among commrades
      */
-    fun getPlayerIndex(user: User): Int{
+    fun getPlayerIndex(user: User): Int {
         return comrades.sortedBy { x -> x.name }.indexOf(user)
     }
 
-    fun registerIV(IV: ECPoint){
+    fun registerIV(IV: ECPoint) {
         this.IV = IV
         encryptor.init(IV.getEncoded(false))
     }
@@ -75,13 +75,13 @@ abstract class PlayerRole{
     /**
      * clear role for later reuser
      */
-    @Synchronized open fun reset(){
+    @Synchronized open fun reset() {
         encryptor = AESEncryptor()
         comrades = mutableSetOf<User>()
     }
 }
 
-enum class Role(val id: Int, val playerRole: PlayerRole){
+enum class Role(val id: Int, val playerRole: PlayerRole) {
     UNKNOWN(-1, UnknownRole()),
     MAFIA(1, MafiaRole()),
     DOCTOR(2, DoctorRole()),
@@ -89,7 +89,7 @@ enum class Role(val id: Int, val playerRole: PlayerRole){
     INNOCENT(4, InnocentRole());
 
     fun getCard(index: Int): Card {
-        return when(this){
+        return when (this) {
             Role.UNKNOWN -> Card(Suit.UNKNOWN, Pip.UNKNOWN)
             Role.MAFIA -> Card(Suit.SPADES, Pip.values()[Pip.KING.value - index])
             Role.DOCTOR -> Card(Suit.HEARTS, Pip.values()[Pip.QUEEN.value - index])
@@ -98,9 +98,9 @@ enum class Role(val id: Int, val playerRole: PlayerRole){
         }
     }
 
-    companion object{
-        fun reset(){
-            for(role in Role.values()){
+    companion object {
+        fun reset() {
+            for (role in Role.values()) {
                 role.playerRole.reset()
             }
         }

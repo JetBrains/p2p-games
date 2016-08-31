@@ -1,10 +1,9 @@
 package apps.games.serious.preferans
 
+import Settings
 import entity.User
-import org.junit.Test
-
 import org.junit.Assert.*
-import org.junit.Before
+import org.junit.Test
 
 /**
  * Created by user on 7/27/16.
@@ -22,7 +21,7 @@ class PreferansScoreCounterTest {
     @Test
     fun checkOneUserBullet() {
         val scoreCounter = PreferansScoreCounter(listOf(user1, user2, user3),
-                                                 maxBulletPerUser = 5)
+                maxBulletPerUser = 5)
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mapOf(user1 to Whists.UNKNOWN, user2 to Whists.PASS, user3 to Whists.PASS)
         scoreCounter.updateScore(handsTaken, Bet.TEN_NO_TRUMP, whists, user1)
@@ -54,7 +53,7 @@ class PreferansScoreCounterTest {
     @Test
     fun checkEveryoneBullet() {
         val scoreCounter = PreferansScoreCounter(listOf(user1, user2, user3),
-                                                 maxBulletPerUser = 10)
+                maxBulletPerUser = 10)
 
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mapOf(user1 to Whists.PASS, user2 to Whists.PASS, user3 to Whists.PASS)
@@ -96,7 +95,7 @@ class PreferansScoreCounterTest {
     @Test
     fun checkAllCells() {
         val scoreCounter = PreferansScoreCounter(listOf(user1, user2, user3),
-                                                 maxBulletPerUser = 10)
+                maxBulletPerUser = 10)
 
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mutableMapOf(user1 to Whists.PASS, user2 to Whists.WHIST_BLIND, user3 to Whists.PASS)
@@ -160,7 +159,6 @@ class PreferansScoreCounterTest {
         assertEquals(300, res[user2])
         assertEquals(-380, res[user3])
     }
-
 
 
 }

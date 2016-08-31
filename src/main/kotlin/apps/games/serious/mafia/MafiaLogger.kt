@@ -32,8 +32,9 @@ class MafiaLogger {
     private val mafiaChoicesSMS = mutableListOf<SMSfAResult>()
     private val calendar = Calendar.getInstance()
     private val fmt: DateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
+
     init {
-        for(role in Role.values()){
+        for (role in Role.values()) {
             usersWithRole[role] = mutableListOf()
         }
     }
@@ -44,7 +45,7 @@ class MafiaLogger {
      * @param user - whose role to register
      * @param role - role of this user
      */
-    fun registerUserRole(user: User, role: Role){
+    fun registerUserRole(user: User, role: Role) {
         roles[user] = role
         usersWithRole[role]!!.add(user)
     }
@@ -56,9 +57,9 @@ class MafiaLogger {
      * @return Int - index among users with same role
      * (or 0 if user is not registered yet)
      */
-    fun getUserRolePosition(user: User): Int{
-        for((role, users) in usersWithRole){
-            if(users.contains(user)){
+    fun getUserRolePosition(user: User): Int {
+        for ((role, users) in usersWithRole) {
+            if (users.contains(user)) {
                 return users.indexOf(user)
             }
         }
@@ -71,7 +72,7 @@ class MafiaLogger {
      * @param voter - who voted
      * @param target - whom he chose as a terget
      */
-    fun registerDayVote(voter: User, target: User){
+    fun registerDayVote(voter: User, target: User) {
         dayLogs.add(DayVote(voter, target, day))
     }
 
@@ -79,7 +80,7 @@ class MafiaLogger {
      * reset all plays, that took part in day phase
      * of current day
      */
-    fun resetDay(){
+    fun resetDay() {
         dayLogs.removeAll { x -> x.day == day }
     }
 
@@ -87,14 +88,14 @@ class MafiaLogger {
      * register SMSfAResult - intermediate result
      * for doctor picking his target
      */
-    fun registerDoctorFirstPhase(smsfa: SMSfAResult){
+    fun registerDoctorFirstPhase(smsfa: SMSfAResult) {
         doctorChoicesSMS.add(smsfa)
     }
 
     /**
      * get random input for last detective choice
      */
-    fun getDoctorNoisedInput(): String{
+    fun getDoctorNoisedInput(): String {
         return doctorChoicesSMS.last().salt + " " + doctorChoicesSMS.last().R.toString()
     }
 
@@ -104,14 +105,14 @@ class MafiaLogger {
      *
      * @return true - if hashes ar OK, false otherwise
      */
-    fun verifyLastDoctorRHashes(hashes: Map<User, String>): Boolean{
+    fun verifyLastDoctorRHashes(hashes: Map<User, String>): Boolean {
         return hashes == doctorChoicesSMS.last().RHashes
     }
 
     /**
      * get sum for last doctor choice
      */
-    fun getDoctorSum(): BigInteger{
+    fun getDoctorSum(): BigInteger {
         return doctorChoicesSMS.last().sum
     }
 
@@ -119,7 +120,7 @@ class MafiaLogger {
      * register SMSfAResult - result of detective
      * picking his target
      */
-    fun registerDetectiveChoiceSMS(smsfa: SMSfAResult){
+    fun registerDetectiveChoiceSMS(smsfa: SMSfAResult) {
         detectiveChoicesSMS.add(smsfa)
     }
 
@@ -127,7 +128,7 @@ class MafiaLogger {
      * register SMSfAResult - result of mafia
      * picking their target
      */
-    fun registerMafiaChoiceSMS(smsfa: SMSfAResult){
+    fun registerMafiaChoiceSMS(smsfa: SMSfAResult) {
         mafiaChoicesSMS.add(smsfa)
     }
 
@@ -137,35 +138,35 @@ class MafiaLogger {
      *
      * @return true - if hashes ar OK, false otherwise
      */
-    fun verifyLastMafiaRHashes(hashes: Map<User, String>): Boolean{
+    fun verifyLastMafiaRHashes(hashes: Map<User, String>): Boolean {
         return hashes == mafiaChoicesSMS.last().RHashes
     }
 
     /**
      * get random input for last mafia choice
      */
-    fun getMafiaNoisedInput(): String{
+    fun getMafiaNoisedInput(): String {
         return mafiaChoicesSMS.last().salt + " " + mafiaChoicesSMS.last().R.toString()
     }
 
     /**
      * get random input for last detective choice
      */
-    fun getDetectiveNoisedInput(): String{
+    fun getDetectiveNoisedInput(): String {
         return detectiveChoicesSMS.last().salt + " " + detectiveChoicesSMS.last().R.toString()
     }
 
     /**
      * get sum for last detective choice
      */
-    fun getDetectiveSum(): BigInteger{
+    fun getDetectiveSum(): BigInteger {
         return detectiveChoicesSMS.last().sum
     }
 
     /**
      * get sum for last mafia choice
      */
-    fun getMafiaSum(): BigInteger{
+    fun getMafiaSum(): BigInteger {
         return mafiaChoicesSMS.last().sum
     }
 
@@ -175,7 +176,7 @@ class MafiaLogger {
      *
      * @return true - if hashes ar OK, false otherwise
      */
-    fun verifyLastDetectiveRHashes(hashes: Map<User, String>): Boolean{
+    fun verifyLastDetectiveRHashes(hashes: Map<User, String>): Boolean {
         return hashes == detectiveChoicesSMS.last().RHashes
     }
 
@@ -186,7 +187,7 @@ class MafiaLogger {
      * @param actor - role that chose a target
      * @param target - who was chosen
      */
-    fun registerNightPlay(actor: Role, target: User){
+    fun registerNightPlay(actor: Role, target: User) {
         nightLogs.add(NightEvent(actor, target, day))
     }
 
@@ -196,15 +197,15 @@ class MafiaLogger {
      * @param target - user, that was checked
      * @param isMafia - whether user was mafia, or not
      */
-    fun registerDetectivePlay(target: User, isMafia: Boolean){
+    fun registerDetectivePlay(target: User, isMafia: Boolean) {
         detectiveLogs.add(DetectiveEvent(target, isMafia, day))
     }
 
     /**
      * start next day log
      */
-    fun nextDay(){
-        day ++
+    fun nextDay() {
+        day++
         calendar.add(Calendar.DAY_OF_YEAR, 1)
     }
 
@@ -214,17 +215,17 @@ class MafiaLogger {
      *
      * @param offset - number of days to rewind
      */
-    fun getDayLog(offset: Int): String{
+    fun getDayLog(offset: Int): String {
         val builder = StringBuilder()
         builder.append(formatDateWithOffset(offset) + "\n")
         val values = dayLogs.filter { x -> x.day == day - offset }
-        if(values.isEmpty()){
+        if (values.isEmpty()) {
             builder.append("That day nothing happened")
-        }else{
+        } else {
             val killed = values.maxBy { x -> values.count { y -> y.target == x.target } }?.target ?:
                     throw GameExecutionException("Someone was supposed to be killed on day ${day - offset}")
             builder.append("${killed.name.capitalize()} was killed with following votes: \n\n")
-            for((voter, target) in values){
+            for ((voter, target) in values) {
                 builder.append("${voter.name.capitalize()} voted against ${target.name.capitalize()}\n")
             }
         }
@@ -236,7 +237,7 @@ class MafiaLogger {
      *
      * @param offset - number of days to rewind
      */
-    fun getNightLog(offset: Int): String{
+    fun getNightLog(offset: Int): String {
         val builder = StringBuilder()
 
         val values = nightLogs.filter { x -> x.day == day - offset }
@@ -244,24 +245,24 @@ class MafiaLogger {
         val died = getLastMafiaTarget()
         val survived = getLastDoctorTarget()
         if (died != null && survived != null) {
-            if(survived == died){
+            if (survived == died) {
                 builder.append("No one died this night\n")
-            }else{
+            } else {
                 builder.append("${died.name.capitalize()} was killed this night\n")
             }
         }
 
         if (detectivePlay != null) {
             builder.append("You as a detective checked ${detectivePlay.target.name.capitalize()} \n and he is ")
-            if (!detectivePlay.isMafia){
+            if (!detectivePlay.isMafia) {
                 builder.append(" NOT ")
             }
             builder.append("Mafia \n\n\n")
         }
-        for((actor, target) in values){
+        for ((actor, target) in values) {
             builder.append("[${actor.name.toLowerCase().capitalize()}] targeted ${target.name.capitalize()}\n")
         }
-        if(builder.isEmpty()){
+        if (builder.isEmpty()) {
             builder.append("That night nothing happened")
         }
         builder.insert(0, formatDateWithOffset(offset) + "\n")
@@ -274,7 +275,7 @@ class MafiaLogger {
      * @param offset - days to rewind
      * @return String - formated date string
      */
-    private fun formatDateWithOffset(offset: Int): String{
+    private fun formatDateWithOffset(offset: Int): String {
         calendar.add(Calendar.DAY_OF_YEAR, -offset)
         val res = fmt.format(calendar.time)
         calendar.add(Calendar.DAY_OF_YEAR, offset)
@@ -284,21 +285,21 @@ class MafiaLogger {
     /**
      * get last person, that was targeted by mafia
      */
-    fun getLastMafiaTarget(): User?{
+    fun getLastMafiaTarget(): User? {
         return nightLogs.filter { x -> x.actor == Role.MAFIA }.firstOrNull()?.target
     }
 
     /**
      * get last person, that was healed by doctor
      */
-    fun getLastDoctorTarget(): User?{
+    fun getLastDoctorTarget(): User? {
         return nightLogs.filter { x -> x.actor == Role.DOCTOR }.firstOrNull()?.target
     }
 
     /**
      * verify all SMSfAResults
      */
-    fun verify(keyManager: RSAKeyManager): Boolean{
+    fun verify(keyManager: RSAKeyManager): Boolean {
         return doctorChoicesSMS.all { x -> x.SMSVerifier.verifySums(keyManager) } &&
                 detectiveChoicesSMS.all { x -> x.SMSVerifier.verifySums(keyManager) } &&
                 mafiaChoicesSMS.all { x -> x.SMSVerifier.verifySums(keyManager) }

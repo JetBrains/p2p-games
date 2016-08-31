@@ -1,7 +1,6 @@
 package apps.games.serious.mafia.subgames.role.distribution
 
 import apps.games.GameExecutionException
-import apps.games.serious.mafia.roles.PlayerRole
 import apps.games.serious.mafia.roles.Role
 import apps.games.serious.mafia.subgames.role.generation.RoleDeck
 import entity.User
@@ -13,7 +12,7 @@ import java.math.BigInteger
  * Created by user on 8/12/16.
  */
 
-class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>){
+class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>) {
     private val N = users.size
     private val deckSize = roleDeck.originalRoles.size
 
@@ -22,9 +21,9 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
     private val RKeys: Map<User, Array<BigInteger>>
 
     init {
-        roleKeys = users.associate { x -> x to Array(deckSize, {i -> BigInteger.ZERO}) }
-        VKeys = users.associate { x -> x to Array(deckSize, {i -> BigInteger.ZERO}) }
-        RKeys = users.associate { x -> x to Array(deckSize, {i -> BigInteger.ZERO}) }
+        roleKeys = users.associate { x -> x to Array(deckSize, { i -> BigInteger.ZERO }) }
+        VKeys = users.associate { x -> x to Array(deckSize, { i -> BigInteger.ZERO }) }
+        RKeys = users.associate { x -> x to Array(deckSize, { i -> BigInteger.ZERO }) }
     }
 
     /**
@@ -34,17 +33,17 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
      * @param position -  position of role to decrypt
      * @param key - users key for this role
      */
-    fun registerRoleKey(user: User, position: Int, key: BigInteger){
-        if(user !in roleKeys){
+    fun registerRoleKey(user: User, position: Int, key: BigInteger) {
+        if (user !in roleKeys) {
             throw GameExecutionException("Unknown user's key provided")
         }
-        if(position >= N || position < 0){
+        if (position >= N || position < 0) {
             throw GameExecutionException("Key position out of range")
         }
-        if(roleKeys[user]!![position] != BigInteger.ZERO && roleKeys[user]!![position] != key){
+        if (roleKeys[user]!![position] != BigInteger.ZERO && roleKeys[user]!![position] != key) {
             throw GameExecutionException("Another key is already registered for that combination of user and position")
         }
-        if(roleKeys[user]!![position] == BigInteger.ZERO){
+        if (roleKeys[user]!![position] == BigInteger.ZERO) {
             roleKeys[user]!![position] = key
             roleDeck.shuffledRoles.decryptCardWithKey(position, key)
         }
@@ -58,14 +57,14 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
      * @param position -  position of V to decrypt
      * @param key - users key for this V
      */
-    fun registerVKey(user: User, position: Int, key: BigInteger){
-        if(user !in VKeys){
+    fun registerVKey(user: User, position: Int, key: BigInteger) {
+        if (user !in VKeys) {
             throw GameExecutionException("Unknown user's key provided")
         }
-        if(position >= N || position < 0){
+        if (position >= N || position < 0) {
             throw GameExecutionException("Key position out of range")
         }
-        if(VKeys[user]!![position] != BigInteger.ZERO && VKeys[user]!![position] != key){
+        if (VKeys[user]!![position] != BigInteger.ZERO && VKeys[user]!![position] != key) {
             throw GameExecutionException("Another key is already registered for that combination of user and position")
         }
         VKeys[user]!![position] = key
@@ -80,14 +79,14 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
      * @param position -  position of R to decrypt
      * @param key - users key for this R
      */
-    fun registerRKey(user: User, position: Int, key: BigInteger){
-        if(user !in RKeys){
+    fun registerRKey(user: User, position: Int, key: BigInteger) {
+        if (user !in RKeys) {
             throw GameExecutionException("Unknown user's key provided")
         }
-        if(position >= N || position < 0){
+        if (position >= N || position < 0) {
             throw GameExecutionException("Key position out of range")
         }
-        if(RKeys[user]!![position] != BigInteger.ZERO && RKeys[user]!![position] != key){
+        if (RKeys[user]!![position] != BigInteger.ZERO && RKeys[user]!![position] != key) {
             throw GameExecutionException("Another key is already registered for that combination of user and position")
         }
         RKeys[user]!![position] = key
@@ -104,16 +103,16 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
      * @throws GameExecutionException - if invalid argument provided
      */
     fun getRole(pos: Int): Role {
-        if(pos < 0 || pos > N){
+        if (pos < 0 || pos > N) {
             throw GameExecutionException("Position is out of range")
         }
         var idx: Int = roleDeck.originalRoles.cards.indexOf(roleDeck.shuffledRoles.cards[pos])
-        if(idx == -1){
+        if (idx == -1) {
             return Role.UNKNOWN
         }
-        for((role, count) in roleDeck.roleCounts.toSortedMap()){
+        for ((role, count) in roleDeck.roleCounts.toSortedMap()) {
             idx -= count
-            if(idx < 0){
+            if (idx < 0) {
                 return role
             }
         }
@@ -126,14 +125,14 @@ class RoleDistributionHelper(val roleDeck: RoleDeck, val users: Collection<User>
      *
      * @param pos - position of card to check
      */
-    private fun canDecryptCard(pos: Int): Boolean{
+    private fun canDecryptCard(pos: Int): Boolean {
         return roleKeys.all { x -> x.value[pos] != BigInteger.ZERO } &&
                 VKeys.all { x -> x.value[pos] != BigInteger.ZERO } &&
                 RKeys.all { x -> x.value[pos] != BigInteger.ZERO }
     }
 
     fun getDecryptedVCard(pos: Int): ECPoint {
-        if(!canDecryptCard(pos)){
+        if (!canDecryptCard(pos)) {
             throw GameExecutionException("Card is not ready for decryption yet")
         }
         return roleDeck.V.cards[pos].multiply(roleDeck.encryptedR[pos].modInverse(roleDeck.V.ECParams.n))

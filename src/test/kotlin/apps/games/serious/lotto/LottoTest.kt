@@ -1,24 +1,20 @@
 package apps.games.serious.lotto
 
+import Settings
 import apps.chat.Chat
 import apps.games.GameManager
-import apps.games.serious.lotto.Lotto
-import apps.games.serious.lotto.Ticket
-import broker.GroupBroker
 import broker.NettyGroupBroker
-import entity.ChatMessage
 import entity.Group
 import entity.User
-import network.ConnectionManager
 import org.apache.log4j.BasicConfigurator
 import org.junit.AfterClass
-import org.junit.Assert.*
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.mockito.Mockito.*
 import proto.GameMessageProto
-import kotlin.reflect.KFunction
 
 /**
  * Created by user on 6/30/16.
@@ -26,7 +22,7 @@ import kotlin.reflect.KFunction
  * create lotto game, send it expected messages,
  * until desired condition is met
  */
-class LottoTest{
+class LottoTest {
     var lotto: Lotto? = null
     var chat: Chat? = null
     var group: Group? = null
@@ -47,7 +43,7 @@ class LottoTest{
     }
 
     @Before
-    fun initGame(){
+    fun initGame() {
         chat = mock(Chat::class.java) ?: throw AssertionError("Initialization error")
         (chat as Chat).username = "TestUser"
         group = mock(Group::class.java) ?: throw AssertionError("Initialization error")
@@ -69,8 +65,8 @@ class LottoTest{
      * We should win this one
      */
     @Test
-    fun winTest(){
-        if(lotto == null){
+    fun winTest() {
+        if (lotto == null) {
             throw AssertionError("Initialization error")
         }
         //perform handshake
@@ -78,7 +74,7 @@ class LottoTest{
         //agree on tickets
         (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         //run until we won
-        while(!(lotto as Lotto).isFinished()){
+        while (!(lotto as Lotto).isFinished()) {
             (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         }
         // We are the only player - we should win
@@ -92,8 +88,8 @@ class LottoTest{
      * Try to claim, that we won -> Fail
      */
     @Test
-    fun cheatTest(){
-        if(lotto == null){
+    fun cheatTest() {
+        if (lotto == null) {
             throw AssertionError("Initialization error")
         }
         //perform handshake
@@ -101,7 +97,7 @@ class LottoTest{
         //agree on tickets
         (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         //run until we won
-        for(i in 1..4){
+        for (i in 1..4) {
             (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         }
         assertFalse("We had only four rounds. How can You win?!", (lotto as Lotto).verifyTicket(

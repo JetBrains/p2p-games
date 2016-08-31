@@ -21,16 +21,16 @@ import com.badlogic.gdx.utils.Align
  * Created by user on 8/27/16.
  */
 
-class LogOverlay(val logger: MafiaLogger): Overlay(){
+class LogOverlay(val logger: MafiaLogger) : Overlay() {
     lateinit var skin: Skin
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
     val bfont = BitmapFont()
     val texture = Texture(Gdx.files.internal("mafia/log.png"))
     val background = Image(texture)
     //normal labels
-    private val dayLabel : Label
-    private val nightLabel : Label
-    private var currentDayOffset : Int = 0
+    private val dayLabel: Label
+    private val nightLabel: Label
+    private var currentDayOffset: Int = 0
 
 
     init {
@@ -65,26 +65,26 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
         skin.add("default", style)
         background.scaleBy(0.6f)
         dayLabel = Label("", skin)
-        nightLabel = Label("",   skin)
+        nightLabel = Label("", skin)
         dayLabel.setWrap(true)
         nightLabel.setWrap(true)
         dayLabel.setAlignment(Align.topLeft)
         nightLabel.setAlignment(Align.topLeft)
-        table.add(dayLabel).width(300f * scaleX).height(600*scaleY).padRight(60 * scaleX).align(Align.top)
-        table.add(nightLabel).width(300f * scaleX).height(600*scaleY).align(Align.top)
+        table.add(dayLabel).width(300f * scaleX).height(600 * scaleY).padRight(60 * scaleX).align(Align.top)
+        table.add(nightLabel).width(300f * scaleX).height(600 * scaleY).align(Align.top)
         stage.addListener(object : InputListener() {
-                        override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
-                when(keycode){
+            override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
+                when (keycode) {
                     Input.Keys.TAB -> {
                         isVisible = !isVisible
                         return true
                     }
                     Input.Keys.LEFT -> {
-                        currentDayOffset ++
+                        currentDayOffset++
                         return true
                     }
                     Input.Keys.RIGHT -> {
-                        currentDayOffset --
+                        currentDayOffset--
                         return true
                     }
                     else -> return false
@@ -93,14 +93,14 @@ class LogOverlay(val logger: MafiaLogger): Overlay(){
         })
     }
 
-    fun updateLabels(){
+    fun updateLabels() {
         dayLabel.setText(logger.getDayLog(currentDayOffset))
         nightLabel.setText(logger.getNightLog(currentDayOffset))
     }
 
 
     override fun render(cam: Camera) {
-        if(isVisible){
+        if (isVisible) {
             stage.camera.projection.set(cam.projection)
             stage.batch.begin()
             stage.batch.draw(texture, 150f * scaleX, 225f * scaleY, 800f * scaleX, 600f * scaleY)

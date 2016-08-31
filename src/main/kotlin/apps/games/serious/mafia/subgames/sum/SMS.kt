@@ -5,16 +5,11 @@ import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameManager
 import apps.games.GameManagerClass
-import apps.games.serious.Cheat.Cheat
-import apps.games.serious.mafia.roles.PlayerRole
-import apps.games.serious.mafia.subgames.role.secret.SecretDeck
-import apps.games.serious.mafia.subgames.role.secret.SecretSharingVerifier
 import crypto.RSA.RSAKeyManager
 import crypto.random.randomString
 import entity.Group
 import entity.User
 import org.bouncycastle.crypto.InvalidCipherTextException
-import org.bouncycastle.jce.spec.ECParameterSpec
 import proto.GameMessageProto
 import java.math.BigInteger
 
@@ -24,7 +19,7 @@ import java.math.BigInteger
 
 
 class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyManager: RSAKeyManager,
-                        val n: BigInteger, gameManager: GameManagerClass = GameManager) : Game<Pair<BigInteger, SMSVerifier>>(chat, group, gameID, gameManager = gameManager) {
+                              val n: BigInteger, gameManager: GameManagerClass = GameManager) : Game<Pair<BigInteger, SMSVerifier>>(chat, group, gameID, gameManager = gameManager) {
     override val name: String
         get() = "First part of SMS algorithm"
 
@@ -34,7 +29,7 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
     val N = group.users.size
     private val SALT_LENGTH = 128
 
-    private enum class State{
+    private enum class State {
         INIT,
         SPLIT,
         SUM,
@@ -47,10 +42,10 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
     private val parts = crypto.random.split(n, N)
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        for(msg in responses){
+        for (msg in responses) {
             chat.showMessage(msg.value)
         }
-        when(state){
+        when (state) {
             State.INIT -> {
                 for (msg in responses) {
                     keyManager.registerUserPublicKey(User(msg.user), msg.value)
@@ -59,11 +54,11 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
                 state = State.SPLIT
             }
             State.SPLIT -> {
-                for(msg in responses){
-                    if(currentPlayer >= 0 && currentPlayer < N){
+                for (msg in responses) {
+                    if (currentPlayer >= 0 && currentPlayer < N) {
                         verifier.registerMessage(User(msg.user), playerOrder[currentPlayer], msg.value)
                     }
-                    if(playerID == currentPlayer){
+                    if (playerID == currentPlayer) {
                         try {
                             val split = keyManager.decodeString(msg.value).split(" ")
                             sum += BigInteger(split[1])
@@ -72,11 +67,11 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
                         }
                     }
                 }
-                currentPlayer ++
-                if(currentPlayer < N){
+                currentPlayer++
+                if (currentPlayer < N) {
                     val msg = randomString(SALT_LENGTH) + " " + parts[currentPlayer].toString()
                     return keyManager.encodeForUser(playerOrder[currentPlayer], msg)
-                }else{
+                } else {
                     state = State.SUM
                     return sum.toString()
                 }
@@ -84,9 +79,9 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
             }
             State.SUM -> {
                 verifier.registerPartialSum(chat.me(), sum)
-                for(msg in responses){
+                for (msg in responses) {
                     val userID = playerOrder.indexOf(User(msg.user))
-                    if(userID != playerID){
+                    if (userID != playerID) {
                         val pSum = BigInteger(msg.value)
                         sum += pSum
                         verifier.registerPartialSum(User(msg.user), pSum)
@@ -97,7 +92,8 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
                 state = State.END
                 return ""
             }
-            State.END -> {}
+            State.END -> {
+            }
         }
         return ""
     }

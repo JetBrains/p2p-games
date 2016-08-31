@@ -3,26 +3,21 @@ package crypto.RSA
 import apps.games.GameExecutionException
 import crypto.random.secureRandom
 import entity.User
-import org.bouncycastle.asn1.pkcs.RSAPrivateKey
-import org.bouncycastle.asn1.pkcs.RSAPublicKey
 import org.bouncycastle.crypto.AsymmetricBlockCipher
 import org.bouncycastle.crypto.encodings.PKCS1Encoding
 import org.bouncycastle.crypto.engines.RSAEngine
 import org.bouncycastle.crypto.params.RSAKeyParameters
 import org.bouncycastle.crypto.util.PrivateKeyFactory
 import org.bouncycastle.crypto.util.PublicKeyFactory
-import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.provider.JCERSAPublicKey
 import sun.misc.BASE64Decoder
 import sun.misc.BASE64Encoder
 import java.math.BigInteger
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.Security
-import java.security.spec.RSAPublicKeySpec
 import javax.xml.bind.DatatypeConverter
 
 /**
@@ -54,14 +49,14 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     /**
      * get public exponent
      */
-    fun getExponent(): BigInteger{
+    fun getExponent(): BigInteger {
         return (keyPair.public as BCRSAPublicKey).publicExponent
     }
 
     /**
      * get public modulus value
      */
-    fun getModulus(): BigInteger{
+    fun getModulus(): BigInteger {
         return (keyPair.public as BCRSAPublicKey).modulus
     }
 
@@ -83,8 +78,8 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
      * @param publicKey - public key of given user
      */
     fun registerUserPublicKey(user: User, publicKey: String) {
-        if(user in userPublicKeys){
-            if(userPublicKeys[user] != publicKey){
+        if (user in userPublicKeys) {
+            if (userPublicKeys[user] != publicKey) {
                 throw GameExecutionException("Changing keys for user is not allowed: ${userPublicKeys[user]} \n $publicKey")
             }
             return
@@ -104,8 +99,8 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
      * @param privateKey - private key of given user
      */
     fun registerUserPrivateKey(user: User, privateKey: String) {
-        if(user in userPrivateKeys){
-            if(userPrivateKeys[user] != privateKey){
+        if (user in userPrivateKeys) {
+            if (userPrivateKeys[user] != privateKey) {
                 throw GameExecutionException("Changing keys for user is not allowed")
             }
             return
@@ -120,7 +115,9 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     /**
      * Encode message with given public RSA parameters
      */
-    fun encodeWithParams(mod: BigInteger, exp: BigInteger, msg: String): String{
+    fun encodeWithParams(mod: BigInteger,
+                         exp: BigInteger,
+                         msg: String): String {
         val cypher: AsymmetricBlockCipher = PKCS1Encoding(RSAEngine())
         cypher.init(true, RSAKeyParameters(false, mod, exp))
         return encodeWithEngine(cypher, msg)
@@ -129,7 +126,9 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     /**
      * Encode message with given public RSA parameters
      */
-    fun encodeWithParams(mod: BigInteger, exp: BigInteger, msg: ByteArray): String{
+    fun encodeWithParams(mod: BigInteger,
+                         exp: BigInteger,
+                         msg: ByteArray): String {
         val cypher: AsymmetricBlockCipher = PKCS1Encoding(RSAEngine())
         cypher.init(true, RSAKeyParameters(false, mod, exp))
         return encodeWithEngine(cypher, msg)
@@ -147,14 +146,16 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     /**
      * encode message with given RSA engine
      */
-    private fun encodeWithEngine(engine: AsymmetricBlockCipher, msg: String): String{
+    private fun encodeWithEngine(engine: AsymmetricBlockCipher,
+                                 msg: String): String {
         return encodeWithEngine(engine, msg.toByteArray())
     }
 
     /**
      * encode message with given RSA engine
      */
-    private fun encodeWithEngine(engine: AsymmetricBlockCipher, bytes: ByteArray): String{
+    private fun encodeWithEngine(engine: AsymmetricBlockCipher,
+                                 bytes: ByteArray): String {
         var len = engine.inputBlockSize
         val res = StringBuilder()
         for (i in 0..bytes.size - 1 step len) {
@@ -163,7 +164,6 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
         }
         return res.toString()
     }
-
 
 
     /**
@@ -178,7 +178,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     /**
      * decode message of bytes
      */
-    fun decodeBytes(msg: String): ByteArray{
+    fun decodeBytes(msg: String): ByteArray {
         return decodeBytesWithEngine(engine, msg)
     }
 
@@ -201,7 +201,8 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
      *
      * @return - decoded string
      */
-    private fun decodeStringWithEngine(engine: AsymmetricBlockCipher, msg: String): String {
+    private fun decodeStringWithEngine(engine: AsymmetricBlockCipher,
+                                       msg: String): String {
         var len = engine.inputBlockSize
         val res = StringBuilder()
         val bytes = toByteArray(msg)
@@ -220,7 +221,8 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
      *
      * @return - decoded string
      */
-    private fun decodeBytesWithEngine(engine: AsymmetricBlockCipher, msg: String): ByteArray{
+    private fun decodeBytesWithEngine(engine: AsymmetricBlockCipher,
+                                      msg: String): ByteArray {
         var len = engine.inputBlockSize
         val res = mutableListOf<Byte>()
         val bytes = toByteArray(msg)

@@ -22,7 +22,7 @@ class DetectiveRole : PlayerRole() {
      * Detective knowns keys [K_i] that were used in secret
      * generation
      */
-    fun registerUserK(user: User, k: BigInteger){
+    fun registerUserK(user: User, k: BigInteger) {
         Ks[user] = k
     }
 
@@ -30,8 +30,8 @@ class DetectiveRole : PlayerRole() {
      * Get User's K value used to
      * conseal his identitty in secret sharing
      */
-    fun getUserK(user: User): BigInteger{
-        if(user !in Ks){
+    fun getUserK(user: User): BigInteger {
+        if (user !in Ks) {
             throw GameExecutionException("Trying to get K for unknown user")
         }
         return Ks[user]!!
@@ -41,13 +41,13 @@ class DetectiveRole : PlayerRole() {
      * Register, that last target of this doctor was user
      * with given id
      */
-    fun registerTarget(user: User, id: BigInteger){
+    fun registerTarget(user: User, id: BigInteger) {
         currentTargetId = id
         currentTargetUser = user
     }
 
-    fun registerTargetResult(id: BigInteger, isMafia: Boolean){
-        if(id != currentTargetId){
+    fun registerTargetResult(id: BigInteger, isMafia: Boolean) {
+        if (id != currentTargetId) {
             throw GameExecutionException("Someone interfered with detective investigation")
         }
         targets[currentTargetUser] = isMafia
@@ -56,14 +56,14 @@ class DetectiveRole : PlayerRole() {
     /**
      * get public key for role transmition
      */
-    fun getPublicExponent(): BigInteger{
+    fun getPublicExponent(): BigInteger {
         return keyManager.getExponent()
     }
 
     /**
      * get modulus for role transmition
      */
-    fun getModulus(): BigInteger{
+    fun getModulus(): BigInteger {
         return keyManager.getModulus()
     }
 
@@ -71,10 +71,10 @@ class DetectiveRole : PlayerRole() {
      * decode secret part (EC point) encoded with parameters
      * obtained from [getPublicExponent] and [getModulus]
      */
-    fun decodeSecretPart(msg: String): ECPoint{
+    fun decodeSecretPart(msg: String): ECPoint {
         try {
             return ECParams.curve.decodePoint(keyManager.decodeBytes(msg))
-        } catch (e: Exception){
+        } catch (e: Exception) {
             throw GameExecutionException("Someone tried to interfere with detectiveRSA")
         }
     }
@@ -84,7 +84,7 @@ class DetectiveRole : PlayerRole() {
      * that all results obtained from out checks were
      * correct
      */
-    fun verifyChecks(roles: Map<User, Role>): Boolean{
+    fun verifyChecks(roles: Map<User, Role>): Boolean {
         return targets.all { x -> x.value == (roles[x.key] == Role.MAFIA) }
     }
 
@@ -97,7 +97,7 @@ class DetectiveRole : PlayerRole() {
         keyManager.reset()
     }
 
-    companion object{
+    companion object {
         val TIMEOUT: Long = 5
 
         val KEY_LENGTH = 1024

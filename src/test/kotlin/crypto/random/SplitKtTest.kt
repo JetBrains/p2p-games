@@ -1,14 +1,15 @@
 package crypto.random
 
 import crypto.RSA.ECParams
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Test
 import java.math.BigInteger
 
 /**
  * Created by user on 8/25/16.
  */
-class SplitKtTest{
+class SplitKtTest {
     val SPLIT_COUNT = 50
 
     /**
@@ -16,13 +17,13 @@ class SplitKtTest{
      * on splits of small numbers
      */
     @Test
-    fun testSplitZerosSmall(){
+    fun testSplitZerosSmall() {
         val n = BigInteger.valueOf(100)
         val tests = 100
-        for(i in 0..tests){
+        for (i in 0..tests) {
             val split = crypto.random.split(n, SPLIT_COUNT, true)
             var sum: BigInteger = BigInteger.ZERO
-            for(v in split){
+            for (v in split) {
                 sum += v
             }
             assertEquals(n, sum)
@@ -35,13 +36,13 @@ class SplitKtTest{
      * on splits of large numbers
      */
     @Test
-    fun testSplitZerosLarge(){
+    fun testSplitZerosLarge() {
         val n = randomBigInt(ECParams.n)
         val tests = 100
-        for(i in 0..tests){
+        for (i in 0..tests) {
             val split = crypto.random.split(n, SPLIT_COUNT, true)
             var sum: BigInteger = BigInteger.ZERO
-            for(v in split){
+            for (v in split) {
                 sum += v
             }
             assertEquals(n, sum)
@@ -55,13 +56,13 @@ class SplitKtTest{
      * on splits of small numbers, and produces no zeros
      */
     @Test
-    fun testSplitNoZerosSmall(){
+    fun testSplitNoZerosSmall() {
         val n = BigInteger.valueOf(100)
         val tests = 100
-        for(i in 0..tests){
+        for (i in 0..tests) {
             val split = crypto.random.split(n, SPLIT_COUNT, false)
             var sum: BigInteger = BigInteger.ZERO
-            for(v in split){
+            for (v in split) {
                 sum += v
             }
             assertEquals(n, sum)
@@ -76,13 +77,13 @@ class SplitKtTest{
      * on splits of large numbers, and produces no zeros
      */
     @Test
-    fun testSplitNoZerosLarge(){
+    fun testSplitNoZerosLarge() {
         val n = randomBigInt(ECParams.n)
         val tests = 100
-        for(i in 0..tests){
+        for (i in 0..tests) {
             val split = crypto.random.split(n, SPLIT_COUNT, true)
             var sum: BigInteger = BigInteger.ZERO
-            for(v in split){
+            for (v in split) {
                 sum += v
             }
             assertEquals(n, sum)

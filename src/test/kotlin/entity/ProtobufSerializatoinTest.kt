@@ -2,16 +2,16 @@ package entity
 
 import common.getSampleUser1
 import common.getSmapleGroup
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import proto.EntitiesProto
 
 /**
  * Created by user on 6/24/16.
  */
-class ProtobufSerializatoinTest{
+class ProtobufSerializatoinTest {
     @Test
-    fun testUserSerialization(){
+    fun testUserSerialization() {
         val userProto: EntitiesProto.User = getSampleUser1()
         val user = User(userProto)
         assertEquals(user.hostAddress.hostName, userProto.hostname)
@@ -24,7 +24,7 @@ class ProtobufSerializatoinTest{
     }
 
     @Test
-    fun testGroupSerialization(){
+    fun testGroupSerialization() {
         val groupProto: EntitiesProto.Group = getSmapleGroup()
         val group = Group(groupProto)
         assertEquals(group.users.size, groupProto.usersList.size)

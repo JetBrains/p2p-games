@@ -13,11 +13,10 @@ import network.ConnectionManagerClass
 import org.apache.log4j.BasicConfigurator
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.junit.AfterClass
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.net.InetSocketAddress
 
@@ -29,7 +28,7 @@ import java.net.InetSocketAddress
  */
 val MAX_USERS = 5
 
-class ShuffleTest{
+class ShuffleTest {
 
     lateinit var chats: Array<Chat>
     lateinit var groups: Array<Group>
@@ -37,18 +36,18 @@ class ShuffleTest{
     private val ECParams = ECNamedCurveTable.getParameterSpec("secp256k1")
 
     companion object {
-        init{
+        init {
             BasicConfigurator.configure()
         }
-        val userClientAdresses = Array(MAX_USERS, {i -> InetSocketAddress("127.0.0.1", 1231 + 2*i)})
-        val userHostAdresses = Array(MAX_USERS, {i -> InetSocketAddress("127.0.0.1", 1232 + 2*i)})
 
-        val users = Array(MAX_USERS, {i -> User(userHostAdresses[i], "TestUser $i")})
+        val userClientAdresses = Array(MAX_USERS, { i -> InetSocketAddress("127.0.0.1", 1231 + 2 * i) })
+        val userHostAdresses = Array(MAX_USERS, { i -> InetSocketAddress("127.0.0.1", 1232 + 2 * i) })
 
-        val connectionManagers = Array(MAX_USERS, {i -> ConnectionManagerClass(userClientAdresses[i], userHostAdresses[i])})
+        val users = Array(MAX_USERS, { i -> User(userHostAdresses[i], "TestUser $i") })
 
-        val gameManagers = Array(MAX_USERS, {i -> GameManagerClass(connectionManagers[i])})
+        val connectionManagers = Array(MAX_USERS, { i -> ConnectionManagerClass(userClientAdresses[i], userHostAdresses[i]) })
 
+        val gameManagers = Array(MAX_USERS, { i -> GameManagerClass(connectionManagers[i]) })
 
 
         @BeforeClass @JvmStatic fun setup() {
@@ -57,16 +56,16 @@ class ShuffleTest{
 
         @AfterClass @JvmStatic fun teardown() {
             gameManagers.forEach { x -> x.close() }
-//            connectionManagers.forEach { x -> x.close() }
+            //            connectionManagers.forEach { x -> x.close() }
         }
     }
 
     @Before
-    fun initGame(){
-        chats = Array(MAX_USERS, {i -> mock(Chat::class.java) ?: throw AssertionError("Initialization error")})
-        groups = Array(MAX_USERS, {i -> Group(mutableSetOf(*users)) })
+    fun initGame() {
+        chats = Array(MAX_USERS, { i -> mock(Chat::class.java) ?: throw AssertionError("Initialization error") })
+        groups = Array(MAX_USERS, { i -> Group(mutableSetOf(*users)) })
 
-        for(i in 0..MAX_USERS-1){
+        for (i in 0..MAX_USERS - 1) {
             chats[i].username = "TestUser $i"
             `when`(chats[i].me()).thenReturn(users[i])
             doReturn(NettyGroupBroker(connectionManagers[i])).`when`(chats[i]).groupBroker
@@ -82,15 +81,15 @@ class ShuffleTest{
      * known
      */
     @Test
-    fun ShuffleTest(){
-        val userRandomDeckGames = Array(MAX_USERS, {i -> RandomDeckGame(chats[i], groups[i], "RandomDeckForShuffle", ECParams, gameManager = gameManagers[i])})
-        val futuresDecks = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userRandomDeckGames[i])})
+    fun ShuffleTest() {
+        val userRandomDeckGames = Array(MAX_USERS, { i -> RandomDeckGame(chats[i], groups[i], "RandomDeckForShuffle", ECParams, gameManager = gameManagers[i]) })
+        val futuresDecks = Array(MAX_USERS, { i -> gameManagers[i].initSubGame(userRandomDeckGames[i]) })
         val originalDeck = futuresDecks[0].get().clone()
-        val userShuffleDeckGames = Array(MAX_USERS, {i -> DeckShuffleGame(chats[i], groups[i], "DeckShuffle", ECParams, futuresDecks[i].get(), gameManager = gameManagers[i])})
-        val futureShuffledDecks = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userShuffleDeckGames[i])})
-        for(i in 0..MAX_USERS-1){
+        val userShuffleDeckGames = Array(MAX_USERS, { i -> DeckShuffleGame(chats[i], groups[i], "DeckShuffle", ECParams, futuresDecks[i].get(), gameManager = gameManagers[i]) })
+        val futureShuffledDecks = Array(MAX_USERS, { i -> gameManagers[i].initSubGame(userShuffleDeckGames[i]) })
+        for (i in 0..MAX_USERS - 1) {
             val shuffledDeck = futureShuffledDecks[i].get()
-            for(j in randomPermutation(MAX_USERS)){
+            for (j in randomPermutation(MAX_USERS)) {
                 assertEquals(0, intersectDecks(shuffledDeck.deck, originalDeck))
                 shuffledDeck.deck.decryptSeparate(futureShuffledDecks[j].get().keys)
             }
@@ -103,15 +102,15 @@ class ShuffleTest{
      * verify that everybody got the same deck
      */
     @Test
-    fun RandomDeckTest(){
-        val userGames = Array(MAX_USERS, {i -> RandomDeckGame(chats[i], groups[i], "RandomDeck", ECParams, gameManager = gameManagers[i])})
-        val futures = Array(MAX_USERS, {i -> gameManagers[i].initSubGame(userGames[i])})
-        for(i in 1..MAX_USERS-1){
+    fun RandomDeckTest() {
+        val userGames = Array(MAX_USERS, { i -> RandomDeckGame(chats[i], groups[i], "RandomDeck", ECParams, gameManager = gameManagers[i]) })
+        val futures = Array(MAX_USERS, { i -> gameManagers[i].initSubGame(userGames[i]) })
+        for (i in 1..MAX_USERS - 1) {
             assertEquals(futures[0].get(), futures[i].get())
         }
     }
 
-    private fun intersectDecks(deck1: Deck, deck2: Deck): Int{
+    private fun intersectDecks(deck1: Deck, deck2: Deck): Int {
         return deck1.cards.intersect(deck2.cards.toList()).size
     }
 

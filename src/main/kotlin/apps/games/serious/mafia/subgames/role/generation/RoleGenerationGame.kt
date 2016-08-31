@@ -82,13 +82,13 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
 
         X = mutableListOf<BigInteger>()
         for ((role, count) in roleCounts.toSortedMap()) {
-            if(role != Role.INNOCENT){
+            if (role != Role.INNOCENT) {
                 val t = randomBigInt(ECParams.n)
                 for (j in 0..count - 1) {
                     X.add(t)
                 }
-            }else{
-                for(j in 0..count - 1){
+            } else {
+                for (j in 0..count - 1) {
                     val t = randomBigInt(ECParams.n)
                     X.add(t)
                 }
@@ -198,16 +198,16 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
         for (msg in responses) {
             val userID = playerOrder.indexOf(User(msg.user))
             if (userID == step) {
-                if (playerID == step + 1 || step == N-1) {
-                    if (msg.dataCount != 2*deckSize) {
+                if (playerID == step + 1 || step == N - 1) {
+                    if (msg.dataCount != 2 * deckSize) {
                         throw GameExecutionException(
                                 "Someone failed to provide their deck")
                     }
                     for (i in 0..deckSize - 1) {
                         V.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
-                    for (i in deckSize..2*deckSize-1){
-                        commonR[i-deckSize] = BigInteger(msg.dataList[i].toByteArray())
+                    for (i in deckSize..2 * deckSize - 1) {
+                        commonR[i - deckSize] = BigInteger(msg.dataList[i].toByteArray())
                     }
                 }
             }
@@ -217,7 +217,7 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
             V.encrypt(Vlock1)
             V.encryptSeparate(X)
             V.encryptSeparate(R)
-            for(i in 0..deckSize-1){
+            for (i in 0..deckSize - 1) {
                 commonR[i] *= R[i]
                 commonR[i] *= Rlock1
                 commonR[i] %= ECParams.n
@@ -234,11 +234,11 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
      *
      * @param responses - answers from other players
      */
-    private fun processShuffling(responses: List<GameMessageProto.GameStateMessage>){
+    private fun processShuffling(responses: List<GameMessageProto.GameStateMessage>) {
         for (msg in responses) {
             val userID = playerOrder.indexOf(User(msg.user))
             if (userID == step) {
-                if (playerID == step + 1 || step == N-1) {
+                if (playerID == step + 1 || step == N - 1) {
                     if (msg.dataCount != 3 * deckSize) {
                         throw GameExecutionException(
                                 "Someone failed to provide their deck")
@@ -247,10 +247,10 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
                         V.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
                     for (i in deckSize..2 * deckSize - 1) {
-                        roles.cards[i-deckSize] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                        roles.cards[i - deckSize] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
-                    for (i in 2 * deckSize..3 * deckSize - 1){
-                        commonR[i - 2*deckSize] = BigInteger(msg.dataList[i].toByteArray())
+                    for (i in 2 * deckSize..3 * deckSize - 1) {
+                        commonR[i - 2 * deckSize] = BigInteger(msg.dataList[i].toByteArray())
                     }
                 }
             }
@@ -267,7 +267,7 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
             commonR.clear()
             commonR.addAll(tmp)
 
-            for(i in 0..deckSize-1){
+            for (i in 0..deckSize - 1) {
                 commonR[i] *= Rlock1.modInverse(ECParams.n) * Rlock2
                 commonR[i] %= ECParams.n
             }
@@ -282,11 +282,11 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
      *
      * @param responses - answers from other players
      */
-    private fun processLocking(responses: List<GameMessageProto.GameStateMessage>){
+    private fun processLocking(responses: List<GameMessageProto.GameStateMessage>) {
         for (msg in responses) {
             val userID = playerOrder.indexOf(User(msg.user))
             if (userID == step) {
-                if (playerID == step + 1  || step == N-1) {
+                if (playerID == step + 1 || step == N - 1) {
                     if (msg.dataCount != 3 * deckSize) {
                         throw GameExecutionException(
                                 "Someone failed to provide their deck")
@@ -295,10 +295,10 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
                         V.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
                     for (i in deckSize..2 * deckSize - 1) {
-                        roles.cards[i-deckSize] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                        roles.cards[i - deckSize] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
-                    for (i in 2 * deckSize..3 * deckSize - 1){
-                        commonR[i - 2*deckSize] = BigInteger(msg.dataList[i].toByteArray())
+                    for (i in 2 * deckSize..3 * deckSize - 1) {
+                        commonR[i - 2 * deckSize] = BigInteger(msg.dataList[i].toByteArray())
                     }
                 }
             }
@@ -309,7 +309,7 @@ class RoleGenerationGame(chat: Chat, group: Group, gameID: String, val ECParams:
             roles.decrypt(Vlock2)
             V.encryptSeparate(VLockKeys)
             roles.encryptSeparate(rolesLockKeys)
-            for(i in 0..deckSize-1){
+            for (i in 0..deckSize - 1) {
                 commonR[i] *= Rlock2.modInverse(ECParams.n) * RLockKeys[i]
                 commonR[i] %= ECParams.n
             }
@@ -350,11 +350,11 @@ data class RoleDeck(val originalRoles: Deck, val shuffledRoles: Deck,
                     val encryptedR: MutableList<BigInteger>,
                     val roleKeys: Collection<BigInteger>, val VKeys: Collection<BigInteger>, val Rkeys: Collection<BigInteger>,
                     val roleKeyHashes: MutableMap<User, String>, val VkeyHashes: MutableMap<User, String>,
-                    val RKeyHashes: MutableMap<User, String>, val roleCounts: Map<Role, Int>): Cloneable{
+                    val RKeyHashes: MutableMap<User, String>, val roleCounts: Map<Role, Int>) : Cloneable {
     override public fun clone(): RoleDeck {
         return RoleDeck(originalRoles.clone(), shuffledRoles.clone(), ArrayList(X),
-                        V.clone(), ArrayList(encryptedR), ArrayList(roleKeys),
-                        ArrayList(VKeys), ArrayList(Rkeys), HashMap(roleKeyHashes),
-                        HashMap(VkeyHashes), HashMap(RKeyHashes), HashMap(roleCounts))
+                V.clone(), ArrayList(encryptedR), ArrayList(roleKeys),
+                ArrayList(VKeys), ArrayList(Rkeys), HashMap(roleKeyHashes),
+                HashMap(VkeyHashes), HashMap(RKeyHashes), HashMap(roleCounts))
     }
 }

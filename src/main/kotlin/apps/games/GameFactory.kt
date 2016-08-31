@@ -2,8 +2,8 @@ package apps.games
 
 import apps.chat.Chat
 import apps.games.serious.Cheat.Cheat
-import apps.games.serious.mafia.Mafia
 import apps.games.serious.lotto.Lotto
+import apps.games.serious.mafia.Mafia
 import apps.games.serious.preferans.Preferans
 import entity.Group
 

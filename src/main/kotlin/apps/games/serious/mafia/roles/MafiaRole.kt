@@ -15,19 +15,19 @@ class MafiaRole : PlayerRole() {
      * Register, that last target of this mafia was user
      * with given id
      */
-    fun registerTarget(id: BigInteger){
+    fun registerTarget(id: BigInteger) {
         currentTarget = id
     }
 
     /**
      * check, that current target pick is consistent with previous picks
      */
-    fun verifyTarget(id: BigInteger): Boolean{
+    fun verifyTarget(id: BigInteger): Boolean {
         return currentTarget == id
     }
 
 
-    companion object{
+    companion object {
         val MESSAGE_INPUT_TIMEOUT: Long = 10
         val TARGET_CHOICE_TIMEOUT: Long = 20
     }

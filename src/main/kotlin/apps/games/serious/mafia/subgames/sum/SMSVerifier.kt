@@ -12,7 +12,7 @@ import java.math.BigInteger
 
 data class SMSEntry(val sender: User, val receiver: User, val msg: String)
 
-class SMSVerifier{
+class SMSVerifier {
     private lateinit var finalSum: BigInteger
     private val partialSum = mutableMapOf<User, BigInteger>()
     private val messages = mutableListOf<SMSEntry>()
@@ -21,7 +21,7 @@ class SMSVerifier{
      *
      * @param sum - final sum that was obtained in SMS
      */
-    fun registerFinalSum(sum: BigInteger){
+    fun registerFinalSum(sum: BigInteger) {
         finalSum = sum
     }
 
@@ -31,7 +31,7 @@ class SMSVerifier{
      * @param user - user whose partial sum to register
      * @param sum - partial sum obtained by that user
      */
-    fun registerPartialSum(user: User, sum: BigInteger){
+    fun registerPartialSum(user: User, sum: BigInteger) {
         partialSum[user] = sum
     }
 
@@ -42,7 +42,7 @@ class SMSVerifier{
      * @param receiver - User, who received message
      * @param msg - encrypted message contents
      */
-    fun registerMessage(sender: User, receiver: User, msg: String){
+    fun registerMessage(sender: User, receiver: User, msg: String) {
         messages.add(SMSEntry(sender, receiver, msg))
     }
 
@@ -54,18 +54,18 @@ class SMSVerifier{
      * @param RSAKeyManager - key manager with all private keys registered
      * @return whether verification was successful
      */
-    fun verifySums(keyManager: RSAKeyManager): Boolean{
-        if (!verifyTotalSum()){
+    fun verifySums(keyManager: RSAKeyManager): Boolean {
+        if (!verifyTotalSum()) {
             return false
         }
-        for((user, sum) in partialSum){
+        for ((user, sum) in partialSum) {
             val userPart = messages.filter { x -> x.receiver == user }
             var realSum: BigInteger = BigInteger.ZERO
-            for(entry in userPart){
+            for (entry in userPart) {
                 val split = keyManager.decodeForUser(user, entry.msg).split(" ")
                 realSum += BigInteger(split[1])
             }
-            if(realSum != partialSum[user]){
+            if (realSum != partialSum[user]) {
                 return false
             }
         }
@@ -79,12 +79,12 @@ class SMSVerifier{
      * @param RSAKeyManager - key manager with all private keys registered
      * @return Map<User, BigIntger> - map user to their input
      */
-    fun getInputs(keyManager: RSAKeyManager): Map<User, BigInteger>{
+    fun getInputs(keyManager: RSAKeyManager): Map<User, BigInteger> {
         val res = mutableMapOf<User, BigInteger>()
-        for(user in partialSum.keys){
+        for (user in partialSum.keys) {
             val userPart = messages.filter { x -> x.sender == user }
             var tmp: BigInteger = BigInteger.ZERO
-            for(entry in userPart){
+            for (entry in userPart) {
                 val split = keyManager.decodeForUser(entry.receiver, entry.msg).split(" ")
                 tmp += BigInteger(split[1])
             }
@@ -96,7 +96,7 @@ class SMSVerifier{
     /**
      * check, that partial sums sum up to total sum
      */
-    private fun verifyTotalSum(): Boolean{
-        return partialSum.values.fold(BigInteger.ZERO, {s: BigInteger, v: BigInteger -> s + v}) == finalSum
+    private fun verifyTotalSum(): Boolean {
+        return partialSum.values.fold(BigInteger.ZERO, { s: BigInteger, v: BigInteger -> s + v }) == finalSum
     }
 }

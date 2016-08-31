@@ -2,7 +2,6 @@ package apps.games.serious.mafia.subgames.role.secret
 
 import apps.games.GameExecutionException
 import apps.games.primitives.Deck
-import com.sun.org.apache.xpath.internal.operations.Bool
 import crypto.RSA.ECParams
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
@@ -19,7 +18,7 @@ import java.math.BigInteger
  */
 data class SecretDeck(val secrets: Deck, val ids: Deck,
                       val SKeys: Collection<BigInteger>,
-                      val SKeyHashes: Map<User, String>){
+                      val SKeyHashes: Map<User, String>) {
     val size = secrets.size
 
     /**
@@ -27,8 +26,8 @@ data class SecretDeck(val secrets: Deck, val ids: Deck,
      *
      * @param id - id*g(point on EC), encrypted with detective k
      */
-    fun getSecretForId(id: ECPoint): ECPoint{
-        if(!ids.contains(id)){
+    fun getSecretForId(id: ECPoint): ECPoint {
+        if (!ids.contains(id)) {
             throw GameExecutionException("Secret for unknown user requested")
         }
         return secrets.cards[ids.cards.indexOf(id)]
@@ -39,16 +38,17 @@ data class SecretDeck(val secrets: Deck, val ids: Deck,
      *
      * @param id - id, encrypted with detective k
      */
-    fun getSecretForId(id: BigInteger): ECPoint{
+    fun getSecretForId(id: BigInteger): ECPoint {
         return getSecretForId(ECParams.g.multiply(id))
     }
 }
 
-class SecretSharingVerifier(val users: Collection<User>, val secrets: Deck){
+class SecretSharingVerifier(val users: Collection<User>, val secrets: Deck) {
     private val SKeys: Map<User, Array<BigInteger>>
     private val N = users.size
+
     init {
-        SKeys = users.associate { x -> x to Array(N*N, {i -> BigInteger.ZERO}) }
+        SKeys = users.associate { x -> x to Array(N * N, { i -> BigInteger.ZERO }) }
     }
 
     /**
@@ -59,31 +59,31 @@ class SecretSharingVerifier(val users: Collection<User>, val secrets: Deck){
      * @param position -  position of V to decrypt
      * @param key - users key for this V
      */
-    fun registerSKey(user: User, position: Int, key: BigInteger){
-        if(user !in SKeys){
+    fun registerSKey(user: User, position: Int, key: BigInteger) {
+        if (user !in SKeys) {
             throw GameExecutionException("Unknown user's key provided")
         }
-        if(position >= N*N || position < 0){
+        if (position >= N * N || position < 0) {
             throw GameExecutionException("Key position $position out of range")
         }
-        if(SKeys[user]!![position] != BigInteger.ZERO && SKeys[user]!![position] != key){
+        if (SKeys[user]!![position] != BigInteger.ZERO && SKeys[user]!![position] != key) {
             throw GameExecutionException("Another key is already registered for that combination of user and position")
         }
-        if(SKeys[user]!![position] == BigInteger.ZERO){
+        if (SKeys[user]!![position] == BigInteger.ZERO) {
             SKeys[user]!![position] = key
             secrets.decryptCardWithKey(position, key)
         }
     }
 
-    fun cardIsDecrypted(pos: Int): Boolean{
+    fun cardIsDecrypted(pos: Int): Boolean {
         return SKeys.all { x -> x.value[pos] != BigInteger.ZERO }
     }
 
     /**
      * Verify key hashes
      */
-    fun verifySKeys(SKeyHashes: Map<User, String>): Boolean{
-        if (!(0..N*N-1).all { x -> cardIsDecrypted(x) }){
+    fun verifySKeys(SKeyHashes: Map<User, String>): Boolean {
+        if (!(0..N * N - 1).all { x -> cardIsDecrypted(x) }) {
             return false
         }
         return SKeys.all { x -> DigestUtils.sha256Hex(x.value.joinToString(" ")) == SKeyHashes[x.key] }

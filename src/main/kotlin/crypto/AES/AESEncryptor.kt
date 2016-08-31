@@ -8,7 +8,6 @@ import org.bouncycastle.crypto.paddings.PKCS7Padding
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher
 import org.bouncycastle.crypto.params.KeyParameter
 import org.bouncycastle.crypto.params.ParametersWithIV
-import org.bouncycastle.math.ec.ECPoint
 import java.math.BigInteger
 import java.security.SecureRandom
 import java.util.*
@@ -22,7 +21,7 @@ import javax.xml.bind.DatatypeConverter
  * @param IV - byte array to use as seed for AES parameters
  */
 
-class AESEncryptor{
+class AESEncryptor {
     private val engine = CBCBlockCipher(AESEngine())
     private lateinit var random: SecureRandom
 
@@ -30,7 +29,7 @@ class AESEncryptor{
     private lateinit var key: KeyParameter
 
 
-    fun init(IV: ByteArray){
+    fun init(IV: ByteArray) {
         random = SecureRandom(IV)
         key = KeyParameter(IV.copyOfRange(0, 32))
     }

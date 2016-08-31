@@ -9,14 +9,8 @@ import apps.games.primitives.Deck
 import apps.games.serious.mafia.roles.DetectiveRole
 import apps.games.serious.mafia.roles.PlayerRole
 import apps.games.serious.mafia.roles.Role
-import apps.games.serious.mafia.subgames.role.distribution.RoleDistributionHelper
-import apps.games.serious.mafia.subgames.role.generation.RoleDeck
-import apps.games.serious.mafia.subgames.role.generation.RoleGenerationVerifier
-import crypto.RSA.RSAKeyManager
 import crypto.random.randomBigInt
 import crypto.random.randomPermutation
-import crypto.random.shuffle
-import crypto.random.split
 import entity.Group
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
@@ -34,7 +28,7 @@ import java.math.BigInteger
  */
 
 class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: ECParameterSpec,
-                         val role: PlayerRole, val id: BigInteger, gameManager: GameManagerClass = GameManager) : Game<Pair<SecretDeck, SecretSharingVerifier>>(chat, group, gameID, gameManager = gameManager) {
+                        val role: PlayerRole, val id: BigInteger, gameManager: GameManagerClass = GameManager) : Game<Pair<SecretDeck, SecretSharingVerifier>>(chat, group, gameID, gameManager = gameManager) {
 
     override val name: String
         get() = "Secret sharing game"
@@ -50,17 +44,18 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
     private val TLock = randomBigInt(ECParams.n)
     private val SKeys: List<BigInteger>
     private val SKeyHashes: MutableMap<User, String> = mutableMapOf()
-    private val secrets = Deck(ECParams, N*N)
+    private val secrets = Deck(ECParams, N * N)
     private val ids = Deck(ECParams, N)
     private val extraData = mutableListOf<ByteArray>()
     private val Ks: List<BigInteger>
     val verifier = SecretSharingVerifier(group.users, secrets)
 
-    init{
-        SKeys = listOf(*Array(N*N, { i -> randomBigInt(ECParams.n) }))
+    init {
+        SKeys = listOf(*Array(N * N, { i -> randomBigInt(ECParams.n) }))
         Ks = listOf(*Array(N, { i -> randomBigInt(ECParams.n) }))
     }
-    private enum class State{
+
+    private enum class State {
         INIT,
         VALIDATE_KEYS,
         EXCHANGE_SPLIT,
@@ -74,11 +69,11 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
     private var state: State = State.INIT
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
-        for(msg in responses){
+        for (msg in responses) {
             chat.showMessage(msg.value)
         }
         extraData.clear()
-        when(state){
+        when (state) {
             State.INIT -> {
                 state = State.VALIDATE_KEYS
                 return DigestUtils.sha256Hex(SKeys.joinToString(" "))
@@ -91,11 +86,11 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
                 state = State.EXCHANGE_SPLIT
             }
             State.EXCHANGE_SPLIT -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     val userID = playerOrder.indexOf(user)
-                    for(i in 0..N-1){
-                        secrets.cards[userID*N + i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                    for (i in 0..N - 1) {
+                        secrets.cards[userID * N + i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
                     ids.cards[userID] = ECParams.curve.decodePoint(msg.dataList[N].toByteArray())
                 }
@@ -104,26 +99,26 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
             }
             State.UNIFY_KEYS -> {
                 processKeyUnification(responses)
-                if(currentPlayer >= N){
+                if (currentPlayer >= N) {
                     currentPlayer = -1
                     state = State.DETECTIVE_MAGIC
                 }
             }
             State.DETECTIVE_MAGIC -> {
                 doDetectiveMagic(responses)
-                if(currentPlayer >= N){
+                if (currentPlayer >= N) {
                     currentPlayer = -1
                     state = State.LOCK
                 }
             }
             State.LOCK -> {
                 processLocking(responses)
-                if(currentPlayer >= N){
+                if (currentPlayer >= N) {
                     val keys = mutableListOf<BigInteger>()
-                    for(i in 0..N*N-1){
-                        if(i%N != playerID){
+                    for (i in 0..N * N - 1) {
+                        if (i % N != playerID) {
                             keys.add(SKeys[i])
-                        }else{
+                        } else {
                             keys.add(BigInteger.ZERO)
                         }
                     }
@@ -132,23 +127,24 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
                 }
             }
             State.EXCHANGE_KEYS -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     val userID = playerOrder.indexOf(user)
                     val split = msg.value.split(" ").map { x -> BigInteger(x) }
 
-                    for(i in 0..N*N-1){
-                        if(i%N != userID){
+                    for (i in 0..N * N - 1) {
+                        if (i % N != userID) {
                             verifier.registerSKey(user, i, split[i])
                         }
                     }
                 }
-                for(i in 0..N-1){
-                    verifier.registerSKey(chat.me(), i*N + playerID, SKeys[i*N + playerID])
+                for (i in 0..N - 1) {
+                    verifier.registerSKey(chat.me(), i * N + playerID, SKeys[i * N + playerID])
                 }
                 state = State.END
             }
-            State.END -> {}
+            State.END -> {
+            }
         }
         return ""
     }
@@ -157,7 +153,7 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
      * create a secret based on our role and id
      * and exchange it via extradata
      */
-    private fun createSecret(){
+    private fun createSecret() {
         val secretValue = if (role.role == Role.MAFIA) id * BigInteger.valueOf(2) else id
         val secret: List<ECPoint> = crypto.random.split(secretValue, N).map { x -> ECParams.g.multiply(x * FLock) }
         extraData.addAll(secret.map { x -> x.getEncoded(false) })
@@ -171,26 +167,26 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
      * after that step every secret part is encrypted with the same
      * combination of keys
      */
-    private fun processKeyUnification(responses: List<GameMessageProto.GameStateMessage>){
-        for(msg in responses){
+    private fun processKeyUnification(responses: List<GameMessageProto.GameStateMessage>) {
+        for (msg in responses) {
             val userID = playerOrder.indexOf(User(msg.user))
             if (userID == currentPlayer) {
-                if (playerID == currentPlayer + 1  || currentPlayer == N-1) {
-                    if (msg.dataCount != N*(N + 1)) {
+                if (playerID == currentPlayer + 1 || currentPlayer == N - 1) {
+                    if (msg.dataCount != N * (N + 1)) {
                         throw GameExecutionException(
                                 "Someone failed to provide their deck")
                     }
-                    for (i in 0..N*N - 1) {
+                    for (i in 0..N * N - 1) {
                         secrets.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
-                    for (i in N*N..N*(N+1)-1)
-                        ids.cards[i-N*N] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                    for (i in N * N..N * (N + 1) - 1)
+                        ids.cards[i - N * N] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                 }
             }
         }
-        currentPlayer ++
-        if(playerID == currentPlayer){
-            for(i in N*playerID..N*(playerID+1)-1){
+        currentPlayer++
+        if (playerID == currentPlayer) {
+            for (i in N * playerID..N * (playerID + 1) - 1) {
                 secrets.decryptCardWithKey(i, FLock)
             }
             ids.decryptCardWithKey(playerID, FLock)
@@ -209,32 +205,32 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
      * shuffle N-sized blocks. For other player there is no way to tell whether
      * shuffling took place or not
      */
-    private fun doDetectiveMagic(responses: List<GameMessageProto.GameStateMessage>){
-        for(msg in responses){
+    private fun doDetectiveMagic(responses: List<GameMessageProto.GameStateMessage>) {
+        for (msg in responses) {
             val userID = playerOrder.indexOf(User(msg.user))
             if (userID == currentPlayer) {
-                if (playerID == currentPlayer + 1  || currentPlayer == N-1) {
-                    if (msg.dataCount != N*(N + 1)) {
+                if (playerID == currentPlayer + 1 || currentPlayer == N - 1) {
+                    if (msg.dataCount != N * (N + 1)) {
                         throw GameExecutionException(
                                 "Someone failed to provide their deck")
                     }
-                    for (i in 0..N*N - 1) {
+                    for (i in 0..N * N - 1) {
                         secrets.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
-                    for (i in N*N..N*(N+1)-1)
-                        ids.cards[i-N*N] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                    for (i in N * N..N * (N + 1) - 1)
+                        ids.cards[i - N * N] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                 }
             }
         }
-        currentPlayer ++
-        if(playerID == currentPlayer){
+        currentPlayer++
+        if (playerID == currentPlayer) {
             secrets.decrypt(HLock)
             ids.decrypt(HLock)
             secrets.encrypt(TLock)
             ids.encrypt(TLock)
-            if(role.role == Role.DETECTIVE){
+            if (role.role == Role.DETECTIVE) {
                 ids.encryptSeparate(Ks)
-                for(i in 0..N-1){
+                for (i in 0..N - 1) {
                     (role as DetectiveRole).registerUserK(playerOrder[i], Ks[i])
                 }
                 val perm = randomPermutation(N)
@@ -250,25 +246,25 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
      * Decrypt all ids(now they are shuffled, so only decetive known wich is
      * wich). Encrypt all secret parts with separate keys
      */
-    private fun processLocking(responses: List<GameMessageProto.GameStateMessage>){
-        for(msg in responses){
+    private fun processLocking(responses: List<GameMessageProto.GameStateMessage>) {
+        for (msg in responses) {
             val userID = playerOrder.indexOf(User(msg.user))
             if (userID == currentPlayer) {
-                if (playerID == currentPlayer + 1  || currentPlayer == N-1) {
-                    if (msg.dataCount != N*(N + 1)) {
+                if (playerID == currentPlayer + 1 || currentPlayer == N - 1) {
+                    if (msg.dataCount != N * (N + 1)) {
                         throw GameExecutionException(
                                 "Someone failed to provide their deck")
                     }
-                    for (i in 0..N*N - 1) {
+                    for (i in 0..N * N - 1) {
                         secrets.cards[i] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                     }
-                    for (i in N*N..N*(N+1)-1)
-                        ids.cards[i-N*N] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
+                    for (i in N * N..N * (N + 1) - 1)
+                        ids.cards[i - N * N] = ECParams.curve.decodePoint(msg.dataList[i].toByteArray())
                 }
             }
         }
-        currentPlayer ++
-        if(playerID == currentPlayer){
+        currentPlayer++
+        if (playerID == currentPlayer) {
             secrets.decrypt(TLock)
             ids.decrypt(TLock)
             secrets.encryptSeparate(SKeys)
@@ -287,11 +283,11 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
 
     override fun getResult(): Pair<SecretDeck, SecretSharingVerifier> {
         val res = Deck(ECParams, N)
-        for(i in 0..N-1){
-            if(!verifier.cardIsDecrypted(i*N + playerID)){
+        for (i in 0..N - 1) {
+            if (!verifier.cardIsDecrypted(i * N + playerID)) {
                 throw GameExecutionException("Somehow secret part is not decrypted")
             }
-            res.cards[i] = secrets.cards[i*N + playerID]
+            res.cards[i] = secrets.cards[i * N + playerID]
         }
         return SecretDeck(res, ids, SKeys, SKeyHashes) to verifier
     }

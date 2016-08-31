@@ -1,22 +1,12 @@
 package apps.games.serious.mafia.GUI
 
-import apps.games.serious.Card
+import Settings
 import apps.games.serious.TableGUI.*
-import apps.games.serious.getCardById
-import apps.games.serious.getIdByCard
 import apps.games.serious.mafia.MafiaLogger
-import apps.games.serious.mafia.roles.PlayerRole
 import apps.games.serious.mafia.roles.Role
-import apps.games.serious.preferans.Bet
-import apps.games.serious.preferans.GUI.ScoreOverlay
-import apps.games.serious.preferans.PreferansScoreCounter
-import apps.games.serious.preferans.Whists
-import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Input
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import entity.Group
 import entity.User
@@ -55,9 +45,9 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     /**
      * Init all overlays, that are used in this game
      */
-    private fun initOverlays(){
+    private fun initOverlays() {
         val users = group.users.toList().sortedBy { x -> x.name }
-        val breaks  = users.slice(4..users.size-1 step 5)
+        val breaks = users.slice(4..users.size - 1 step 5)
         val names = users.associate { x -> x to x.name }
         userOverlay = ButtonOverlayFactory.create(users, breaks, names)
         userOverlay.create()
@@ -81,7 +71,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     /**
      * Show overlay with mafia input dialog
      */
-    fun showMafiaInputOverlay(){
+    fun showMafiaInputOverlay() {
         mafiaInputOverlay.newMessage()
         tableScreen.addOverlay(mafiaInputOverlay)
         tableScreen.actionManager.addAfterLastComplete(
@@ -91,7 +81,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     /**
      * Show overlay to display mafia messages
      */
-    fun showMafiaMessagesOverlay(){
+    fun showMafiaMessagesOverlay() {
         tableScreen.addOverlay(mafiaMessagesOverlay)
         tableScreen.actionManager.addAfterLastComplete(
                 OverlayVisibilityAction(mafiaMessagesOverlay, true))
@@ -118,7 +108,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     /**
      * register mafia messages to corresponding overlay
      */
-    fun registerMafiaMessages(messages: Map<User, String>){
+    fun registerMafiaMessages(messages: Map<User, String>) {
         mafiaMessagesOverlay.registerUserMessages(messages)
     }
 
@@ -134,7 +124,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     /**
      * register callback to be executed after last
      */
-    fun <T> registerMafiaEOICallback(callback: (String) -> (T)){
+    fun <T> registerMafiaEOICallback(callback: (String) -> (T)) {
         mafiaInputOverlay.registerCallback(callback)
     }
 
@@ -142,7 +132,8 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
      * Add callback listener for buttons
      * corresponding to User Picks
      */
-    fun <R> registerUserPickCallback(callback: (User) -> (R), users: Collection<User>) {
+    fun <R> registerUserPickCallback(callback: (User) -> (R),
+                                     users: Collection<User>) {
         for (user in users) {
             userOverlay.addCallback(user, callback)
         }
@@ -153,7 +144,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
      * @param users - users, whom u can not pick
      */
     fun disableUserPicks(users: Collection<User>) {
-        for (user in users){
+        for (user in users) {
             userOverlay.disableOption(user)
         }
     }
@@ -170,7 +161,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     /**
      * Set role to be shown in hint
      */
-    fun setRole(role: Role){
+    fun setRole(role: Role) {
         this.role = role.name
     }
 
@@ -218,11 +209,11 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
      *
      * @param role - role of killed player
      */
-    fun animateRolePlay(role: Role, index: Int = 0){
+    fun animateRolePlay(role: Role, index: Int = 0) {
         val card = getCardModelByRole(role, index)
         val action = tableScreen.animateCardPlay(card)
-        if(action != null){
-            while (!action.isComplete()){
+        if (action != null) {
+            while (!action.isComplete()) {
                 Thread.sleep(100)
             }
         }
@@ -255,12 +246,12 @@ fun main(args: Array<String>) {
     Thread.sleep(2000)
 
     //MAFIA INPUT
-//    gameGUI.registerMafiaEOICallback { s ->
-//        println(s)
-//        gameGUI.hideMafiaInputOverlay()
-//        gameGUI.showMafiaInputOverlay()
-//    }
-//    gameGUI.showMafiaInputOverlay()
+    //    gameGUI.registerMafiaEOICallback { s ->
+    //        println(s)
+    //        gameGUI.hideMafiaInputOverlay()
+    //        gameGUI.showMafiaInputOverlay()
+    //    }
+    //    gameGUI.showMafiaInputOverlay()
 
     //SHOW MESSAGES
     gameGUI.registerMafiaMessages(mutableMapOf(User(Settings.hostAddress, "alice") to "sslfgjsilef", User(Settings.hostAddress, "bob") to "skefhskfhesuef",

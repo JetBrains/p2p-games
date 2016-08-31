@@ -5,7 +5,6 @@ import apps.games.GameExecutionException
 import apps.games.GameManager
 import apps.games.GameManagerClass
 import apps.games.serious.CardGame
-import apps.games.serious.Cheat.GUI.CheatGame
 import apps.games.serious.mafia.GUI.MafiaGame
 import apps.games.serious.mafia.roles.*
 import apps.games.serious.mafia.subgames.role.distribution.RoleDistributionGame
@@ -45,7 +44,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     override val name: String
         get() = "mafia game"
 
-    private enum class State{
+    private enum class State {
         INIT,
         VALIDATE_KEYS,
         INIT_ID,
@@ -106,10 +105,10 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
 
     init {
         N = group.users.size
-        ids = Array(N, {i -> BigInteger.ZERO})
+        ids = Array(N, { i -> BigInteger.ZERO })
         //if(N < 3) throw GameExecutionException("mafia is only viable with 4+ players")
         M = Math.sqrt(N * 1.0).toInt()
-        for(user in playerOrder){
+        for (user in playerOrder) {
             userRoles[user] = Role.UNKNOWN
         }
         mafiaLeft = M
@@ -117,13 +116,12 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     }
 
 
-
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
         for (msg in responses) {
             chat.showMessage("[${msg.user.name}] said ${msg.value}")
         }
         extraData.clear()
-        when(state){
+        when (state) {
 
             State.INIT -> {
                 for (msg in responses) {
@@ -151,21 +149,21 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 if (currentPlayerID != N) {
                     val s = randomString(512) + " " + HANDSHAKE_PHRASE
                     return keyManager.encodeForUser(playerOrder[currentPlayerID], s)
-                }else{
+                } else {
                     state = State.INIT_ID
                     chat.sendMessage("RSA is OK. Generating deck")
                     return randomBigInt(ECParams.n).toString()
                 }
             }
             State.INIT_ID -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     val userID = getUserID(user)
                     ids[userID] = BigInteger(msg.value)
                 }
-                for(i in 0..N-1){
-                    for(j in 0..N-1){
-                        if((i != j && ids[i] == ids[j]) || ids[i] == BigInteger.valueOf(2) * ids[j]){
+                for (i in 0..N - 1) {
+                    for (j in 0..N - 1) {
+                        if ((i != j && ids[i] == ids[j]) || ids[i] == BigInteger.valueOf(2) * ids[j]) {
                             return randomBigInt(ECParams.n).toString()
                         }
                     }
@@ -176,77 +174,78 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
             }
             State.DAY_PHASE_PICK -> {
                 state = State.DAY_PHASE_VERIFY
-                if(chat.me() in alive){
+                if (chat.me() in alive) {
                     val pick = pickUser()
                     return getUserID(pick).toString()
                 }
             }
             State.DAY_PHASE_VERIFY -> {
                 val voices = mutableMapOf<User, Int>()
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
-                    if(user in dead){
+                    if (user in dead) {
                         continue
                     }
                     toKill = playerOrder[msg.value.toInt()]
                     logger.registerDayVote(user, toKill)
-                    if(toKill !in alive){
+                    if (toKill !in alive) {
                         throw GameExecutionException("What is dead may never die")
                     }
-                    if(toKill !in voices){
+                    if (toKill !in voices) {
                         voices[toKill] = 0
                     }
                     voices[toKill] = voices[toKill]!! + 1
                 }
                 val deadUser = voices.maxBy { x -> x.value }?.key ?: throw GameExecutionException("Something wrong in this town")
                 val draw = voices.filter { x -> x.value == voices[deadUser] }.size > 1
-                if(draw){
+                if (draw) {
                     state = State.DAY_PHASE_PICK
                     logger.resetDay()
-                } else{
+                } else {
                     state = State.DAY_PHASE_REVEAL
                 }
                 return getUserID(deadUser).toString()
             }
             State.DAY_PHASE_REVEAL -> {
                 val distinctResults = responses.distinctBy { x -> x.value }.size
-                if(distinctResults > 1){
+                if (distinctResults > 1) {
                     throw GameExecutionException("Something went wrong during day phase")
                 }
                 state = State.DAY_PHASE_KILL
                 toKill = playerOrder[responses[0].value.toInt()]
-                if(toKill == chat.me()){ // if we were killed
+                if (toKill == chat.me()) {
+                    // if we were killed
                     return roleDeck.roleKeys.elementAt(playerID).toString()
                 }
             }
             State.DAY_PHASE_KILL -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     val userID = getUserID(user)
-                    if(user == toKill){
-                        if(toKill != chat.me()){
+                    if (user == toKill) {
+                        if (toKill != chat.me()) {
                             roleDistributionHelper.registerRoleKey(user, userID, BigInteger(msg.value))
                         }
-                        val role = if(user == chat.me()) role.role else roleDistributionHelper.getRole(userID)
+                        val role = if (user == chat.me()) role.role else roleDistributionHelper.getRole(userID)
                         killUser(user, role)
                         break
                     }
                 }
-//                if(!gameEnded()){ // todo
-//
-//                }
+                //                if(!gameEnded()){ // todo
+                //
+                //                }
                 state = State.DOCTOR_I
                 //state = State.DETECTIVE_CHANNEL
             }
             State.DOCTOR_I -> {
-                if(dead.filter{x -> userRoles[x] == Role.DOCTOR}.isEmpty()){
+                if (dead.filter { x -> userRoles[x] == Role.DOCTOR }.isEmpty()) {
                     processDoctorPick()
                 }
                 state = State.DETECTIVE_CHANNEL
                 //state = State.DOCTOR_II_REVEAL
             }
             State.DETECTIVE_CHANNEL -> {
-                if(dead.filter{x -> userRoles[x] == Role.DETECTIVE}.isNotEmpty()){
+                if (dead.filter { x -> userRoles[x] == Role.DETECTIVE }.isNotEmpty()) {
                     state = State.MAFIA_COMMUNICATE
                     return ""
                 }
@@ -263,13 +262,13 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
             State.DETECTIVE_CHOICE_REVEAL -> {
                 var noise = BigInteger.ZERO
                 val hashes = mutableMapOf<User, String>()
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     hashes[user] = DigestUtils.sha256Hex(msg.value)
                     val split = msg.value.split(" ")
                     noise += BigInteger(split[1])
                 }
-                if(!logger.verifyLastDetectiveRHashes(hashes)){
+                if (!logger.verifyLastDetectiveRHashes(hashes)) {
                     throw GameExecutionException("Someone cheated with his SMSfA value inputes")
                 }
                 val targetID = (logger.getDetectiveSum() - noise)
@@ -295,21 +294,22 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
             }
             State.MAFIA_REVEAL -> {
                 val consensus = computeMafiaChoiceConsensus(responses)
-                if(ids.contains(consensus)){ //mafia came to consensus
-                    if(role is MafiaRole && !(role as MafiaRole).verifyTarget(consensus)){
+                if (ids.contains(consensus)) {
+                    //mafia came to consensus
+                    if (role is MafiaRole && !(role as MafiaRole).verifyTarget(consensus)) {
                         throw GameExecutionException("Someone probably tried to interfere with mafia picks")
                     }
                     logger.registerNightPlay(Role.MAFIA, playerOrder[ids.indexOf(consensus)])
                     state = State.DOCTOR_II_REVEAL
-                }else{
+                } else {
                     state = State.MAFIA_COMMUNICATE
                 }
             }
             State.DOCTOR_II_REVEAL -> {
-                if(dead.filter{x -> userRoles[x] == Role.DOCTOR}.isEmpty()){
+                if (dead.filter { x -> userRoles[x] == Role.DOCTOR }.isEmpty()) {
                     state = State.DOCTOR_II_RESULT
                     return logger.getDoctorNoisedInput()
-                }else{
+                } else {
                     state = State.NIGHT_RESULTS_REVEAL
                 }
 
@@ -321,32 +321,33 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
             State.NIGHT_RESULTS_REVEAL -> {
                 val died = logger.getLastMafiaTarget() ?: throw GameExecutionException("Somthing wrong with mafia pick")
                 val survived = logger.getLastDoctorTarget()
-                if(died == survived){
+                if (died == survived) {
                     state = State.DAY_PHASE_PICK
                     return ""
                 }
                 toKill = died
                 state = State.NIGHT_RESULTS_KILL
-                if(died == chat.me()){ // if we were killed
+                if (died == chat.me()) {
+                    // if we were killed
                     return roleDeck.roleKeys.elementAt(playerID).toString()
                 }
             }
             State.NIGHT_RESULTS_KILL -> {
-                for(msg in responses){
+                for (msg in responses) {
                     val user = User(msg.user)
                     val userID = getUserID(user)
-                    if(user == toKill){
-                        if(toKill != chat.me()){
+                    if (user == toKill) {
+                        if (toKill != chat.me()) {
                             roleDistributionHelper.registerRoleKey(user, userID, BigInteger(msg.value))
                         }
-                        val role = if(user == chat.me()) role.role else roleDistributionHelper.getRole(userID)
+                        val role = if (user == chat.me()) role.role else roleDistributionHelper.getRole(userID)
                         killUser(user, role)
                         break
                     }
                 }
-                if(gameEnded()){
+                if (gameEnded()) {
                     state = State.VERIFY_BEGIN
-                }else{
+                } else {
                     state = State.DAY_PHASE_PICK
                 }
             }
@@ -359,7 +360,8 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 verify(responses)
                 state = State.END
             }
-            State.END -> {}
+            State.END -> {
+            }
         }
         return ""
     }
@@ -388,12 +390,12 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * after this step [role] holds current player role
      * with the list of known comrades
      */
-    private fun initRoles(){
+    private fun initRoles() {
         val rolesCount = mutableMapOf<Role, Int>()
-        for(role in Role.values()){
-            when(role){
+        for (role in Role.values()) {
+            when (role) {
                 Role.MAFIA -> rolesCount[role] = M
-                else -> if(role != Role.INNOCENT && role != Role.UNKNOWN) rolesCount[role] = 1
+                else -> if (role != Role.INNOCENT && role != Role.UNKNOWN) rolesCount[role] = 1
             }
         }
         rolesCount[Role.INNOCENT] = N - rolesCount.values.sum()
@@ -405,20 +407,20 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
             val roleFuture = runSubGame(RoleDistributionGame(chat, group, subGameID(), ECParams, roleDeck, gameManager))
             role = roleFuture.get().first
             roleDistributionHelper = roleFuture.get().second
-        }catch (e: CancellationException){
+        } catch (e: CancellationException) {
             return
-        }catch (e: Exception){
+        } catch (e: Exception) {
             throw GameExecutionException(e.message ?: "Something went wrong in role generation/distribution")
         }
-        for(user in role.getComrades()){
+        for (user in role.getComrades()) {
             logger.registerUserRole(user, role.role)
         }
         gameGUI.setRole(role.role)
-        for(i in 0..N-1){
-            if(playerOrder[i] in role.getComrades()){
+        for (i in 0..N - 1) {
+            if (playerOrder[i] in role.getComrades()) {
                 gameGUI.dealPlayer(getTablePlayerId(i), role.role, logger.getUserRolePosition(playerOrder[i]))
                 userRoles[playerOrder[i]] = role.role
-            }else{
+            } else {
                 gameGUI.dealPlayer(getTablePlayerId(i), Role.UNKNOWN)
             }
         }
@@ -428,14 +430,14 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * create share secrets via SecretSharing game
      */
-    private fun shareSecrets(){
+    private fun shareSecrets() {
         try {
             val secretFuture = runSubGame(SecretSharingGame(chat, group, subGameID(), ECParams, role, ids[playerID], gameManager))
             secretDeck = secretFuture.get().first
             secretSharingVerivier = secretFuture.get().second
-        } catch (e: CancellationException){
+        } catch (e: CancellationException) {
             return
-        } catch (e: Exception){
+        } catch (e: Exception) {
             throw GameExecutionException(e.message ?: "Something went wrong in secret sharing")
         }
     }
@@ -460,7 +462,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * get message for other members of mafia from GUI
      */
-    private fun getMafiaInput(seconds: Long): String{
+    private fun getMafiaInput(seconds: Long): String {
         val msgQueue = LinkedBlockingQueue<String>(1)
         val callback = { x: String -> msgQueue.offer(x) }
         gameGUI.resetAllUserPicks()
@@ -476,15 +478,15 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * given user and his role - register him as dead
      */
-    private fun killUser(user: User, role: Role){
+    private fun killUser(user: User, role: Role) {
         userRoles[user] = role
         alive.remove(user)
         dead.add(user)
         chat.showMessage("Killed [${user.name}] whose role was [${role.name}]")
-        if(role == Role.MAFIA){
-            mafiaLeft --
+        if (role == Role.MAFIA) {
+            mafiaLeft--
         }
-        if(role != this.role.role){
+        if (role != this.role.role) {
             gameGUI.revealPlayerRole(getTablePlayerId(getUserID(user)), role, logger.getUserRolePosition(user))
         }
         gameGUI.animateRolePlay(role, logger.getUserRolePosition(user))
@@ -494,19 +496,19 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * Run first phase of doctor actions:
      * doctor picks his target via SMSfA
      */
-    private fun processDoctorPick(){
+    private fun processDoctorPick() {
         val deadline = Calendar.getInstance()
         deadline.add(Calendar.SECOND, DoctorRole.TIMEOUT.toInt())
         val targetID: BigInteger
-        if(role is DoctorRole){
+        if (role is DoctorRole) {
             val user = pickUser(DoctorRole.TIMEOUT)
             targetID = ids[getUserID(user)]
             (role as DoctorRole).registerTarget(targetID)
-        }else{
+        } else {
             targetID = BigInteger.ZERO
         }
         val currentTime = Calendar.getInstance()
-        if(currentTime < deadline){
+        if (currentTime < deadline) {
             Thread.sleep(deadline.timeInMillis - currentTime.timeInMillis)
         }
         val targetFuture = gameManager.initSubGame(SecureMultipartySumForAnonymizationGame(chat, group, subGameID(), keyManager, targetID, ECParams.n, gameManager))
@@ -519,20 +521,20 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * detective picks his target and
      * broadcasts encoded id via SMSfA
      */
-    private fun processDetectivePick(){
+    private fun processDetectivePick() {
         val deadline = Calendar.getInstance()
         deadline.add(Calendar.SECOND, DetectiveRole.TIMEOUT.toInt())
         val encryptedTargetId: BigInteger
-        if(role is DetectiveRole){
+        if (role is DetectiveRole) {
             val user = pickUser(DetectiveRole.TIMEOUT)
             val userID = getUserID(user)
             encryptedTargetId = ids[userID] * (role as DetectiveRole).getUserK(user)
             (role as DetectiveRole).registerTarget(user, ids[userID])
-        }else{
+        } else {
             encryptedTargetId = BigInteger.ZERO
         }
         val currentTime = Calendar.getInstance()
-        if(currentTime < deadline){
+        if (currentTime < deadline) {
             Thread.sleep(deadline.timeInMillis - currentTime.timeInMillis)
         }
         val targetFuture = gameManager.initSubGame(SecureMultipartySumForAnonymizationGame(chat, group, subGameID(), keyManager, encryptedTargetId, ECParams.n, gameManager))
@@ -546,17 +548,17 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      *
      * @return get mafia input encoded for commrades
      */
-    private fun processMafiaCommunicationInput(): String{
+    private fun processMafiaCommunicationInput(): String {
         val deadline = Calendar.getInstance()
         deadline.add(Calendar.SECOND, MafiaRole.MESSAGE_INPUT_TIMEOUT.toInt())
         val msg: String
-        if(role is MafiaRole && !dead.contains(chat.me())){
+        if (role is MafiaRole && !dead.contains(chat.me())) {
             msg = getMafiaInput(MafiaRole.MESSAGE_INPUT_TIMEOUT).padEnd(MAX_TEXT_LENGTH)
-        }else{
+        } else {
             msg = randomString(MAX_TEXT_LENGTH)
         }
         val currentTime = Calendar.getInstance()
-        if(currentTime < deadline){
+        if (currentTime < deadline) {
             Thread.sleep(deadline.timeInMillis - currentTime.timeInMillis)
         }
         return role.encryptForComrades(msg)
@@ -565,15 +567,15 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * exchange detective RSA public paramenters via SMSfA
      */
-    private fun processDetectiveRSA(){
+    private fun processDetectiveRSA() {
         val mod: BigInteger
         val exp: BigInteger
 
 
-        if(role is DetectiveRole){
+        if (role is DetectiveRole) {
             mod = (role as DetectiveRole).getModulus()
             exp = (role as DetectiveRole).getPublicExponent()
-        }else{
+        } else {
             mod = BigInteger.ZERO
             exp = BigInteger.ZERO
         }
@@ -590,10 +592,10 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * compute and store RSA parameters
      */
-    private fun regiserDetectiveRSA(responses: List<GameMessageProto.GameStateMessage>){
+    private fun regiserDetectiveRSA(responses: List<GameMessageProto.GameStateMessage>) {
         var modSum = BigInteger.ZERO
         var expSum = BigInteger.ZERO
-        for(msg in responses){
+        for (msg in responses) {
             val split = msg.value.split(" ").map { x -> BigInteger(x) }
             modSum += split[0]
             expSum += split[1]
@@ -605,21 +607,21 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * Compute check result for detective based on preveous check results
      */
-    private fun computeDetectiveChoiceResult(responses: List<GameMessageProto.GameStateMessage>){
-        if(role !is DetectiveRole){
+    private fun computeDetectiveChoiceResult(responses: List<GameMessageProto.GameStateMessage>) {
+        if (role !is DetectiveRole) {
             return
         }
         var sum: ECPoint = ECParams.curve.infinity
-        for(msg in responses){
+        for (msg in responses) {
             val part = (role as DetectiveRole).decodeSecretPart(msg.value)
-            sum  = sum.add(part)
+            sum = sum.add(part)
         }
-        for(i in 0..N-1){
-            if(ECParams.g.multiply(ids[i]) == sum){
+        for (i in 0..N - 1) {
+            if (ECParams.g.multiply(ids[i]) == sum) {
                 (role as DetectiveRole).registerTargetResult(ids[i], false)
                 logger.registerDetectivePlay(playerOrder[i], false)
             }
-            if(ECParams.g.multiply(ids[i] * BigInteger.valueOf(2)) == sum){
+            if (ECParams.g.multiply(ids[i] * BigInteger.valueOf(2)) == sum) {
                 (role as DetectiveRole).registerTargetResult(ids[i], true)
                 logger.registerDetectivePlay(playerOrder[i], true)
             }
@@ -629,10 +631,10 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * after R exchange we can compute, who was healed by the doctor
      */
-    private fun computeDotcorChoice(responses: List<GameMessageProto.GameStateMessage>){
+    private fun computeDotcorChoice(responses: List<GameMessageProto.GameStateMessage>) {
         val hashes = mutableMapOf<User, String>()
         var RSum = BigInteger.ZERO
-        for(msg in responses){
+        for (msg in responses) {
             val user = User(msg.user)
             hashes[user] = DigestUtils.sha256Hex(msg.value)
             RSum += BigInteger(msg.value.split(" ")[1])
@@ -647,12 +649,12 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * assuming we got a bunch of messages encoded for commrades:
      * decrypt the and show to user
      */
-    private fun showMafiaMessages(responses: List<GameMessageProto.GameStateMessage>){
-        if(role is MafiaRole){
+    private fun showMafiaMessages(responses: List<GameMessageProto.GameStateMessage>) {
+        if (role is MafiaRole) {
             val messages = mutableMapOf<User, String>()
-            for(msg in responses){
+            for (msg in responses) {
                 val user = User(msg.user)
-                if(role.getComrades().contains(user)){
+                if (role.getComrades().contains(user)) {
                     messages[user] = role.decryptForComrades(msg.value)
                 }
             }
@@ -665,20 +667,20 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * getinput form mafia and run SMSfA subgame
      * store result in [mafiaSMS] for further use
      */
-    private fun processMafiaPick(){
+    private fun processMafiaPick() {
         val deadline = Calendar.getInstance()
         deadline.add(Calendar.SECOND, MafiaRole.TARGET_CHOICE_TIMEOUT.toInt())
         val targetId: BigInteger
-        if(role is MafiaRole && !dead.contains(chat.me())){
+        if (role is MafiaRole && !dead.contains(chat.me())) {
             val user = pickUser(MafiaRole.TARGET_CHOICE_TIMEOUT)
             val userID = getUserID(user)
             targetId = ids[userID]
             (role as MafiaRole).registerTarget(targetId)
-        }else{
+        } else {
             targetId = BigInteger.ZERO
         }
         val currentTime = Calendar.getInstance()
-        if(currentTime < deadline){
+        if (currentTime < deadline) {
             Thread.sleep(deadline.timeInMillis - currentTime.timeInMillis)
         }
         gameGUI.hideMafiaMessagesOverlay()
@@ -689,10 +691,10 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     /**
      * compute average vote of all mafias.
      */
-    private fun computeMafiaChoiceConsensus(responses: List<GameMessageProto.GameStateMessage>): BigInteger{
+    private fun computeMafiaChoiceConsensus(responses: List<GameMessageProto.GameStateMessage>): BigInteger {
         val hashes = mutableMapOf<User, String>()
         var RSum = BigInteger.ZERO
-        for(msg in responses){
+        for (msg in responses) {
             val user = User(msg.user)
             hashes[user] = DigestUtils.sha256Hex(msg.value)
             RSum += BigInteger(msg.value.split(" ")[1])
@@ -712,7 +714,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * [X]
      * [SKeys]
      */
-    private fun revealExtraData(){
+    private fun revealExtraData() {
         extraData.addAll(roleDeck.roleKeys.map { x -> x.toByteArray() })
         extraData.addAll(roleDeck.VKeys.map { x -> x.toByteArray() })
         extraData.addAll(roleDeck.Rkeys.map { x -> x.toByteArray() })
@@ -724,14 +726,14 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      * run verification on all data, that was
      * tranmited in [revealExtraData]
      */
-    private fun verify(responses: List<GameMessageProto.GameStateMessage>){
+    private fun verify(responses: List<GameMessageProto.GameStateMessage>) {
         val roleKeys = mutableMapOf<User, List<BigInteger>>()
         val VKeys = mutableMapOf<User, List<BigInteger>>()
         val RKeys = mutableMapOf<User, List<BigInteger>>()
         val Xs = mutableMapOf<User, List<BigInteger>>()
         val SKeys = mutableMapOf<User, String>()
         val roles = mutableMapOf<User, Role>()
-        for(msg in responses){
+        for (msg in responses) {
             val user = User(msg.user)
             keyManager.registerUserPrivateKey(user, msg.value)
             val s = keyManager.decodeForUser(user, keyManager.encodeForUser(user, HANDSHAKE_PHRASE))
@@ -740,30 +742,30 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
             }
             val roleDeckLen = roleDeck.Rkeys.size
             val secretDeckLen = secretDeck.SKeys.size
-            roleKeys[user] = msg.dataList.slice(0..roleDeckLen-1).map { x -> BigInteger(x.toByteArray()) }
-            VKeys[user] = msg.dataList.slice(roleDeckLen..2*roleDeckLen-1).map { x -> BigInteger(x.toByteArray()) }
-            RKeys[user] = msg.dataList.slice(2*roleDeckLen..3*roleDeckLen-1).map { x -> BigInteger(x.toByteArray()) }
-            Xs[user] = msg.dataList.slice(3*roleDeckLen..4*roleDeckLen-1).map { x -> BigInteger(x.toByteArray()) }
-            val ss = msg.dataList.slice(4*roleDeckLen..4*roleDeckLen + secretDeckLen -1).map { x -> BigInteger(x.toByteArray()) }
-            for(i in 0..secretDeckLen-1){
+            roleKeys[user] = msg.dataList.slice(0..roleDeckLen - 1).map { x -> BigInteger(x.toByteArray()) }
+            VKeys[user] = msg.dataList.slice(roleDeckLen..2 * roleDeckLen - 1).map { x -> BigInteger(x.toByteArray()) }
+            RKeys[user] = msg.dataList.slice(2 * roleDeckLen..3 * roleDeckLen - 1).map { x -> BigInteger(x.toByteArray()) }
+            Xs[user] = msg.dataList.slice(3 * roleDeckLen..4 * roleDeckLen - 1).map { x -> BigInteger(x.toByteArray()) }
+            val ss = msg.dataList.slice(4 * roleDeckLen..4 * roleDeckLen + secretDeckLen - 1).map { x -> BigInteger(x.toByteArray()) }
+            for (i in 0..secretDeckLen - 1) {
                 secretSharingVerivier.registerSKey(user, i, ss[i])
             }
-            for(i in 0..roleDeckLen-1){
+            for (i in 0..roleDeckLen - 1) {
                 roleDistributionHelper.registerRoleKey(user, i, roleKeys[user]!![i])
             }
             roles[user] = roleDistributionHelper.getRole(getUserID(user))
             SKeys[user] = DigestUtils.sha256Hex(ss.joinToString(" "))
         }
-        if(!roleGenerationVerifier.verify(roleKeys, VKeys, RKeys, Xs)){
+        if (!roleGenerationVerifier.verify(roleKeys, VKeys, RKeys, Xs)) {
             throw GameExecutionException("Someone cheated at role Generatoin phase")
         }
-        if(!secretSharingVerivier.verifySKeys(SKeys)){
+        if (!secretSharingVerivier.verifySKeys(SKeys)) {
             throw GameExecutionException("Someone cheated at Secret sharing part")
         }
-        if(!logger.verify(keyManager)){
+        if (!logger.verify(keyManager)) {
             throw GameExecutionException("Someone cheated in SMSfA")
         }
-        if(role is DetectiveRole && !(role as DetectiveRole).verifyChecks(roles)){
+        if (role is DetectiveRole && !(role as DetectiveRole).verifyChecks(roles)) {
             throw GameExecutionException("Someone lied about their role")
         }
     }
@@ -776,8 +778,8 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
      *
      * @return whether game has ended
      */
-    private fun gameEnded(): Boolean{
-        return mafiaLeft == 0 || (alive.size <= 2*mafiaLeft)
+    private fun gameEnded(): Boolean {
+        return mafiaLeft == 0 || (alive.size <= 2 * mafiaLeft)
     }
 
     override fun getInitialMessage(): String {
@@ -792,8 +794,9 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     }
 
     override fun isFinished(): Boolean {
-        return  state == State.END
+        return state == State.END
     }
+
     override fun getData(): List<ByteArray> {
         return extraData
     }

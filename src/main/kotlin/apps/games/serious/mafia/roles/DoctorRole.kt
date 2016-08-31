@@ -15,11 +15,11 @@ class DoctorRole : PlayerRole() {
      * Register, that last target of this doctor was user
      * with given id
      */
-    fun registerTarget(id: BigInteger){
+    fun registerTarget(id: BigInteger) {
         currentTarget = id
     }
 
-    companion object{
+    companion object {
         val TIMEOUT: Long = 5
     }
 }

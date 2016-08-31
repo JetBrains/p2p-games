@@ -1,8 +1,6 @@
 package apps.games
 
 import apps.chat.Chat
-import apps.games.serious.mafia.subgames.role.generation.RoleDeck
-import apps.games.serious.mafia.subgames.role.generation.RoleGenerationVerifier
 import entity.ChatMessage
 import entity.Group
 import entity.User

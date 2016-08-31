@@ -16,34 +16,34 @@ import java.math.BigInteger
  *
  * @return List<BigInteger> - resulting splits
  */
-fun split(n: BigInteger, parts: Int, zeros: Boolean = false): List<BigInteger>{
+fun split(n: BigInteger, parts: Int, zeros: Boolean = false): List<BigInteger> {
     val v = BigDecimal(n)
-    if(parts <= 1 || (!zeros && n < BigInteger.valueOf(parts.toLong()))){
+    if (parts <= 1 || (!zeros && n < BigInteger.valueOf(parts.toLong()))) {
         throw IllegalArgumentException("invalid number of split parts")
     }
-    val points = Array(parts, {i -> BigDecimal(secureRandom.nextDouble())})
+    val points = Array(parts, { i -> BigDecimal(secureRandom.nextDouble()) })
     points.sort()
     val result = mutableListOf<BigInteger>()
     var s: BigInteger = BigInteger.ZERO
-    for(i in 0..parts-2){
+    for (i in 0..parts - 2) {
         val tmp = (v * points[i]).toBigInteger() - s
-        if(tmp == BigInteger.ZERO && !zeros){
+        if (tmp == BigInteger.ZERO && !zeros) {
             result.add(BigInteger.ONE)
-        }else{
+        } else {
             result.add(tmp)
         }
         s += result[i]
     }
     val tmp = n - s
-    if(tmp == BigInteger.ZERO && !zeros){
-        for(i in 0..parts-3){
-            if(result[i+1] - result[i] > BigInteger.ONE){
-                result[i+1] -= BigInteger.ONE
+    if (tmp == BigInteger.ZERO && !zeros) {
+        for (i in 0..parts - 3) {
+            if (result[i + 1] - result[i] > BigInteger.ONE) {
+                result[i + 1] -= BigInteger.ONE
                 result.add(BigInteger.ONE)
                 break
             }
         }
-    }else{
+    } else {
         result.add(tmp)
     }
     return result

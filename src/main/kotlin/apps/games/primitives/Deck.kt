@@ -4,7 +4,6 @@ import crypto.random.shuffleArray
 import entity.User
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.math.ec.ECPoint
-import org.bouncycastle.pqc.math.linearalgebra.Permutation
 import java.math.BigInteger
 import java.util.*
 
@@ -15,7 +14,7 @@ import java.util.*
 
 class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
     constructor(other: Deck) : this(other.ECParams, other.size) {
-        for(i in 0..size){
+        for (i in 0..size) {
             cards[i] = other.cards[i].multiply(BigInteger.ONE)
         }
     }
@@ -45,15 +44,15 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
      *
      * @param permutation - List of indiciers in permutuation. TODO - move to bouncycastle permutations
      */
-    fun shuffle(permutation: List<Int>){
-        if(size != permutation.size){
+    fun shuffle(permutation: List<Int>) {
+        if (size != permutation.size) {
             throw IllegalArgumentException("Permutation size doesn't match deck size")
         }
         val res = mutableListOf<ECPoint>()
-        for(x in permutation){
+        for (x in permutation) {
             res.add(cards[x])
         }
-        for (i in 0..size-1){
+        for (i in 0..size - 1) {
             cards[i] = res[i]
         }
     }
@@ -65,10 +64,10 @@ class Deck(val ECParams: ECParameterSpec, val size: Int = 52) : Cloneable {
      * @param permutation - List of indiciers in permutuation.
      * @param blockSize - size of shuffle block
      */
-    fun shuffle(permutation: List<Int>, blockSize: Int){
+    fun shuffle(permutation: List<Int>, blockSize: Int) {
         val tmp = cards.toList()
         val shuffled = crypto.random.shuffle(tmp, permutation, blockSize)
-        for(i in 0..shuffled.size-1){
+        for (i in 0..shuffled.size - 1) {
             cards[i] = shuffled[i]
         }
     }

@@ -7,17 +7,19 @@ import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
-import com.badlogic.gdx.scenes.scene2d.ui.*
+import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.ui.TextArea
+import com.badlogic.gdx.scenes.scene2d.ui.TextField
 
 /**
  * Created by user on 8/30/16.
  */
 
-class MafiaInputOverlay(maxLength: Int): Overlay(){
+class MafiaInputOverlay(maxLength: Int) : Overlay() {
     lateinit var skin: Skin
     lateinit var table: com.badlogic.gdx.scenes.scene2d.ui.Table
 
@@ -26,7 +28,7 @@ class MafiaInputOverlay(maxLength: Int): Overlay(){
     //normal labels
     private val inputField: TextArea
     private var shiftPressed: Boolean = false
-    private var callback: (String) -> (Unit) = {x -> Unit}
+    private var callback: (String) -> (Unit) = { x -> Unit }
 
     init {
 
@@ -65,11 +67,11 @@ class MafiaInputOverlay(maxLength: Int): Overlay(){
         inputField = TextArea("TestTEST", skin)
         inputField.setPrefRows(7f)
         inputField.maxLength = maxLength
-        table.add(inputField).width(300f*scaleX)
+        table.add(inputField).width(300f * scaleX)
         stage.addActor(table)
-        inputField.addListener(object: InputListener(){
+        inputField.addListener(object : InputListener() {
             override fun keyUp(event: InputEvent?, keycode: Int): Boolean {
-                if (keycode == Input.Keys.SHIFT_RIGHT || keycode == Input.Keys.SHIFT_LEFT){
+                if (keycode == Input.Keys.SHIFT_RIGHT || keycode == Input.Keys.SHIFT_LEFT) {
                     shiftPressed = false
                     return true
                 }
@@ -77,7 +79,7 @@ class MafiaInputOverlay(maxLength: Int): Overlay(){
             }
 
             override fun keyDown(event: InputEvent?, keycode: Int): Boolean {
-                when(keycode){
+                when (keycode) {
                     Input.Keys.SHIFT_LEFT -> {
                         shiftPressed = true
                         return true
@@ -87,7 +89,7 @@ class MafiaInputOverlay(maxLength: Int): Overlay(){
                         return true
                     }
                     Input.Keys.ENTER -> {
-                        if(shiftPressed){
+                        if (shiftPressed) {
                             finishedTyping(inputField.text)
                         }
                         return true
@@ -105,14 +107,14 @@ class MafiaInputOverlay(maxLength: Int): Overlay(){
      *
      * @param s - message to send
      */
-    private fun finishedTyping(s: String){
+    private fun finishedTyping(s: String) {
         callback(s)
     }
 
     /**
      * set focus on input
      */
-    fun newMessage(){
+    fun newMessage() {
         inputField.text = ""
         stage.keyboardFocus = inputField
     }
@@ -120,16 +122,16 @@ class MafiaInputOverlay(maxLength: Int): Overlay(){
     /**
      * register callback to be executed after end of input
      */
-    fun <T> registerCallback(callback: (String) -> (T)){
-        this.callback = {s: String ->
-            if(isVisible){
+    fun <T> registerCallback(callback: (String) -> (T)) {
+        this.callback = { s: String ->
+            if (isVisible) {
                 callback(s)
             }
         }
     }
 
     override fun render(cam: Camera) {
-        if(isVisible){
+        if (isVisible) {
             stage.camera.projection.set(cam.projection)
             stage.batch.begin()
             stage.batch.draw(texture, 280f * scaleX, 325f * scaleY, 450f * scaleX, 320f * scaleY)

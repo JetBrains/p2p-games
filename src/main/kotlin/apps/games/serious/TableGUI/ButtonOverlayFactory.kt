@@ -144,8 +144,8 @@ abstract class ButtonOverlay<T> : Overlay() {
 
     companion object ListenerFactory {
         fun <R, T> create(option: T,
-                                    betButton: Button,
-                                    callback: (T) -> (R)): EventListener {
+                          betButton: Button,
+                          callback: (T) -> (R)): EventListener {
             return object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
                     if (!betButton.isDisabled) {
@@ -198,7 +198,7 @@ class ButtonOverlayFactory {
                        names: Map<T, String>): ButtonOverlay<T> {
             return object : ButtonOverlay<T>() {
                 override fun create() {
-                    for(value in values){
+                    for (value in values) {
                         val name = names[value]
                         val button = TextButton(name, textButtonStyle)
                         buttons[value] = button
