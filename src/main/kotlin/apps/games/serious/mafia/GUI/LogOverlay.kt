@@ -39,7 +39,6 @@ class LogOverlay(val logger: MafiaLogger) : Overlay() {
 
         val parameter = FreeTypeFontGenerator.FreeTypeFontParameter()
         parameter.size = 20
-        //TODO - remove caps in logger
 
         val bfont = generator.generateFont(parameter) // font size 12 pixels
         generator.dispose()

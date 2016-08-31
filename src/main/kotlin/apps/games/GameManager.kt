@@ -75,18 +75,13 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
         chat.groupBroker.broadcastAsync(chat.group, finalMessage)
     }
 
-    //todo game choise
     /**
      * Someone initialized a game. Process request
      * and start local game
      */
     fun initGame(msg: GameMessageProto.GameInitMessage): Future<Unit>? {
         val group = Group(msg.participants)
-        val chat = ChatManager.getChatOrNull(msg.chatID)
-        if (chat == null) {
-            //TODO - respond to someone
-            return null
-        }
+        val chat = ChatManager.getChatOrNull(msg.chatID) ?: return null
         val game = GameFactory.instantiateGame(msg.gameType, chat, group, msg.gameID)
         games[msg.gameID] = game
         if (group != chat.group) {

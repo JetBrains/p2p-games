@@ -53,9 +53,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     private val TALON = 2
 
     //Required - three players.
-    //TODO - add checker for number of players
 
-    private val N = 3
+    private val N = group.users.size
 
     //map cards to players, that holded that cardID.
     //cardholder -1 - for played cardID
@@ -88,6 +87,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
 
     init {
+        if(N != 3) throw GameExecutionException("Only 3 player preferans is supported")
         val order = listOf(*playerOrder.toTypedArray())
         Collections.rotate(order, getTablePlayerId(playerID))
         scoreCounter = PreferansScoreCounter(order)
@@ -130,7 +130,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
             State.BIDDING -> {
                 betQueue.clear()
                 for (msg in responses) {
-                    // TODO - digital signatures on player or encrypt channel
                     val userID = getUserID(User(msg.user))
                     if (userID == currentPlayerID) {
                         bets[userID] = Bet.values().first { x -> x.value == msg.value.toInt() }
@@ -196,7 +195,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                     gameGUI.showBiddingOverlay()
                     val res = getBid()
                     gameGUI.hideBiddingOverlay()
-                    //TODO - log turn for later validation
                     val card1 = playCard(playerID, restrictCards = false)
                     val card2 = playCard(playerID, restrictCards = false)
                     saltTalon(card1, card2)
@@ -240,7 +238,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                     }
                     Whists.WHIST_BLIND -> {
                         state = State.PLAY
-                        //TODO - store first player ID
                         currentPlayerID = -1
                     }
                     Whists.WHIST_OPEN -> {
@@ -271,7 +268,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                         decryptUserHand(User(msg.user), keys)
                     }
                 }
-                //TODO - store first player ID
                 currentPlayerID = -1
                 state = State.PLAY
             }
@@ -290,7 +286,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                 for (msg in responses) {
                     val userID = getUserID(User(msg.user))
                     if (userID == mainUser) {
-                        //TODO - switch first players
                         val split = msg.value.split(" ")
                         if (split.size < 2) {
                             throw GameExecutionException("Invalid cardID " +

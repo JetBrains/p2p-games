@@ -231,11 +231,12 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                         break
                     }
                 }
-                //                if(!gameEnded()){ // todo
-                //
-                //                }
-                state = State.DOCTOR_I
-                //state = State.DETECTIVE_CHANNEL
+                if(!gameEnded()){
+                    state = State.DOCTOR_I
+                }else{
+                    state = State.VERIFY_BEGIN
+                }
+
             }
             State.DOCTOR_I -> {
                 if (dead.filter { x -> userRoles[x] == Role.DOCTOR }.isEmpty()) {

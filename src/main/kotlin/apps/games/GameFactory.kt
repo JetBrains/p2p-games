@@ -11,8 +11,6 @@ import entity.Group
  * Created by user on 6/27/16.
  */
 
-//TODO - Create annotation instead of
-
 class GameFactory {
     companion object {
         private val games = listOf("Lotto", "Preferans", "Cheat", "mafia")

@@ -199,7 +199,6 @@ class RoundLogger(val N: Int, val deckSize: Int, val shuffledDeck: ShuffledDeck)
                    decoder: (User, String) -> (String)): Boolean {
 
         val cards = mutableListOf<Int>()
-        //TODO - take note of gaps in userList if game is played untill last player
         var receiverId: Int = userList.indexOf(stack.claims.last().user)
         if (!stack.guessedCorrect) {
             receiverId = (receiverId + 1) % N

@@ -77,7 +77,6 @@ class MessageServerHandler(val dispatcher: Dispatcher<GenericMessageProto.Generi
 }
 
 
-// TODO merge with MessageClientChannelInitializer
 /**
  * Pipeline for protobuf network serialization/deserialization
  */

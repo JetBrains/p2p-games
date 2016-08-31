@@ -76,7 +76,6 @@ class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
     }
 
     companion object {
-        //TODO - Maybe cache actions on cards
         fun animate(card: CardGUI,
                     x: Float,
                     y: Float,

@@ -4,7 +4,6 @@ import java.net.InetSocketAddress
  * Created by user on 6/24/16.
  */
 
-//TODO - better pattern
 val DEBUG = false
 
 object Settings {

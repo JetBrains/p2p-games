@@ -186,7 +186,6 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
                         DEAL_SPEED, angle))
     }
 
-    //TODO - mark cards dealt to self as revealed\
 
     /**
      * Reveal cardID in common hand
