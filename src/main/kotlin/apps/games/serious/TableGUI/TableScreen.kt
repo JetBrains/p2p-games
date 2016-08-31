@@ -222,7 +222,6 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
             actionManager.add(action)
 
             cards.remove(oldCard)
-            //spawn cardID facing table
             cards.add(card)
         }
     }
@@ -589,8 +588,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
 
     fun updateInputProcessor() {
         synchronized(overlays) {
-            val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }
-                    .toTypedArray())
+            val overlayProcessor = InputMultiplexer(*overlays.map { x -> x.stage }.reversed().toTypedArray())
             Gdx.input.inputProcessor = InputMultiplexer(overlayProcessor, this, camController)
         }
     }

@@ -20,6 +20,6 @@ class DoctorRole : PlayerRole() {
     }
 
     companion object {
-        val TIMEOUT: Long = 5
+        val TIMEOUT: Long = 15
     }
 }

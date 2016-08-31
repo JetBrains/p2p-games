@@ -20,7 +20,7 @@ import javax.swing.*
  * Created by user on 6/24/16.
  */
 class ChatManagerGUI() {
-    internal val appName = "P2P chat + [${Settings.hostAddress.port}]git sпше "
+    internal val appName = "P2P chat + [${Settings.hostAddress.port}]"
     internal var usernameChooser: JTextField = JTextField()
     internal var hostAddressChooser: JTextField = JTextField()
     internal var chatIDChooser: JFormattedTextField = JFormattedTextField()

@@ -242,8 +242,8 @@ class MafiaLogger {
 
         val values = nightLogs.filter { x -> x.day == day - offset }
         val detectivePlay = detectiveLogs.firstOrNull { x -> x.day == day - offset }
-        val died = getLastMafiaTarget()
-        val survived = getLastDoctorTarget()
+        val died = values.firstOrNull{x -> x.actor == Role.MAFIA}?.target
+        val survived = values.firstOrNull{x -> x.actor == Role.DOCTOR}?.target
         if (died != null && survived != null) {
             if (survived == died) {
                 builder.append("No one died this night\n")
@@ -257,7 +257,7 @@ class MafiaLogger {
             if (!detectivePlay.isMafia) {
                 builder.append(" NOT ")
             }
-            builder.append("Mafia \n\n\n")
+            builder.append("mafia \n\n\n")
         }
         for ((actor, target) in values) {
             builder.append("[${actor.name.toLowerCase().capitalize()}] targeted ${target.name.capitalize()}\n")

@@ -243,7 +243,6 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                     processDoctorPick()
                 }
                 state = State.DETECTIVE_CHANNEL
-                //state = State.DOCTOR_II_REVEAL
             }
             State.DETECTIVE_CHANNEL -> {
                 if (dead.filter { x -> userRoles[x] == Role.DETECTIVE }.isNotEmpty()) {
@@ -297,7 +296,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 val consensus = computeMafiaChoiceConsensus(responses)
                 if (ids.contains(consensus)) {
                     //mafia came to consensus
-                    if (role is MafiaRole && !(role as MafiaRole).verifyTarget(consensus)) {
+                    if (role is MafiaRole && !dead.contains(chat.me()) && !(role as MafiaRole).verifyTarget(consensus)) {
                         throw GameExecutionException("Someone probably tried to interfere with mafia picks")
                     }
                     logger.registerNightPlay(Role.MAFIA, playerOrder[ids.indexOf(consensus)])
@@ -553,8 +552,12 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
         val deadline = Calendar.getInstance()
         deadline.add(Calendar.SECOND, MafiaRole.MESSAGE_INPUT_TIMEOUT.toInt())
         val msg: String
-        if (role is MafiaRole && !dead.contains(chat.me())) {
-            msg = getMafiaInput(MafiaRole.MESSAGE_INPUT_TIMEOUT).padEnd(MAX_TEXT_LENGTH)
+        if (role is MafiaRole) {
+            if(!dead.contains(chat.me())){
+                msg = getMafiaInput(MafiaRole.MESSAGE_INPUT_TIMEOUT).padEnd(MAX_TEXT_LENGTH)
+            } else {
+                msg = "Can't help, I'm dead"
+            }
         } else {
             msg = randomString(MAX_TEXT_LENGTH)
         }

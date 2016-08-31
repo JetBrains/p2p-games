@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
 import entity.User
 
@@ -88,6 +89,16 @@ class MafiaMessagesOverlay() : Overlay() {
                         return true
                     }
                     else -> return false
+                }
+            }
+
+            override fun touchUp(event: InputEvent,
+                                 x: Float,
+                                 y: Float,
+                                 pointer: Int,
+                                 button: Int) {
+                if(isVisible){
+                    event.handle()
                 }
             }
         })

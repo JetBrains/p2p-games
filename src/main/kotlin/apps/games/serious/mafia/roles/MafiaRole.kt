@@ -28,7 +28,7 @@ class MafiaRole : PlayerRole() {
 
 
     companion object {
-        val MESSAGE_INPUT_TIMEOUT: Long = 10
-        val TARGET_CHOICE_TIMEOUT: Long = 20
+        val MESSAGE_INPUT_TIMEOUT: Long = 40
+        val TARGET_CHOICE_TIMEOUT: Long = 40
     }
 }
