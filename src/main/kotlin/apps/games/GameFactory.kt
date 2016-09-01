@@ -13,7 +13,7 @@ import entity.Group
 
 class GameFactory {
     companion object {
-        private val games = listOf("Lotto", "Preferans", "Cheat", "mafia")
+        private val games = listOf("Lotto", "Preferans", "Cheat", "Mafia")
         fun getGameNames() = games
         fun instantiateGame(name: String,
                             chat: Chat,
@@ -23,7 +23,7 @@ class GameFactory {
                 "Lotto" -> return Lotto(chat, group, gameID)
                 "Preferans" -> return Preferans(chat, group, gameID)
                 "Cheat" -> return Cheat(chat, group, gameID)
-                "mafia" -> return Mafia(chat, group, gameID)
+                "Mafia" -> return Mafia(chat, group, gameID)
             }
             throw IllegalArgumentException("No such game")
         }

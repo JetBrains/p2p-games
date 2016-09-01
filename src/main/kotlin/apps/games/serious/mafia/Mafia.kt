@@ -170,7 +170,8 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 }
                 initRoles()
                 shareSecrets()
-                state = State.DAY_PHASE_PICK
+                //state = State.DAY_PHASE_PICK
+                state = State.MAFIA_COMMUNICATE
             }
             State.DAY_PHASE_PICK -> {
                 state = State.DAY_PHASE_VERIFY

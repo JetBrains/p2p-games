@@ -98,7 +98,7 @@ class DetectiveRole : PlayerRole() {
     }
 
     companion object {
-        val TIMEOUT: Long = 15
+        val TIMEOUT: Long = 1
 
         val KEY_LENGTH = 1024
     }

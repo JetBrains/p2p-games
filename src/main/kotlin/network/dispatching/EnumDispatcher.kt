@@ -106,12 +106,12 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
         val type = message.getField(enumFieldDescriptor)
         // By convention typenumber + 1 = field number
         val fieldNumber = (type as Descriptors.EnumValueDescriptor).number + 1
-        val nesterMessage = message.getField(
+        val nestedMessage = message.getField(
                 message.descriptorForType.findFieldByNumber(fieldNumber))
         var responseGroupBuilder: GenericMessageProto.ResponseGroup.Builder? = null
         for (listener in getHandlers(type,
-                (nesterMessage as GeneratedMessage).javaClass)) {
-            val res = listener.dispatch(nesterMessage)
+                (nestedMessage as GeneratedMessage).javaClass)) {
+            val res = listener.dispatch(nestedMessage)
             if (res != null) {
                 if (responseGroupBuilder == null) {
                     responseGroupBuilder = GenericMessageProto.ResponseGroup.newBuilder()

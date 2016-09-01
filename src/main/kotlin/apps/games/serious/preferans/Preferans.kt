@@ -107,10 +107,6 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         }
         when (state) {
             State.INIT -> {
-                if (group.users.size != N) {
-                    throw GameExecutionException("Only 3 playerId Preferans is " +
-                            "supported")
-                }
                 state = State.ROUND_INIT
                 initGame(responses)
             }
@@ -542,7 +538,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
             gameGUI.resetAllBets()
             gameGUI.markBets(*toDisplay)
             val maxBet = bets.maxBy { x -> x.value } ?: throw GameExecutionException(
-                    "Something went wront in betting")
+                    "Something went wronп in betting")
             gameGUI.disableAllBets()
             //playerId alvays can bet higher then current bidding
             gameGUI.enableBets(
@@ -559,7 +555,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                 gameGUI.showHint(
                         "Your turn! You can bid [${maxBet.type}] or higher or PASS")
             }
-            if (bets[playerID] != Bet.UNKNOWN) {
+            if (bets[playerID] != Bet.UNKNOWN && bets[playerID] != Bet.MIZER) {
                 gameGUI.disableBets(Bet.MIZER)
             }
             betQueue.clear()

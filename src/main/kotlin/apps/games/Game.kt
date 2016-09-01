@@ -13,7 +13,7 @@ import java.util.concurrent.Future
  * @param group - group of active game participants(can ve cahnged during game)
  */
 
-abstract class Game<out T>(val chat: Chat, internal val group: Group, val gameID: String,
+abstract class Game<out T>(val chat: Chat, val group: Group, val gameID: String,
                            var gameManager: GameManagerClass = GameManager) {
     private var subGameCounter: Int = 0
     private var nestedGames: MutableList<GameResult<*>> = mutableListOf()
