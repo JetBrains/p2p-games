@@ -215,7 +215,7 @@ class ScoreOverlay(val scoreCounter: PreferansScoreCounter, val me: Int) : Overl
             stage.camera.projection.set(cam.projection)
             stage.batch.begin()
             stage.batch.draw(texture, 150f * scaleX, 225f * scaleY, 800f * scaleX, 600f * scaleY)
-            //Draw player names
+            //Draw playerId names
             stage.batch.end()
             drawLabels(stage.batch)
 

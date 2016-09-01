@@ -46,7 +46,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter, val me: Int, val de
     }
 
     /**
-     * Give a player with specified ID
+     * Give a playerId with specified ID
      * a cardID from a 32 cardID deck
      */
     fun dealPlayer(player: Int, cardID: Int) {
@@ -293,11 +293,11 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter, val me: Int, val de
     }
 
     /**
-     * Move cardID from hand of one player to the hand of another
+     * Move cardID from hand of one playerId to the hand of another
      * @param cardID - cardID to move(any unknown cardID is picked, if cardID = -1)
-     * @param from - id of player, to take cardID from
+     * @param from - id of playerId, to take cardID from
      * from = -1 - means common hand is used
-     * @param to - id of player, to give cardID to
+     * @param to - id of playerId, to give cardID to
      * to = -1 - means common hand is used
      */
     fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true) {
@@ -333,7 +333,19 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter, val me: Int, val de
         return tableScreen.deck.getCardModel(card.suit, card.pip)
     }
 
+    /**
+     * update name of player with given ID
+     *
+     * @param player - table id of name to register
+     * @param name - new name
+     */
+    fun updatePlayerName(player: Int, name: String){
+        tableScreen.updatePlayerName(player, name)
+    }
 
+    /**
+     * init overlays, that require pressing button onscreen
+     */
     private fun initButtonOverlays() {
         val betBreaks = listOf(Bet.PASS, Bet.SIX_NO_TRUMP, Bet.SEVEN_NO_TRUMP,
                 Bet.EIGHT_NO_TRUMP, Bet.MIZER, Bet.NINE_NO_TRUMP)

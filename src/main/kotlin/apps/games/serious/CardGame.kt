@@ -33,7 +33,7 @@ abstract class CardGame(chat: Chat, group: Group, gameID: String,
     //shuffled Deck
     protected lateinit var deck: ShuffledDeck
 
-    //player whose turn is right now
+    //playerId whose turn is right now
     protected var currentPlayerID: Int = 0
 
     /**
@@ -52,7 +52,7 @@ abstract class CardGame(chat: Chat, group: Group, gameID: String,
 
 
     /**
-     * During the game in GUI - ew are always player 0,
+     * During the game in GUI - ew are always playerId 0,
      * meanwhile in game we are not
      */
     fun getTablePlayerId(id: Int): Int {

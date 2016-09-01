@@ -22,10 +22,10 @@ import java.math.BigInteger
  *
  * Algorithm has four stages:
  *
- * INIT - protocol just started, each player generates his own
+ * INIT - protocol just started, each playerId generates his own
  * random number and broadcasts it
  *
- * GENERATE - each player processes random numbers received from
+ * GENERATE - each playerId processes random numbers received from
  * other players and computes their sum - that is common random
  * number
  *

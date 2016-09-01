@@ -202,7 +202,7 @@ class SecretSharingGame(chat: Chat, group: Group, gameID: String, val ECParams: 
      * one thing: decrypt with H key and encrypt with T key.
      *
      * Detective on the other hand - not onely encrypts with T key, but also
-     * shuffle N-sized blocks. For other player there is no way to tell whether
+     * shuffle N-sized blocks. For other playerId there is no way to tell whether
      * shuffling took place or not
      */
     private fun doDetectiveMagic(responses: List<GameMessageProto.GameStateMessage>) {

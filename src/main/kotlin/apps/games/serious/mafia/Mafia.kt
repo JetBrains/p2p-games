@@ -382,12 +382,15 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
+        for(i in 0..N-1){
+            gameGUI.updatePlayerName(getTablePlayerId(i), playerOrder[i].name)
+        }
         return ""
     }
 
     /**
      * process role generation and distribution.
-     * after this step [role] holds current player role
+     * after this step [role] holds current playerId role
      * with the list of known comrades
      */
     private fun initRoles() {

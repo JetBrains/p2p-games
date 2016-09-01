@@ -13,10 +13,14 @@ import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
+import com.badlogic.gdx.graphics.g3d.decals.DecalBatch
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
 import com.badlogic.gdx.math.Intersector
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.utils.Align
+import java.util.*
 
 /**
  * Created by user on 7/1/16.
@@ -47,10 +51,12 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     var actionManager = ActionManager()
     val topDeck: CardGUI
     var showDeck = true
-    val overlays = mutableListOf<Overlay>()
-    lateinit var spriteBatch: SpriteBatch
+    val overlays: MutableList<Overlay> = Collections.synchronizedList(mutableListOf<Overlay>())
+    lateinit var staticBatch: SpriteBatch
+    lateinit var dynamicBatch: SpriteBatch
     lateinit var font: BitmapFont
-
+    private val initWidth: Int
+    private val initHeight: Int
     private var selector: CardSelector = DefaultSelector
 
     var hint: String = ""
@@ -60,7 +66,10 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     private val DEAL_SPEED = 1f
 
     init {
-        spriteBatch = SpriteBatch()
+        initHeight = Gdx.graphics.height
+        initWidth = Gdx.graphics.width
+        staticBatch = SpriteBatch()
+        dynamicBatch = SpriteBatch()
         font = BitmapFont()
         font.color = Color.RED
 
@@ -104,22 +113,23 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
      * Render everything. Also in charge of spawning cards on timer
      */
     override fun render(delta: Float) {
-        val delta = Math.min(1 / 30f, Gdx.graphics.deltaTime)
+        val timeDelta = Math.min(1 / 30f, Gdx.graphics.deltaTime)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
         Gdx.gl20.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
         camController.update()
 
-        actionManager.update(delta)
-
+        actionManager.update(timeDelta)
         game.batch.begin(getCam())
-        game.batch.render(cards, environment)
         game.batch.render(table.tableTop, environment)
+        game.batch.render(cards, environment)
         game.batch.end()
+        renderNames()
+        staticBatch.begin()
+        font.draw(staticBatch, hint, 100f, 20f)
+        font.draw(staticBatch, controlsHint, initWidth - 300f, initHeight - 50f)
+        staticBatch.end()
 
-        spriteBatch.begin()
-        font.draw(spriteBatch, hint, 100f, 100f)
-        font.draw(spriteBatch, controlsHint, 700f, 1000f)
-        spriteBatch.end()
+
         synchronized(overlays) {
             for (overlay in overlays) {
                 overlay.render(getCam())
@@ -140,7 +150,33 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     }
 
     /**
-     * Deal specified cardID to a specified player
+     * draw name of active players to the sprite batch
+     * with given font
+     *
+     * @param batch - where to draw
+     * @param font - font to use
+     */
+    fun renderNames(){
+        val oldMatrix = dynamicBatch.projectionMatrix.cpy()
+        for (player in table.players){
+            val transform = oldMatrix.idt().translate(player.nickPosition).scl(0.06f).rotate(0f, 0f, 1f, player.getAngle())
+            dynamicBatch.projectionMatrix = Matrix4(getCam().combined).mul(transform)
+            dynamicBatch.begin()
+            font.draw(dynamicBatch, player.name, 0f, 0f, 0, player.name.length, 5f, Align.center, false)
+            dynamicBatch.end()
+        }
+        dynamicBatch.projectionMatrix = oldMatrix
+    }
+
+    /**
+     * update name of a player with given player Id
+     */
+    fun updatePlayerName(playerID: Int, name: String){
+        table.players[playerID].name = name
+    }
+
+    /**
+     * Deal specified cardID to a specified playerId
      * @param player - receives the cardID
      * @param card - cardID to give
      */
@@ -161,12 +197,12 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     }
 
     /**
-     * Deal specified cardID to a player with a give playerId
-     * @param player - id of the player that receives the cardID
+     * Deal specified cardID to a playerId with a give playerId
+     * @param playerId - id of the playerId that receives the cardID
      * @param card - cardID to give
      */
-    @Synchronized fun dealPlayer(player: Int, card: CardGUI) {
-        dealPlayer(table.players[player], card)
+    @Synchronized fun dealPlayer(playerId: Int, card: CardGUI) {
+        dealPlayer(table.players[playerId], card)
     }
 
 
@@ -227,7 +263,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     }
 
     /**
-     * Replace specified card in player cardspace with new one
+     * Replace specified card in playerId cardspace with new one
      */
     @Synchronized fun revealCardInCardSpaceHand(playerID: Int,
                                                 oldCardIndex: Int,
@@ -249,7 +285,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     }
 
     /**
-     * Get card by index from cardspace of one player and move it
+     * Get card by index from cardspace of one playerId and move it
      * to hand of another
      */
     @Synchronized fun transferCardFromCardSpaceToPlayer(fromPlayer: Int,
@@ -262,7 +298,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     }
 
     /**
-     * Remove all cards, that are not in player hands from table
+     * Remove all cards, that are not in playerId hands from table
      */
     @Synchronized fun clearTable() {
         val toRemove = cards.filter { x -> table.getPlayerWithCard(x) == null }
@@ -362,10 +398,10 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
         cam2d.position.set(0f, 0f, 11f)
         cam2d.lookAt(0f, 0f, 0f)
         if (width > height) {
-            cam2d.viewportHeight = 21f
+            cam2d.viewportHeight = 22f
             cam2d.viewportWidth = cam2d.viewportHeight * width.toFloat() / height.toFloat()
         } else {
-            cam2d.viewportWidth = 21f
+            cam2d.viewportWidth = 22f
             cam2d.viewportHeight = cam2d.viewportWidth * height.toFloat() / width.toFloat()
         }
 
@@ -562,7 +598,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
                 return i
             }
         }
-        throw ArrayIndexOutOfBoundsException("No such card in player hand")
+        throw ArrayIndexOutOfBoundsException("No such card in playerId hand")
     }
 
     /**
@@ -574,7 +610,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
                 return i
             }
         }
-        throw ArrayIndexOutOfBoundsException("No such card in player card space")
+        throw ArrayIndexOutOfBoundsException("No such card in playerId card space")
     }
 
 

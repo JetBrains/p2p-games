@@ -37,7 +37,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         WHISTING, //if contract os not PASS - dicide on whisting
         WHISTING_RESULT, //exchage results of whisting
         OPEN_HAND_KEY_EXHANGE, //if after whisting game whisted only ny one
-        OPEN_HAND_DECRYPT, // player and he dycided top open hands - exchange keys
+        OPEN_HAND_DECRYPT, // playerId and he dycided top open hands - exchange keys
         PLAY, //play cards =)
         VERYFY_ROUND, //Verify talon, cards played and key sets
         FINALIZE, //Count scores, send logs
@@ -87,7 +87,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
 
     init {
-        if(N != 3) throw GameExecutionException("Only 3 player preferans is supported")
+        if(N != 3) throw GameExecutionException("Only 3 playerId preferans is supported")
         val order = listOf(*playerOrder.toTypedArray())
         Collections.rotate(order, getTablePlayerId(playerID))
         scoreCounter = PreferansScoreCounter(order)
@@ -108,11 +108,11 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         when (state) {
             State.INIT -> {
                 if (group.users.size != N) {
-                    throw GameExecutionException("Only 3 player Preferans is " +
+                    throw GameExecutionException("Only 3 playerId Preferans is " +
                             "supported")
                 }
                 state = State.ROUND_INIT
-                return initGame(responses)
+                initGame(responses)
             }
             State.ROUND_INIT -> {
                 state = State.DECRYPT_HAND
@@ -317,7 +317,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                         }
                         currentPlayerID = logger.log.registerPlay(currentPlayerID
                                 to index) ?:
-                                throw GameExecutionException("Can not find next player")
+                                throw GameExecutionException("Can not find next playerId")
 
 
                         if (logger.log.newTurnStarted()) {
@@ -344,7 +344,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
                     mainUser = currentPlayerID
                 }
                 //in case of Open whists - someone plays instead of
-                // passed player
+                // passed playerId
                 if (playerID == mainUser) {
                     gameGUI.showHint("[${gameBet.type}] It is your turn to " +
                             "play " +
@@ -408,8 +408,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     /**
      * Start GUI for the Preferans game
      */
-    private fun initGame(responses: List<GameMessageProto.GameStateMessage>): String {
-        //validate player order
+    private fun initGame(responses: List<GameMessageProto.GameStateMessage>){
+        //validate playerId order
         val hashes = responses.distinctBy { x -> x.value }
         if (hashes.size != 1) {
             throw GameExecutionException("Someone has different deck")
@@ -425,7 +425,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
-        return ""
+        for(i in 0..N-1){
+            gameGUI.updatePlayerName(getTablePlayerId(i), playerOrder[i].name)
+        }
     }
 
     /**
@@ -531,7 +533,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     /**
      * Show bidding overlay, get bet from
-     * the player
+     * the playerId
      */
     private fun getBid(): String {
         val toDisplay = Array(N, { i -> Pair(playerOrder[i], bets[i]) })
@@ -542,11 +544,11 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
             val maxBet = bets.maxBy { x -> x.value } ?: throw GameExecutionException(
                     "Something went wront in betting")
             gameGUI.disableAllBets()
-            //player alvays can bet higher then current bidding
+            //playerId alvays can bet higher then current bidding
             gameGUI.enableBets(
                     *Bet.values().filter { x -> x.value > maxBet.value }.toTypedArray())
 
-            //If player is currently highest bidder - he can stick to the same bet
+            //If playerId is currently highest bidder - he can stick to the same bet
             //if he is not - he can pass
             if (bets[playerID] == maxBet) {
                 gameGUI.enableBets(bets[playerID])
@@ -622,7 +624,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Give talon to main player
+     * Give talon to main playerId
      */
     fun dealTalon() {
         for (i in 0..TALON - 1) {
@@ -637,7 +639,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     /**
      * Take a list of keys sent by user,
      * keys should correspond to cards, that are not
-     * by that user. I.E. If player holds cards
+     * by that user. I.E. If playerId holds cards
      * 1, 4, 7 in shuffled deck, keys - contains
      * key for every cardID, that is not in TALON,
      * and are not possesed by that user
@@ -686,7 +688,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Give each player cards, that
+     * Give each playerId cards, that
      * belong to his hand(GUI)
      */
     private fun dealHands() {
@@ -718,7 +720,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Skip game if we are main player or
+     * Skip game if we are main playerId or
      * run subgame if we are not
      */
     private fun startWhisting(): String {
@@ -784,8 +786,8 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     /**
      * play any known cardID that is possesed by
-     * player with given id
-     * @param playerID - player whose cardID will be played
+     * playerId with given id
+     * @param playerID - playerId whose cardID will be played
      * @param restrictCards - wether to allow to play
      * cards that don't match current trump suit
      * @return ID of picked cardID

@@ -135,10 +135,8 @@ class EnumDispatcher<T : GeneratedMessage> : Dispatcher<T> {
         return null
     }
 
-
     @Suppress("UNCHECKED_CAST")
-    private fun <T : GeneratedMessage> getHandlers(eventType: Descriptors.EnumValueDescriptor,
-                                                   eventValueType: Class<T>)
+    private fun <T : GeneratedMessage> getHandlers(eventType: Descriptors.EnumValueDescriptor, @Suppress("UNUSED_PARAMETER") eventValueType: Class<T>)
             : List<Dispatcher<T>> {
         val list = listeners[eventType]
         return list as List<Dispatcher<T>>

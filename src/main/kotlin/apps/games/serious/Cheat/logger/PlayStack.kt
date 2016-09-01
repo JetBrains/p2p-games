@@ -97,7 +97,7 @@ class PlayStack(val deckSize: Int) {
     }
 
     /**
-     * Register verifier player
+     * Register verifier playerId
      *
      * @param user - User who claimed cheat/believe
      * @param cardPos - position of card to be verified
@@ -108,7 +108,7 @@ class PlayStack(val deckSize: Int) {
             throw GameExecutionException("Verifier already registered")
         }
         if (user != claims.last().user) {
-            throw GameExecutionException("Someone else response instead of last player")
+            throw GameExecutionException("Someone else response instead of last playerId")
         }
         if (cardPos < 0 || cardPos >= claims.last().count.size) {
             throw GameExecutionException("Verification card index out of range")
@@ -126,7 +126,7 @@ class PlayStack(val deckSize: Int) {
      */
     fun registerVerifyResponse(user: User, response: String) {
         if (verifierPlayer != user) {
-            throw GameExecutionException("Someone else response instead of last player")
+            throw GameExecutionException("Someone else response instead of last playerId")
         }
         val hash = DigestUtils.sha256Hex(response)
         if (hash != claims.last().hashes[verificationCard]) {
@@ -137,7 +137,7 @@ class PlayStack(val deckSize: Int) {
     /**
      * @return True, if verification was successful,
      * i.e cheat was claimed and found or
-     * player was right to believe
+     * playerId was right to believe
      */
     fun checkResponseCard(cardId: Int): Boolean {
         guessedCorrect = (getCardById(cardId, deckSize).pip == pip) xor cheat

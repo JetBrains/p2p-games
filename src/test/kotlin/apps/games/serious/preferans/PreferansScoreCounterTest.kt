@@ -16,7 +16,7 @@ class PreferansScoreCounterTest {
 
     /**
      * Simulate two rounds played in both rounds
-     * first player takes 10 hands with other users just passing
+     * first playerId takes 10 hands with other users just passing
      */
     @Test
     fun checkOneUserBullet() {
@@ -99,7 +99,7 @@ class PreferansScoreCounterTest {
 
         val handsTaken = mutableMapOf(user1 to 0, user2 to 0, user3 to 0)
         val whists = mutableMapOf(user1 to Whists.PASS, user2 to Whists.WHIST_BLIND, user3 to Whists.PASS)
-        //first player failed to play 10, took only 6
+        //first playerId failed to play 10, took only 6
         handsTaken[user1] = 6
         handsTaken[user2] = 2
         handsTaken[user3] = 2
@@ -112,7 +112,7 @@ class PreferansScoreCounterTest {
         whists[user1] = Whists.WHIST_BLIND
         whists[user3] = Whists.WHIST_BLIND
         scoreCounter.updateScore(handsTaken, Bet.SIX_NO_TRUMP, whists, user2)
-        //first player failed to play 9, took only 6
+        //first playerId failed to play 9, took only 6
         handsTaken[user1] = 2
         handsTaken[user2] = 2
         handsTaken[user3] = 6
@@ -122,7 +122,7 @@ class PreferansScoreCounterTest {
         scoreCounter.updateScore(handsTaken, Bet.NINE_NO_TRUMP, whists, user3)
         //Now user1 has 10 in bullet. user2 has 2, user3 has 10
         assertFalse(scoreCounter.endOfGameReached())
-        //First player won 30 two times in a row, ending the game
+        //First playerId won 30 two times in a row, ending the game
         handsTaken[user1] = 2
         handsTaken[user2] = 2
         handsTaken[user3] = 6

@@ -115,10 +115,10 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
     }
 
     /**
-     * currenty - no need to do anything
      * @param game - game to be removed
      */
     fun deleteGame(game: Game<*>) {
+        println("${game.gameID} was canceled")
     }
 
     /**

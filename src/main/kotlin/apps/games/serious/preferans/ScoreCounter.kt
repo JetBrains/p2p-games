@@ -12,7 +12,7 @@ import java.util.*
  * Class for computing preferans score
  * (update heap/bullet/whists)
  * @param users - list of users who participate in this game
- * @param maxBulletPerUser - maximum bullet per player. Game will not stop
+ * @param maxBulletPerUser - maximum bullet per playerId. Game will not stop
  * @param heapMultiplier - heap to whist ratio
  * @param bulletMultiplier - bullet to heap ratio
  * until total bullet is [maxBulletPerUser] * [N], where [N] - number of
@@ -23,7 +23,7 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 5
                             val bulletMultiplier: Int = 2) {
     val heap: MutableMap<User, Int> = mutableMapOf()
     val bullet: MutableMap<User, Int> = mutableMapOf()
-    //Pair of <A, B> - how many whists A has on player B
+    //Pair of <A, B> - how many whists A has on playerId B
     val whists: MutableMap<Pair<User, User>, Int> = mutableMapOf()
 
     init {
@@ -175,7 +175,7 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 5
 
 
     /**
-     * update scores if everyone agreed with contract(one player passed,
+     * update scores if everyone agreed with contract(one playerId passed,
      * another half-whisted)
      * @param gameBet - highest contract
      * @param mainPlayer - holder of gameBet
@@ -191,16 +191,16 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 5
 
 
     /**
-     * update scores if one player passed and second
-     * player whisted contract
+     * update scores if one playerId passed and second
+     * playerId whisted contract
      * @param gameBet - highest contract
      * @param handsTaken - Map<User, Int>, describes number
-     * if hands taken by each player
+     * if hands taken by each playerId
      * @param mainPlayer - holder of gameBet contract
      * @param whisters - list of users, that whisted(should contain only one
-     * user for 3-player game)
+     * user for 3-playerId game)
      * @param passed - list of users, that passed(should contain only one
-     * user for 3-player game)
+     * user for 3-playerId game)
      */
     private fun oneWhisted(gameBet: Bet,
                            handsTaken: Map<User, Int>,
@@ -208,7 +208,7 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 5
                            whisters: List<User>,
                            passed: List<User>) {
         if (whisters.size != 1 || passed.size != 1) {
-            throw IllegalArgumentException("One player must pass, another whist")
+            throw IllegalArgumentException("One playerId must pass, another whist")
         }
         val whister = whisters[0]
         val pass = passed[0]
@@ -244,15 +244,15 @@ class PreferansScoreCounter(val users: List<User>, val maxBulletPerUser: Int = 5
      * update scores if both players pwhisted contract
      * @param gameBet - highest contract
      * @param handsTaken - Map<User, Int>, describes number
-     * if hands taken by each player
+     * if hands taken by each playerId
      * @param mainPlayer - holder of gameBet contract
      * @param whisters - list of users, that whisted(should contain two
-     * user for 3-player game)
+     * user for 3-playerId game)
      */
     private fun bothWhisted(gameBet: Bet, handsTaken: Map<User, Int>,
                             mainPlayer: User, whisters: List<User>) {
         if (whisters.size != 2) {
-            throw IllegalArgumentException("One player must pass, another whist")
+            throw IllegalArgumentException("One playerId must pass, another whist")
         }
         val whister1 = whisters[0]
         val whister2 = whisters[1]

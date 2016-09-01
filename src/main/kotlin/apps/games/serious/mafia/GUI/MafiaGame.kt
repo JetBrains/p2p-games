@@ -175,7 +175,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     }
 
     /**
-     * Give a player with specified ID
+     * Give a playerId with specified ID
      * a cardID taht corresponds to given role
      */
     fun dealPlayer(player: Int, role: Role, index: Int = 0) {
@@ -193,7 +193,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
     }
 
     /**
-     * reveal player role
+     * reveal playerId role
      *
      * @param player - whose card to reveal
      * @param role - role to reveal
@@ -205,9 +205,9 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
 
     /**
      * if role already revealed - animate play
-     * of corresponding card (that means player death)
+     * of corresponding card (that means playerId death)
      *
-     * @param role - role of killed player
+     * @param role - role of killed playerId
      */
     fun animateRolePlay(role: Role, index: Int = 0) {
         val card = getCardModelByRole(role, index)
@@ -217,6 +217,16 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
                 Thread.sleep(100)
             }
         }
+    }
+
+    /**
+     * update name of player with given ID
+     *
+     * @param player - table id of name to register
+     * @param name - new name
+     */
+    fun updatePlayerName(player: Int, name: String){
+        tableScreen.updatePlayerName(player, name)
     }
 
 

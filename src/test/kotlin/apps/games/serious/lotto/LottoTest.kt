@@ -77,7 +77,7 @@ class LottoTest {
         while (!(lotto as Lotto).isFinished()) {
             (lotto as Lotto).evaluate(listOf<GameMessageProto.GameStateMessage>())
         }
-        // We are the only player - we should win
+        // We are the only playerId - we should win
         assertTrue("Ticket is incorrect", (lotto as Lotto).verifyTicket(
                 sampleTicket))
         assertTrue("Somehow we lost to ourself", (lotto as Lotto).win())

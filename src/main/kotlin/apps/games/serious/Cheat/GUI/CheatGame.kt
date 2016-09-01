@@ -45,7 +45,7 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     }
 
     /**
-     * Give a player with specified ID
+     * Give a playerId with specified ID
      * a card with cardID from the deck
      */
     fun dealPlayer(player: Int, cardID: Int) {
@@ -53,7 +53,7 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     }
 
     /**
-     * Give a player with specified ID
+     * Give a playerId with specified ID
      * a card from the deck
      */
     fun dealPlayer(player: Int, card: Card) {
@@ -101,11 +101,11 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     }
 
     /**
-     * Move cardID from hand of one player to the hand of another
+     * Move cardID from hand of one playerId to the hand of another
      * @param cardID - cardID to move(any unknown cardID is picked, if cardID = -1)
-     * @param from - id of player, to take cardID from
+     * @param from - id of playerId, to take cardID from
      * from = -1 - means common hand is used
-     * @param to - id of player, to give cardID to
+     * @param to - id of playerId, to give cardID to
      * to = -1 - means common hand is used
      */
     fun giveCard(cardID: Int, from: Int, to: Int, flip: Boolean = true) {
@@ -363,7 +363,7 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     /**
      * Reveal a card played by a given user
      *
-     * @param player - player whose card will be revealed
+     * @param player - playerId whose card will be revealed
      * @param oldCardIndex - index of card to be played
      * from 0 to all cards in card space
      * @param newCard - new card to be played
@@ -380,10 +380,10 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     }
 
     /**
-     * Transfer card from player's cardspace
-     * to the hand of another player
-     * @param fromPlayer - id of player, whose cards to transfer
-     * @param toPlayer - id of player, who will receive cards
+     * Transfer card from playerId's cardspace
+     * to the hand of another playerId
+     * @param fromPlayer - id of playerId, whose cards to transfer
+     * @param toPlayer - id of playerId, who will receive cards
      * @param index - index of played card in cardspace
      * @param newCard - a card that will be revealed instead
      * of card at index position
@@ -442,6 +442,16 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
         deckSizeChanged = true
     }
 
+    /**
+     * update name of player with given ID
+     *
+     * @param player - table id of name to register
+     * @param name - new name
+     */
+    fun updatePlayerName(player: Int, name: String){
+        tableScreen.updatePlayerName(player, name)
+    }
+
 
     override fun render() {
         if (deckSizeChanged) {
@@ -468,14 +478,25 @@ fun main(args: Array<String>) {
     config.width = 1024
     config.height = 1024
     config.forceExit = false
+    config.title = "A"
     val gameGUI = CheatGame(1, N = 5, deckSize = 52)
-    LwjglApplication(gameGUI, config)
+    val app =LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
     for (i in 0..51) {
         gameGUI.dealPlayer(i % 5, i)
     }
-    val allowed = gameGUI.tableScreen.cards.map { x -> Card(x.suit, x.pip) }.toTypedArray()
-    while (true) {
-        gameGUI.pickCard(*allowed)
+    app.stop()
+    val gameGUI2 = CheatGame(1, N = 5, deckSize = 52)
+    val config2 = LwjglApplicationConfiguration()
+    config2.width = 1024
+    config2.height = 1024
+    config2.forceExit = false
+    config.title = "B"
+    LwjglApplication(gameGUI2, config2)
+    Thread.sleep(2000)
+    for (i in 0..51) {
+        gameGUI2.dealPlayer(i % 5, i)
     }
+
+
 }

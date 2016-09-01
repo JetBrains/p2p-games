@@ -44,7 +44,7 @@ class RoundLogger(val N: Int, val deckSize: Int, val shuffledDeck: ShuffledDeck)
     }
 
     /**
-     * Check if current player - firs player
+     * Check if current playerId - firs playerId
      * in the new stack
      */
     fun isNewStack() = currentStack.isNewStack()
@@ -181,7 +181,7 @@ class RoundLogger(val N: Int, val deckSize: Int, val shuffledDeck: ShuffledDeck)
     /**
      * Verify, that all plays of this stack are consistent.
      * Only hashes and card ownership is checked. Player order
-     * is enforced by design: if al least one player is not cheating
+     * is enforced by design: if al least one playerId is not cheating
      * his game will crush due to unexpected message
      *
      * @param userList - list of all users, who participate in the game
@@ -230,7 +230,7 @@ class RoundLogger(val N: Int, val deckSize: Int, val shuffledDeck: ShuffledDeck)
     /**
      * Calculate hash for user key set - used to
      * validate, that no cardID exchange cooperation was present
-     * @param player - id of player, whose key hash is being calculated
+     * @param player - id of playerId, whose key hash is being calculated
      * @return Sting - resulting hash. Null if current information is
      * insuffitient to calculate requested hash
      */

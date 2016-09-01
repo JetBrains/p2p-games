@@ -13,7 +13,7 @@ import org.bouncycastle.math.ec.ECPoint
 
 abstract class PlayerRole {
     /**
-     * Role of player
+     * Role of playerId
      */
     abstract val role: Role
 

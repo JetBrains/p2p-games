@@ -3,6 +3,8 @@ package apps.games.serious.TableGUI
 import apps.games.GameExecutionException
 import apps.games.serious.Pip
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.Model
 import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.badlogic.gdx.graphics.g3d.loader.ObjLoader
@@ -65,6 +67,15 @@ class Table(val playersCount: Int, var handSize: Int) : Disposable {
         }
     }
 
+    /**
+     * Given a card gui find a playerId,
+     * whose cardspace this card currently
+     * belongs
+     *
+     * @param card - CardGUI to find
+     * @return Player - playerId, who holds this
+     * card or null, if no such playerId exists
+     */
     fun getPlayerWithCard(card: CardGUI): Player? {
         for (player in players) {
             if (player.hand.cards.contains(card)) {
@@ -74,10 +85,16 @@ class Table(val playersCount: Int, var handSize: Int) : Disposable {
         return null
     }
 
+    /**
+     * get playerId at the head of the table
+     */
     fun getMainPlayer(): Player {
         return players[0]
     }
 
+    /**
+     * clear and reset the table
+     */
     fun clear() {
         commonHand.clear()
         for (player in players) {
@@ -95,8 +112,12 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
 
     val cardSpaceHand: Hand = Hand(Vector3(position).scl(0.7f), 4, direction, 4.5f)
 
+    var name: String = "Anonymous"
+
+    val nickPosition: Vector3 = Vector3(position).scl(1.22f).add(0f, 0f, 1f)
+
     /**
-     * get angle between player and center of the table
+     * get angle between playerId and center of the table
      */
     fun getAngle(): Float {
         return MathUtils.radDeg * MathUtils.atan2(-direction.x, direction.y)
@@ -108,6 +129,7 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
     fun getCardspace(): Vector3 {
         return cardSpaceHand.nextCardPosition()
     }
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -123,8 +145,6 @@ class Player(val position: Vector3, val direction: Vector3, handSize: Int, val I
     override fun hashCode(): Int {
         return Id
     }
-
-
 }
 
 class Hand(val position: Vector3, var MAX_HAND_SIZE: Int = 6, val direction: Vector3, val MAX_HAND_WIDTH: Float = 3f) {

@@ -90,7 +90,7 @@ GameManagerClass, val gameGUI: PreferansGame,
 
                         Round.REBID -> {
                             showRebidRoundWhists()
-                            //if first player whisted - auto pass
+                            //if first playerId whisted - auto pass
                             //if he didn't - keep our half whist
                             if (playerID == 1) {
                                 if (whists[0] in realWhists) {
@@ -114,7 +114,7 @@ GameManagerClass, val gameGUI: PreferansGame,
                     return whist.name
 
                 } else {
-                    gameGUI.showHint("[${maxBet.type}] Waiting for other player to" +
+                    gameGUI.showHint("[${maxBet.type}] Waiting for other playerId to" +
                             " " +
                             "decide " +
                             "on " +
@@ -185,7 +185,7 @@ GameManagerClass, val gameGUI: PreferansGame,
                 "whist are equal)")
         gameGUI.enableWhists(Whists.PASS, Whists.WHIST_BLIND,
                 Whists.WHIST_OPEN)
-        //if first player passed - second can go half whist
+        //if first playerId passed - second can go half whist
         if (playerID == 1 && whists[0] == Whists.PASS && maxBet.value <= Bet.MIZER.value) {
             gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST or " +
                     "HALF WHIST(Both " +
@@ -195,11 +195,11 @@ GameManagerClass, val gameGUI: PreferansGame,
     }
 
     /**
-     * If second player Half-Whisted - firs player can upgrade his
+     * If second playerId Half-Whisted - firs playerId can upgrade his
      * pass to whist
      */
     fun showRebidRoundWhists() {
-        //first player can pass or whist
+        //first playerId can pass or whist
         if (playerID == 0) {
             gameGUI.showHint("[${maxBet.type}] You can PASS or WHIST(Both " +
                     "whist are equal)")

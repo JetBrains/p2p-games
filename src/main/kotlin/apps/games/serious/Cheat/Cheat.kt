@@ -241,6 +241,9 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
+        for(i in 0..N-1){
+            gameGUI.updatePlayerName(getTablePlayerId(i), playerOrder[i].name)
+        }
         return ""
     }
 
@@ -283,7 +286,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     /**
      * Take a list of keys sent by user,
      * keys should correspond to cards, that are not
-     * by that user. I.E. If player holds cards
+     * by that user. I.E. If playerId holds cards
      * 1, 4, 7 in shuffled deck, keys - contains
      * key for every cardID, that is not in TALON,
      * and are not possessed by that user
@@ -326,9 +329,9 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
 
     /**
      * Process messages receive from last turn (in game phase)
-     * update logger, choose next player to make his move
+     * update logger, choose next playerId to make his move
      *
-     * @return player action(Choice)
+     * @return playerId action(Choice)
      */
     private fun processGameResponses(responses: List<GameMessageProto.GameStateMessage>): Choice {
         for (msg in responses) {
@@ -365,7 +368,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * if previous player decided to add cards - process his request
+     * if previous playerId decided to add cards - process his request
      * @param msg - GameStateMessage describing added cards
      */
     private fun processAddCardHashes(msg: GameMessageProto.GameStateMessage) {
@@ -445,7 +448,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Get player Choice from UI
+     * Get playerId Choice from UI
      */
     private fun getPlayerChoise(): Choice {
         if (logger.log.isNewStack()) {
@@ -466,7 +469,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
 
 
     /**
-     * Get number of cards that player will play this round
+     * Get number of cards that playerId will play this round
      */
     private fun getAddCount(): BetCount {
         val betCountQueue = LinkedBlockingQueue<BetCount>(1)
@@ -502,7 +505,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
      * Reveal card sent by verifier.
      * Log it and check, that everything was consistent.
      * Reveal card and hide it(GUI animations)
-     * set cardReceiver to the id of player,
+     * set cardReceiver to the id of playerId,
      * who should receive all cards on the table
      */
     private fun revealCard(responses: List<GameMessageProto.GameStateMessage>) {
@@ -537,7 +540,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
 
     /**
      * This function is used during revealing cards to
-     * one player. It tages list of responses, exactly one
+     * one playerId. It tages list of responses, exactly one
      * of which contains encrypted info about passed cards
      * (this data is stored in data field of protobuf message
      */
@@ -594,11 +597,11 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Get next active player starting
+     * Get next active playerId starting
      * from n
      *
-     * @param n - starting player
-     * @return id of next active player
+     * @param n - starting playerId
+     * @return id of next active playerId
      */
     private fun getNextPlayer(n: Int = currentPlayerID): Int {
         var res = (n + 1) % N
@@ -609,10 +612,10 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Get first active player befor n
+     * Get first active playerId befor n
      *
-     * @param n - starting player
-     * @return id of last active player
+     * @param n - starting playerId
+     * @return id of last active playerId
      */
     private fun getPreviousPlayer(n: Int = currentPlayerID): Int {
         var res = n - 1

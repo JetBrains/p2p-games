@@ -46,11 +46,11 @@ class RoundLogger(val N: Int, val deckSize: Int, val TALON_SIZE: Int) {
     /**
      * Assuming N - is the number of players, register
      * set of N Keys - cards played starting from the
-     * first player of this round(one, who goes first)
+     * first playerId of this round(one, who goes first)
      * @param plays -  Pair<Int, Int> . First item - playerID
      * second - CardId
      *
-     * @return id of the player whose turn is next
+     * @return id of the playerId whose turn is next
      * @throws GameExecutionException - if someone played
      * inconsistent with rules
      */
@@ -144,15 +144,15 @@ class RoundLogger(val N: Int, val deckSize: Int, val TALON_SIZE: Int) {
     }
 
     /**
-     * For each player - hount how many turns has he won this round
-     * @return Map<Int, Int> - map player Ids to nowber of turns won
+     * For each playerId - hount how many turns has he won this round
+     * @return Map<Int, Int> - map playerId Ids to nowber of turns won
      */
     fun countWonTurns(): MutableMap<Int, Int> {
         return turnsWon
     }
 
     /**
-     * Check, that every player submitted allowed cardID for each turn. This
+     * Check, that every playerId submitted allowed cardID for each turn. This
      * is only verifyable at the end, when all plays(keys) are known
      */
     fun verifyRoundPlays(): Boolean {
@@ -222,7 +222,7 @@ class RoundLogger(val N: Int, val deckSize: Int, val TALON_SIZE: Int) {
     /**
      * Calculate hash for user key set - used to
      * validate, that no cardID exchange cooperation was present
-     * @param player - id of player, whose key hash is being calculated
+     * @param player - id of playerId, whose key hash is being calculated
      * @return Sting - resulting hash. Null if current information is
      * insuffitient to calculate requested hash
      */
