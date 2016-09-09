@@ -1,7 +1,7 @@
 package apps.chat
 
 import Settings
-import apps.chat.GUI.ChatGUI
+import apps.chat.gui.ChatGUI
 import broker.NettyGroupBroker
 import entity.ChatMessage
 import entity.Group
@@ -76,7 +76,7 @@ open class Chat(val chatId: Int) : Runnable {
         this.username = username
         group.users.add(me())
         chatGUI.refreshTitle(
-                "$username[${Settings.hostAddress.toString()}]GUI #$chatId")
+                "$username[${Settings.hostAddress.toString()}]gui #$chatId")
     }
 
     /**
@@ -129,6 +129,6 @@ open class Chat(val chatId: Int) : Runnable {
 
     //TODO - close connectons of this chat
     fun close() {
-        println("GUI closing")
+        println("gui closing")
     }
 }

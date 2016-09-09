@@ -1,6 +1,6 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.preferans.gui
 
-import apps.games.serious.TableGUI.Overlay
+import apps.table.gui.Overlay
 import apps.games.serious.preferans.PreferansScoreCounter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input

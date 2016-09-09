@@ -1,4 +1,4 @@
-package apps.chat.GUI
+package apps.chat.gui
 
 import Settings
 import apps.chat.ChatManager

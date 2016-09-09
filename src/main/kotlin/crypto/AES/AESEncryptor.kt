@@ -1,6 +1,6 @@
-package crypto.AES
+package crypto.aes
 
-import crypto.RSA.ECParams
+import crypto.rsa.ECParams
 import org.bouncycastle.crypto.engines.AESEngine
 import org.bouncycastle.crypto.modes.CBCBlockCipher
 import org.bouncycastle.crypto.paddings.BlockCipherPadding
@@ -16,9 +16,9 @@ import javax.xml.bind.DatatypeConverter
 /**
  * Created by Mark on 8/24/16.
  * Class for encryption/decryption with
- * symmetric AES cypher
+ * symmetric aes cypher
  *
- * @param IV - byte array to use as seed for AES parameters
+ * @param IV - byte array to use as seed for aes parameters
  */
 
 class AESEncryptor {

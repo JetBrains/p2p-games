@@ -1,4 +1,4 @@
-package crypto.RSA
+package crypto.rsa
 
 import apps.games.GameExecutionException
 import crypto.random.secureRandom
@@ -113,7 +113,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     }
 
     /**
-     * Encode message with given public RSA parameters
+     * Encode message with given public rsa parameters
      */
     fun encodeWithParams(mod: BigInteger,
                          exp: BigInteger,
@@ -124,7 +124,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     }
 
     /**
-     * Encode message with given public RSA parameters
+     * Encode message with given public rsa parameters
      */
     fun encodeWithParams(mod: BigInteger,
                          exp: BigInteger,
@@ -144,7 +144,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     }
 
     /**
-     * encode message with given RSA engine
+     * encode message with given rsa engine
      */
     private fun encodeWithEngine(engine: AsymmetricBlockCipher,
                                  msg: String): String {
@@ -152,7 +152,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
     }
 
     /**
-     * encode message with given RSA engine
+     * encode message with given rsa engine
      */
     private fun encodeWithEngine(engine: AsymmetricBlockCipher,
                                  bytes: ByteArray): String {
@@ -246,7 +246,7 @@ class RSAKeyManager(val KEY_LENGTH: Int = 1024) {
      * reset private/public keys as well as list of known enginies
      */
     fun reset() {
-        val keyGen = KeyPairGenerator.getInstance("RSA", "BC")
+        val keyGen = KeyPairGenerator.getInstance("rsa", "BC")
         keyGen.initialize(KEY_LENGTH, secureRandom)
         keyPair = keyGen.genKeyPair()
         engine.init(false, PrivateKeyFactory.createKey(keyPair.private.encoded))

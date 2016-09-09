@@ -3,7 +3,7 @@ package apps.games.serious.mafia
 import apps.games.GameExecutionException
 import apps.games.serious.mafia.roles.Role
 import apps.games.serious.mafia.subgames.sum.SMSfAResult
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.RSAKeyManager
 import entity.User
 import java.math.BigInteger
 import java.text.DateFormat
@@ -242,8 +242,8 @@ class MafiaLogger {
 
         val values = nightLogs.filter { x -> x.day == day - offset }
         val detectivePlay = detectiveLogs.firstOrNull { x -> x.day == day - offset }
-        val died = values.firstOrNull{x -> x.actor == Role.MAFIA}?.target
-        val survived = values.firstOrNull{x -> x.actor == Role.DOCTOR}?.target
+        val died = values.firstOrNull { x -> x.actor == Role.MAFIA }?.target
+        val survived = values.firstOrNull { x -> x.actor == Role.DOCTOR }?.target
         if (died != null && survived != null) {
             if (survived == died) {
                 builder.append("No one died this night\n")

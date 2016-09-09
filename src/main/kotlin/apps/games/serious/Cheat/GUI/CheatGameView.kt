@@ -1,10 +1,10 @@
-package apps.games.serious.Cheat.GUI
+package apps.games.serious.Cheat.gui
 
 import apps.games.serious.*
 import apps.games.serious.Cheat.BetCount
 import apps.games.serious.Cheat.Choice
 import apps.games.serious.Cheat.DeckSizes
-import apps.games.serious.TableGUI.*
+import apps.table.gui.*
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
+class CheatGameView(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit private var deckSizeOverlay: ButtonOverlay<DeckSizes>
@@ -435,7 +435,7 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
     }
 
     /**
-     * Update deck size inside of GUI
+     * Update deck size inside of gui
      */
     fun updateDeckSize(newDeckSize: Int) {
         deckSize = newDeckSize
@@ -448,7 +448,7 @@ class CheatGame(val me: Int, var deckSize: Int = 32, val N: Int) : GameView() {
      * @param player - table id of name to register
      * @param name - new name
      */
-    fun updatePlayerName(player: Int, name: String){
+    fun updatePlayerName(player: Int, name: String) {
         tableScreen.updatePlayerName(player, name)
     }
 
@@ -479,14 +479,14 @@ fun main(args: Array<String>) {
     config.height = 1024
     config.forceExit = false
     config.title = "A"
-    val gameGUI = CheatGame(1, N = 5, deckSize = 52)
-    val app =LwjglApplication(gameGUI, config)
+    val gameGUI = CheatGameView(1, N = 5, deckSize = 52)
+    val app = LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
     for (i in 0..51) {
         gameGUI.dealPlayer(i % 5, i)
     }
     app.stop()
-    val gameGUI2 = CheatGame(1, N = 5, deckSize = 52)
+    val gameGUI2 = CheatGameView(1, N = 5, deckSize = 52)
     val config2 = LwjglApplicationConfiguration()
     config2.width = 1024
     config2.height = 1024

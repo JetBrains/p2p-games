@@ -14,7 +14,7 @@ class Ticket(val ticketSize: Int) {
     private val marked: MutableSet<Int> = mutableSetOf()
 
     /**
-     * GUI if ticket contains give number
+     * gui if ticket contains give number
      * @param n - number to search
      */
     fun contains(n: Int): Boolean {

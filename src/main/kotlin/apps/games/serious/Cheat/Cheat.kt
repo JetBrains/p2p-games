@@ -4,13 +4,13 @@ import apps.chat.Chat
 import apps.games.GameExecutionException
 import apps.games.serious.Card
 import apps.games.serious.CardGame
-import apps.games.serious.Cheat.GUI.CheatGame
+import apps.games.serious.Cheat.gui.CheatGameView
 import apps.games.serious.Cheat.logger.CheatGameLogger
 import apps.games.serious.Pip
 import apps.games.serious.getCardById
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.RSAKeyManager
 import crypto.random.randomString
 import entity.Group
 import entity.User
@@ -47,7 +47,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
 
     private var state: State = State.INIT
 
-    private lateinit var gameGUI: CheatGame
+    private lateinit var gameGUI: CheatGameView
     private lateinit var application: LwjglApplication
 
     private val keyManager = RSAKeyManager()
@@ -92,10 +92,10 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                             val s = keyManager.decodeString(msg.value)
                             val handshake = s.split(" ").last()
                             if (handshake != HANDSHAKE_PHRASE) {
-                                throw GameExecutionException("Invalid RSA key")
+                                throw GameExecutionException("Invalid rsa key")
                             }
                         } catch (e: InvalidCipherTextException) {
-                            throw GameExecutionException("Malformed RSA key")
+                            throw GameExecutionException("Malformed rsa key")
                         }
                     }
                 }
@@ -103,7 +103,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                 currentPlayerID++
                 if (currentPlayerID == N) {
                     state = State.PICK_DECK_SIZE
-                    chat.sendMessage("RSA is OK. Generating deck")
+                    chat.sendMessage("rsa is OK. Generating deck")
                     currentPlayerID = -1
                     return ""
 
@@ -216,7 +216,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
                         { user: User, msg: String -> keyManager.decodeForUser(user, msg) },
                         winners.zip(playerOrder).map { x -> x.second to x.first }.toMap())
                 if (!f) {
-                    throw GameExecutionException("Someone cheated. After decrypting RSA something is not in place")
+                    throw GameExecutionException("Someone cheated. After decrypting rsa something is not in place")
                 }
                 keyManager.reset()
                 state = State.END
@@ -228,7 +228,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Start GUI for the Cheat game
+     * Start gui for the Cheat game
      */
     private fun initGame(): String {
         val config = LwjglApplicationConfiguration()
@@ -236,12 +236,12 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
         config.height = 1024
         config.forceExit = false
         config.title = "Cheat Game[${chat.username}]"
-        gameGUI = CheatGame(playerID, N = N)
+        gameGUI = CheatGameView(playerID, N = N)
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
-        for(i in 0..N-1){
+        for (i in 0..N - 1) {
             gameGUI.updatePlayerName(getTablePlayerId(i), playerOrder[i].name)
         }
         return ""
@@ -504,7 +504,7 @@ class Cheat(chat: Chat, group: Group, gameID: String) :
     /**
      * Reveal card sent by verifier.
      * Log it and check, that everything was consistent.
-     * Reveal card and hide it(GUI animations)
+     * Reveal card and hide it(gui animations)
      * set cardReceiver to the id of playerId,
      * who should receive all cards on the table
      */

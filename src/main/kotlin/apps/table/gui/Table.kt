@@ -1,4 +1,4 @@
-package apps.games.serious.TableGUI
+package apps.table.gui
 
 import apps.games.GameExecutionException
 import apps.games.serious.Pip

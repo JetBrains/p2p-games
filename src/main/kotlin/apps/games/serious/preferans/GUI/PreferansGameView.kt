@@ -1,13 +1,13 @@
-package apps.games.serious.preferans.GUI
+package apps.games.serious.preferans.gui
 
 import Settings
 import apps.games.serious.Card
-import apps.games.serious.TableGUI.*
 import apps.games.serious.getCardById
 import apps.games.serious.getIdByCard
 import apps.games.serious.preferans.Bet
 import apps.games.serious.preferans.PreferansScoreCounter
 import apps.games.serious.preferans.Whists
+import apps.table.gui.*
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -18,7 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by user on 6/30/16.
  */
-class PreferansGame(val scoreCounter: PreferansScoreCounter, val me: Int, val deckSize: Int = 32) : GameView() {
+class PreferansGameView(val scoreCounter: PreferansScoreCounter, val me: Int, val deckSize: Int = 32) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var biddingOverlay: ButtonOverlay<Bet>
@@ -339,7 +339,7 @@ class PreferansGame(val scoreCounter: PreferansScoreCounter, val me: Int, val de
      * @param player - table id of name to register
      * @param name - new name
      */
-    fun updatePlayerName(player: Int, name: String){
+    fun updatePlayerName(player: Int, name: String) {
         tableScreen.updatePlayerName(player, name)
     }
 
@@ -389,7 +389,7 @@ fun main(args: Array<String>) {
     config.width = 1024
     config.height = 1024
     config.forceExit = false
-    val gameGUI = PreferansGame(PreferansScoreCounter(listOf(User(Settings.hostAddress, "sfsefse"))), 1)
+    val gameGUI = PreferansGameView(PreferansScoreCounter(listOf(User(Settings.hostAddress, "sfsefse"))), 1)
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
     println("6 \u2660")

@@ -2,7 +2,7 @@ package apps.games.serious.mafia.subgames.role.secret
 
 import apps.games.GameExecutionException
 import apps.games.primitives.Deck
-import crypto.RSA.ECParams
+import crypto.rsa.ECParams
 import entity.User
 import org.apache.commons.codec.digest.DigestUtils
 import org.bouncycastle.math.ec.ECPoint

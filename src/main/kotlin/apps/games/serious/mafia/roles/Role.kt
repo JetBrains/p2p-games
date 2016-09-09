@@ -3,7 +3,7 @@ package apps.games.serious.mafia.roles
 import apps.games.serious.Card
 import apps.games.serious.Pip
 import apps.games.serious.Suit
-import crypto.AES.AESEncryptor
+import crypto.aes.AESEncryptor
 import entity.User
 import org.bouncycastle.math.ec.ECPoint
 

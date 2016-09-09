@@ -1,4 +1,4 @@
-package apps.games.serious.TableGUI
+package apps.table.gui
 
 import apps.games.serious.Pip
 import apps.games.serious.Suit
@@ -156,9 +156,9 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
      * @param batch - where to draw
      * @param font - font to use
      */
-    fun renderNames(){
+    fun renderNames() {
         val oldMatrix = dynamicBatch.projectionMatrix.cpy()
-        for (player in table.players){
+        for (player in table.players) {
             val transform = oldMatrix.idt().translate(player.nickPosition).scl(0.06f).rotate(0f, 0f, 1f, player.getAngle())
             dynamicBatch.projectionMatrix = Matrix4(getCam().combined).mul(transform)
             dynamicBatch.begin()
@@ -171,7 +171,7 @@ class TableScreen(val game: GameView, val maxPlayers: Int = 3) : InputAdapter(),
     /**
      * update name of a player with given player Id
      */
-    fun updatePlayerName(playerID: Int, name: String){
+    fun updatePlayerName(playerID: Int, name: String) {
         table.players[playerID].name = name
     }
 

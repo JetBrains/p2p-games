@@ -1,6 +1,6 @@
 package apps.games.serious
 
-import apps.games.serious.TableGUI.CardGUI
+import apps.table.gui.CardGUI
 
 
 data class Card(val suit: Suit, val pip: Pip)

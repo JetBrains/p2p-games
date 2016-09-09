@@ -9,7 +9,7 @@ import apps.games.primitives.Deck
 import apps.games.primitives.EncryptedDeck
 import apps.games.primitives.protocols.DeckShuffleGame
 import apps.games.primitives.protocols.RandomDeckGame
-import crypto.RSA.ECParams
+import crypto.rsa.ECParams
 import entity.ChatMessage
 import entity.Group
 import entity.User
@@ -52,7 +52,7 @@ abstract class CardGame(chat: Chat, group: Group, gameID: String,
 
 
     /**
-     * During the game in GUI - ew are always playerId 0,
+     * During the game in gui - ew are always playerId 0,
      * meanwhile in game we are not
      */
     fun getTablePlayerId(id: Int): Int {

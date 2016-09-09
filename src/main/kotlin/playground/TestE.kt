@@ -1,6 +1,9 @@
+package playground
+
 /**
  * Created by user on 6/24/16.
  */
+import DEBUG
 import apps.chat.ChatManager
 import apps.games.GameManager
 import org.apache.log4j.BasicConfigurator

@@ -1,6 +1,6 @@
 package apps.games.serious.mafia.subgames.sum
 
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.RSAKeyManager
 import entity.User
 import java.math.BigInteger
 
@@ -12,7 +12,7 @@ import java.math.BigInteger
 
 data class SMSEntry(val sender: User, val receiver: User, val msg: String)
 
-class SMSVerifier {
+class SecureMultypartySumVerifier {
     private lateinit var finalSum: BigInteger
     private val partialSum = mutableMapOf<User, BigInteger>()
     private val messages = mutableListOf<SMSEntry>()

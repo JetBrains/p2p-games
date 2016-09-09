@@ -1,3 +1,9 @@
+package playground
+
+/**
+ * Created by user on 6/24/16.
+ */
+import DEBUG
 import apps.chat.ChatManager
 import apps.games.GameManager
 import org.apache.log4j.BasicConfigurator
@@ -24,13 +30,13 @@ fun main(args: Array<String>) {
             host = InetAddress.getLocalHost().hostAddress
         }
     }
-
-    val a1: InetSocketAddress = InetSocketAddress(host, 1233)
-    val a2: InetSocketAddress = InetSocketAddress(host, 1234)
+    val a1: InetSocketAddress = InetSocketAddress(host, 1237)
+    val a2: InetSocketAddress = InetSocketAddress(host, 1238)
     Settings.clientAddress = a1
     Settings.hostAddress = a2
-    Settings.defaultUsername = "Bob"
+    Settings.defaultUsername = "Dave"
     ChatManager.start()
     GameManager.start()
+
     //connectionManager.close()
 }

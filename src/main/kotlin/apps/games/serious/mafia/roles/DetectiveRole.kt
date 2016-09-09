@@ -1,8 +1,8 @@
 package apps.games.serious.mafia.roles
 
 import apps.games.GameExecutionException
-import crypto.RSA.ECParams
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.ECParams
+import crypto.rsa.RSAKeyManager
 import entity.User
 import org.bouncycastle.math.ec.ECPoint
 import java.math.BigInteger
@@ -90,7 +90,7 @@ class DetectiveRole : PlayerRole() {
 
     /**
      * reset evrything in parrent +
-     * create new RSA key pair
+     * create new rsa key pair
      */
     override fun reset() {
         super.reset()
@@ -98,7 +98,7 @@ class DetectiveRole : PlayerRole() {
     }
 
     companion object {
-        val TIMEOUT: Long = 1
+        val TIMEOUT: Long = 20
 
         val KEY_LENGTH = 1024
     }

@@ -1,6 +1,6 @@
-package apps.games.serious.mafia.GUI
+package apps.games.serious.mafia.gui
 
-import apps.games.serious.TableGUI.Overlay
+import apps.table.gui.Overlay
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Camera
@@ -97,14 +97,14 @@ class MafiaMessagesOverlay() : Overlay() {
                                  y: Float,
                                  pointer: Int,
                                  button: Int) {
-                if(isVisible){
+                if (isVisible) {
                     event.handle()
                 }
             }
         })
-        stage.addListener(object : ClickListener(){
+        stage.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent, x: Float, y: Float) {
-                if(isVisible){
+                if (isVisible) {
                     event.handle()
                 }
             }

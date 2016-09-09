@@ -1,6 +1,6 @@
 package apps.chat
 
-import apps.chat.GUI.ChatManagerGUI
+import apps.chat.gui.ChatManagerGUI
 import apps.games.GameManager
 import entity.ChatMessage
 import entity.User
@@ -34,7 +34,7 @@ object ChatManager {
                 ChatService(this))
 
 
-        //Init main GUI
+        //Init playground.main gui
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
         } catch (e: Exception) {

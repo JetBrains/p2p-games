@@ -5,7 +5,7 @@ import apps.games.GameExecutionException
 import apps.games.serious.Card
 import apps.games.serious.CardGame
 import apps.games.serious.getCardById
-import apps.games.serious.preferans.GUI.PreferansGame
+import apps.games.serious.preferans.gui.PreferansGameView
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import crypto.random.randomString
@@ -46,7 +46,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     private var state: State = State.INIT
 
-    private lateinit var gameGUI: PreferansGame
+    private lateinit var gameGUI: PreferansGameView
     private lateinit var application: LwjglApplication
 
     //TALON - always last two cards of the deck
@@ -87,7 +87,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
 
     init {
-        if(N != 3) throw GameExecutionException("Only 3 playerId preferans is supported")
+        if (N != 3) throw GameExecutionException("Only 3 playerId preferans is supported")
         val order = listOf(*playerOrder.toTypedArray())
         Collections.rotate(order, getTablePlayerId(playerID))
         scoreCounter = PreferansScoreCounter(order)
@@ -402,9 +402,9 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Start GUI for the Preferans game
+     * Start gui for the Preferans game
      */
-    private fun initGame(responses: List<GameMessageProto.GameStateMessage>){
+    private fun initGame(responses: List<GameMessageProto.GameStateMessage>) {
         //validate playerId order
         val hashes = responses.distinctBy { x -> x.value }
         if (hashes.size != 1) {
@@ -416,12 +416,12 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
         config.height = 1024
         config.forceExit = false
         config.title = "Preferans Game[${chat.username}]"
-        gameGUI = PreferansGame(scoreCounter, playerID)
+        gameGUI = PreferansGameView(scoreCounter, playerID)
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
-        for(i in 0..N-1){
+        for (i in 0..N - 1) {
             gameGUI.updatePlayerName(getTablePlayerId(i), playerOrder[i].name)
         }
     }
@@ -620,7 +620,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Give talon to main playerId
+     * Give talon to playground.main playerId
      */
     fun dealTalon() {
         for (i in 0..TALON - 1) {
@@ -685,7 +685,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
 
     /**
      * Give each playerId cards, that
-     * belong to his hand(GUI)
+     * belong to his hand(gui)
      */
     private fun dealHands() {
         gameGUI.showHint("Dealing hands")
@@ -716,7 +716,7 @@ class Preferans(chat: Chat, group: Group, gameID: String) :
     }
 
     /**
-     * Skip game if we are main playerId or
+     * Skip game if we are playground.main playerId or
      * run subgame if we are not
      */
     private fun startWhisting(): String {

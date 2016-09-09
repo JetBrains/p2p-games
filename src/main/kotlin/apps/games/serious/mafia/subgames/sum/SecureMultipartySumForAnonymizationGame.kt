@@ -5,8 +5,8 @@ import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameManager
 import apps.games.GameManagerClass
-import crypto.RSA.ECParams
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.ECParams
+import crypto.rsa.RSAKeyManager
 import crypto.random.randomBigInt
 import crypto.random.randomString
 import entity.Group
@@ -38,7 +38,7 @@ class SecureMultipartySumForAnonymizationGame(chat: Chat, group: Group, gameID: 
     private val SALT_LENGTH = 128
     private val SALT = randomString(SALT_LENGTH)
     private val RHashes = mutableMapOf<User, String>()
-    private lateinit var verifier: SMSVerifier
+    private lateinit var verifier: SecureMultypartySumVerifier
     private lateinit var totalSum: BigInteger
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
@@ -82,4 +82,4 @@ class SecureMultipartySumForAnonymizationGame(chat: Chat, group: Group, gameID: 
     }
 }
 
-data class SMSfAResult(val sum: BigInteger, val salt: String, val R: BigInteger, val RHashes: Map<User, String>, val SMSVerifier: SMSVerifier)
+data class SMSfAResult(val sum: BigInteger, val salt: String, val R: BigInteger, val RHashes: Map<User, String>, val SMSVerifier: SecureMultypartySumVerifier)

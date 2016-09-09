@@ -1,9 +1,9 @@
-package apps.games.serious.mafia.GUI
+package apps.games.serious.mafia.gui
 
 import Settings
-import apps.games.serious.TableGUI.*
 import apps.games.serious.mafia.MafiaLogger
 import apps.games.serious.mafia.roles.Role
+import apps.table.gui.*
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -14,7 +14,7 @@ import entity.User
 /**
  * Created by user on 6/30/16.
  */
-class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: Int) : GameView() {
+class MafiaGameView(val group: Group, val logger: MafiaLogger, val maxTextLength: Int) : GameView() {
     lateinit var font: BitmapFont
     lateinit var tableScreen: TableScreen
     lateinit var userOverlay: ButtonOverlay<User>
@@ -225,7 +225,7 @@ class MafiaGame(val group: Group, val logger: MafiaLogger, val maxTextLength: In
      * @param player - table id of name to register
      * @param name - new name
      */
-    fun updatePlayerName(player: Int, name: String){
+    fun updatePlayerName(player: Int, name: String) {
         tableScreen.updatePlayerName(player, name)
     }
 
@@ -251,7 +251,7 @@ fun main(args: Array<String>) {
     config.height = 1024
     config.forceExit = false
     val group = Group(mutableSetOf(User(Settings.hostAddress, "sfsefse"), User(Settings.hostAddress, "ASD")))
-    val gameGUI = MafiaGame(group, MafiaLogger(), 140)
+    val gameGUI = MafiaGameView(group, MafiaLogger(), 140)
     LwjglApplication(gameGUI, config)
     Thread.sleep(2000)
 

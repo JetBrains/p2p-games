@@ -1,4 +1,4 @@
-package apps.games.serious.TableGUI
+package apps.table.gui
 
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Mesh

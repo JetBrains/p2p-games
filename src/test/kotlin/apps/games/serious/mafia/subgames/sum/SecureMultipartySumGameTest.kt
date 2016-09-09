@@ -4,7 +4,7 @@ import apps.chat.Chat
 import apps.games.GameManagerClass
 import apps.games.serious.mafia.subgames.MAX_USERS
 import broker.NettyGroupBroker
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.RSAKeyManager
 import crypto.random.randomBigInt
 import entity.Group
 import entity.User

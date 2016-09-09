@@ -1,4 +1,4 @@
-package apps.games.serious.TableGUI
+package apps.table.gui
 
 import apps.games.serious.Card
 import apps.games.serious.Pip
@@ -38,7 +38,7 @@ private fun convert(front: FloatArray, back: FloatArray): FloatArray {
 }
 
 /**
- * CardGUI GUI representation
+ * CardGUI gui representation
  */
 class CardGUI(val suit: Suit, val pip: Pip, front: Sprite, back: Sprite) {
     val CARD_WIDTH = 1f

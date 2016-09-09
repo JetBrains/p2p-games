@@ -1,6 +1,6 @@
 package crypto.random
 
-import crypto.RSA.ECParams
+import crypto.rsa.ECParams
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test

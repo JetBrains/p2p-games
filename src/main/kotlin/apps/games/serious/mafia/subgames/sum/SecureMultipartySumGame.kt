@@ -5,7 +5,7 @@ import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameManager
 import apps.games.GameManagerClass
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.RSAKeyManager
 import crypto.random.randomString
 import entity.Group
 import entity.User
@@ -19,7 +19,7 @@ import java.math.BigInteger
 
 
 class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyManager: RSAKeyManager,
-                              val n: BigInteger, gameManager: GameManagerClass = GameManager) : Game<Pair<BigInteger, SMSVerifier>>(chat, group, gameID, gameManager = gameManager) {
+                              val n: BigInteger, gameManager: GameManagerClass = GameManager) : Game<Pair<BigInteger, SecureMultypartySumVerifier>>(chat, group, gameID, gameManager = gameManager) {
     override val name: String
         get() = "First part of SMS algorithm"
 
@@ -38,7 +38,7 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
 
     private var state: State = State.INIT
     private var sum: BigInteger = BigInteger.ZERO
-    private val verifier = SMSVerifier()
+    private val verifier = SecureMultypartySumVerifier()
     private val parts = crypto.random.split(n, N)
 
     override fun evaluate(responses: List<GameMessageProto.GameStateMessage>): String {
@@ -63,7 +63,7 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
                             val split = keyManager.decodeString(msg.value).split(" ")
                             sum += BigInteger(split[1])
                         } catch (e: InvalidCipherTextException) {
-                            throw GameExecutionException("Malformed RSA key")
+                            throw GameExecutionException("Malformed rsa key")
                         }
                     }
                 }
@@ -106,7 +106,7 @@ class SecureMultipartySumGame(chat: Chat, group: Group, gameID: String, val keyM
         return state == State.END
     }
 
-    override fun getResult(): Pair<BigInteger, SMSVerifier> {
+    override fun getResult(): Pair<BigInteger, SecureMultypartySumVerifier> {
         return sum to verifier
     }
 

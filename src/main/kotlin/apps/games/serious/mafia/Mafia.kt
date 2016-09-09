@@ -5,7 +5,7 @@ import apps.games.GameExecutionException
 import apps.games.GameManager
 import apps.games.GameManagerClass
 import apps.games.serious.CardGame
-import apps.games.serious.mafia.GUI.MafiaGame
+import apps.games.serious.mafia.gui.MafiaGameView
 import apps.games.serious.mafia.roles.*
 import apps.games.serious.mafia.subgames.role.distribution.RoleDistributionGame
 import apps.games.serious.mafia.subgames.role.distribution.RoleDistributionHelper
@@ -19,8 +19,8 @@ import apps.games.serious.mafia.subgames.sum.SMSfAResult
 import apps.games.serious.mafia.subgames.sum.SecureMultipartySumForAnonymizationGame
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
-import crypto.RSA.ECParams
-import crypto.RSA.RSAKeyManager
+import crypto.rsa.ECParams
+import crypto.rsa.RSAKeyManager
 import crypto.random.randomBigInt
 import crypto.random.randomString
 import entity.Group
@@ -69,7 +69,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
         END,
     }
 
-    private lateinit var gameGUI: MafiaGame
+    private lateinit var gameGUI: MafiaGameView
     private lateinit var application: LwjglApplication
     private val logger = MafiaLogger()
 
@@ -137,10 +137,10 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                             val s = keyManager.decodeString(msg.value)
                             val handshake = s.split(" ").last()
                             if (handshake != HANDSHAKE_PHRASE) {
-                                throw GameExecutionException("Invalid RSA key")
+                                throw GameExecutionException("Invalid rsa key")
                             }
                         } catch (e: InvalidCipherTextException) {
-                            throw GameExecutionException("Malformed RSA key")
+                            throw GameExecutionException("Malformed rsa key")
                         }
                     }
                 }
@@ -151,7 +151,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                     return keyManager.encodeForUser(playerOrder[currentPlayerID], s)
                 } else {
                     state = State.INIT_ID
-                    chat.sendMessage("RSA is OK. Generating deck")
+                    chat.sendMessage("rsa is OK. Generating deck")
                     return randomBigInt(ECParams.n).toString()
                 }
             }
@@ -170,8 +170,8 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                 }
                 initRoles()
                 shareSecrets()
-                //state = State.DAY_PHASE_PICK
-                state = State.MAFIA_COMMUNICATE
+                state = State.DAY_PHASE_PICK
+                //state = State.MAFIA_COMMUNICATE
             }
             State.DAY_PHASE_PICK -> {
                 state = State.DAY_PHASE_VERIFY
@@ -232,9 +232,9 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
                         break
                     }
                 }
-                if(!gameEnded()){
+                if (!gameEnded()) {
                     state = State.DOCTOR_I
-                }else{
+                } else {
                     state = State.VERIFY_BEGIN
                 }
 
@@ -368,7 +368,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     }
 
     /**
-     * Start GUI for the Cheat game
+     * Start gui for the Cheat game
      */
     private fun initGame(): String {
         Role.reset()
@@ -378,12 +378,12 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
         config.forceExit = false
         config.title = "Cheat Game[${chat.username}]"
 
-        gameGUI = MafiaGame(group, logger, MAX_TEXT_LENGTH)
+        gameGUI = MafiaGameView(group, logger, MAX_TEXT_LENGTH)
         application = LwjglApplication(gameGUI, config)
         while (!gameGUI.loaded) {
             Thread.sleep(200)
         }
-        for(i in 0..N-1){
+        for (i in 0..N - 1) {
             gameGUI.updatePlayerName(getTablePlayerId(i), playerOrder[i].name)
         }
         return ""
@@ -464,7 +464,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     }
 
     /**
-     * get message for other members of mafia from GUI
+     * get message for other members of mafia from gui
      */
     private fun getMafiaInput(seconds: Long): String {
         val msgQueue = LinkedBlockingQueue<String>(1)
@@ -557,7 +557,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
         deadline.add(Calendar.SECOND, MafiaRole.MESSAGE_INPUT_TIMEOUT.toInt())
         val msg: String
         if (role is MafiaRole) {
-            if(!dead.contains(chat.me())){
+            if (!dead.contains(chat.me())) {
                 msg = getMafiaInput(MafiaRole.MESSAGE_INPUT_TIMEOUT).padEnd(MAX_TEXT_LENGTH)
             } else {
                 msg = "Can't help, I'm dead"
@@ -573,7 +573,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     }
 
     /**
-     * exchange detective RSA public paramenters via SMSfA
+     * exchange detective rsa public paramenters via SMSfA
      */
     private fun processDetectiveRSA() {
         val mod: BigInteger
@@ -598,7 +598,7 @@ class Mafia(chat: Chat, group: Group, gameID: String, gameManager: GameManagerCl
     }
 
     /**
-     * compute and store RSA parameters
+     * compute and store rsa parameters
      */
     private fun regiserDetectiveRSA(responses: List<GameMessageProto.GameStateMessage>) {
         var modSum = BigInteger.ZERO

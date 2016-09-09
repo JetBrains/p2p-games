@@ -51,7 +51,7 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
     /**
      * send initial request to start game
      * GameInitMessage will be sent to all
-     * users of GUI
+     * users of gui
      * @param chat - where to conduct game
      * @param type - game type
      */
@@ -86,7 +86,7 @@ open class GameManagerClass(private val connectionManager: network.ConnectionMan
         games[msg.gameID] = game
         if (group != chat.group) {
             sendEndGame(msg.gameID,
-                    "GUI member lists of [${msg.user.name}] and [${chat.username}] mismatch",
+                    "gui member lists of [${msg.user.name}] and [${chat.username}] mismatch",
                     game.getVerifier())
             return null
         } else {

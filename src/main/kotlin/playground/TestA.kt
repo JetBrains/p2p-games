@@ -1,6 +1,6 @@
-/**
- * Created by user on 6/24/16.
- */
+package playground
+
+import DEBUG
 import apps.chat.ChatManager
 import apps.games.GameManager
 import org.apache.log4j.BasicConfigurator
@@ -16,6 +16,7 @@ import java.net.Socket
 fun main(args: Array<String>) {
     BasicConfigurator.configure()
     val host: String
+
     if (DEBUG) {
         host = "127.0.0.1"
     } else {
@@ -27,13 +28,12 @@ fun main(args: Array<String>) {
             host = InetAddress.getLocalHost().hostAddress
         }
     }
-    val a1: InetSocketAddress = InetSocketAddress(host, 1237)
-    val a2: InetSocketAddress = InetSocketAddress(host, 1238)
+    val a1: InetSocketAddress = InetSocketAddress(host, 1231)
+    val a2: InetSocketAddress = InetSocketAddress(host, 1232)
     Settings.clientAddress = a1
     Settings.hostAddress = a2
-    Settings.defaultUsername = "Dave"
+    Settings.defaultUsername = "Alice"
     ChatManager.start()
     GameManager.start()
-
     //connectionManager.close()
 }

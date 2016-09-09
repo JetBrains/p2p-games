@@ -4,7 +4,7 @@ import apps.chat.Chat
 import apps.games.Game
 import apps.games.GameExecutionException
 import apps.games.GameManagerClass
-import apps.games.serious.preferans.GUI.PreferansGame
+import apps.games.serious.preferans.gui.PreferansGameView
 import entity.Group
 import entity.User
 import proto.GameMessageProto
@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue
 private val realWhists = listOf(Whists.WHIST_BLIND, Whists.WHIST_OPEN)
 
 class WhistingGame(chat: Chat, group: Group, gameID: String, gameManager:
-GameManagerClass, val gameGUI: PreferansGame,
+GameManagerClass, val gameGUI: PreferansGameView,
                    val maxBet: Bet) : Game<Whists>(chat, group, gameID, gameManager) {
     override val name: String
         get() = "Whisting game"
